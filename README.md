@@ -23,18 +23,19 @@ Make sure to select a specific bone within the armature while in Edit or Pose mo
 
 ![Servo Settings panel](screenshots/servo_settings.png)
 
-| Property             | Description                                                                                                                                                                                           |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Position Min         | The minimum position value before the servo physically stops moving                                                                                                                                   |
-| Position Max         | Same as `Position Min`, but for the maximum value                                                                                                                                                     |
-| Set Position Limits  | Define a position range to limit the calculated position values according to a specific build                                                                                                         |
-| Position Limit Start | The minimum position value before the servo is supposed to stop moving within a specific build                                                                                                        |
-| Position Limit End   | Same as `Position Limit Start`, but for the end value                                                                                                                                                 |
-| Neutral Angle        | The assumed neutral angle of the servo in degrees (typically half the rotation range) which should be adjusted carefully, since the servo will first move to its 'natural' neutral angle when powered |
-| Rotation Range       | The manufactured rotation range of the servo in degrees (typically 180)                                                                                                                               |
-| Euler Rotation Axis  | The Euler rotation axis (X, Y or Z) of the bone rotation representing the servo movement                                                                                                              |
-| Multiplier           | Multilplier to increase or decrease the rotation to adjust the intensity within a specific build                                                                                                      |
-| Reverse Direction    | Whether the applied rotation should be reversed when converting to position value which might be necessary to reflect the servo's positioning within a specific build                                 |
+| Property               | Description                                                                                                                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provide Servo Settings | Define servo settings for this bone and include its position values when exporting                                                                                                                    |
+| Position Min           | The minimum position value before the servo physically stops moving                                                                                                                                   |
+| Position Max           | Same as `Position Min`, but for the maximum value                                                                                                                                                     |
+| Set Position Limits    | Define a position range to limit the calculated position values according to a specific build                                                                                                         |
+| Position Limit Start   | The minimum position value before the servo is supposed to stop moving within a specific build                                                                                                        |
+| Position Limit End     | Same as `Position Limit Start`, but for the end value                                                                                                                                                 |
+| Neutral Angle          | The assumed neutral angle of the servo in degrees (typically half the rotation range) which should be adjusted carefully, since the servo will first move to its 'natural' neutral angle when powered |
+| Rotation Range         | The manufactured rotation range of the servo in degrees (typically 180)                                                                                                                               |
+| Euler Rotation Axis    | The Euler rotation axis (X, Y or Z) of the bone rotation representing the servo movement                                                                                                              |
+| Multiplier             | Multilplier to increase or decrease the rotation to adjust the intensity within a specific build                                                                                                      |
+| Reverse Direction      | Whether the applied rotation should be reversed when converting to position value which might be necessary to reflect the servo's positioning within a specific build                                 |
 
 Note that the correct settings vary between different servo brands and models. Be careful not to damage the servo when finding the min and max position values. The range of motion of a servo can be limited depending on your specific build design. In this case you can use the position limit values to avoid damage to your build.
 

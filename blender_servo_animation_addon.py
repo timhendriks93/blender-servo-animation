@@ -32,7 +32,7 @@ class SERVOANIMATION_converter:
             bone = pose_bone.bone
             self.positions[bone.name] = []
             
-specific    def calculate_positions_for_frame(self, frame, pose_bones, scene, precision):
+    def calculate_positions_for_frame(self, frame, pose_bones, scene, precision):
         scene.frame_set(frame)
             
         for pose_bone in pose_bones:
