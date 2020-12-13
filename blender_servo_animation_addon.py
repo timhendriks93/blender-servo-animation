@@ -32,16 +32,16 @@ class SERVOANIMATION_converter:
             bone = pose_bone.bone
             self.positions[bone.name] = []
             
-    def calculate_positions_for_frame(self, frame, context, precision):
-        context.scene.frame_set(frame)
+    def calculate_positions_for_frame(self, frame, pose_bones, scene, precision):
+        scene.frame_set(frame)
             
-        for pose_bone in context.object.pose.bones:
+        for pose_bone in pose_bones:
             bone = pose_bone.bone
             servo_settings = bone.servo_settings
             rotation_axis_index = int(servo_settings.rotation_axis)
             rotation_in_degrees = round(math.degrees(pose_bone.rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
             
-            if (servo_settings.reverse_direction == True):
+            if servo_settings.reverse_direction == True:
                 rotation_in_degrees = rotation_in_degrees * -1
             
             angle = servo_settings.neutral_angle - rotation_in_degrees
@@ -50,23 +50,30 @@ class SERVOANIMATION_converter:
             check_min = servo_settings.position_min
             check_max = servo_settings.position_max
             
-            if (servo_settings.set_position_limits == True):
+            if servo_settings.set_position_limits == True:
                 check_min = servo_settings.position_limit_start
                 check_max = servo_settings.position_limit_end
             
-            if (position < check_min or position > check_max):
+            if position < check_min or position > check_max:
                 raise RuntimeError('Calculated position ' + str(position) + ' for bone ' + bone.name + ' is out of range (' + str(check_min) + ' - ' + str(check_max) + ') at frame ' + str(frame) + '.')
             
             self.positions[bone.name].append(str(position))
             
     def calculate_positions(self, context, precision):
-        self.prepare_positions_dictionary(context.object.pose.bones)
+        pose_bones = []
+        scene = context.scene
+        
+        for pose_bone in context.object.pose.bones:
+            if pose_bone.bone.servo_settings.active == True:
+                pose_bones.append(pose_bone)
+
+        self.prepare_positions_dictionary(pose_bones)
         
         if precision == 0:
             precision = None
         
-        for frame in range(context.scene.frame_start, context.scene.frame_end + 1):
-            self.calculate_positions_for_frame(frame, context, precision)
+        for frame in range(scene.frame_start, scene.frame_end + 1):
+            self.calculate_positions_for_frame(frame, pose_bones, scene, precision)
             
         return self.positions
 
@@ -115,7 +122,7 @@ class SERVOANIMATION_OT_export_arduino(bpy.types.Operator, bpy_extras.io_utils.E
                 variable_name = re.sub('[^a-zA-Z0-9_]', '', bone_name)
                 content = content + 'const ' + variable_type + ' ' + variable_name + '[' + str(frame_count) + '] '
                 
-                if (self.use_progmem == True):
+                if self.use_progmem == True:
                     content = content + 'PROGMEM '
                     
                 content = content + '= {' + ', '.join(positions[bone_name]) + '};\n'
@@ -190,9 +197,9 @@ class SERVOANIMATION_OT_export_json(bpy.types.Operator, bpy_extras.io_utils.Expo
 
 class SERVOANIMATION_PG_servo_settings(bpy.types.PropertyGroup):
     def range_limit_value(self, value, min_value, max_value):
-        if (min_value is not None and value < min_value):
+        if min_value is not None and value < min_value:
             return min_value
-        elif (max_value is not None and value > max_value):
+        elif max_value is not None and value > max_value:
             return max_value
         else:
             return value
@@ -212,6 +219,10 @@ class SERVOANIMATION_PG_servo_settings(bpy.types.PropertyGroup):
     def update_neutral_angle(self, context):
         self["neutral_angle"] = self.range_limit_value(self.neutral_angle, None, self.rotation_range)
     
+    active: bpy.props.BoolProperty(
+        name="Provide Servo Settings",
+        description="Provide servo settings for this bone"
+    )
     position_min: bpy.props.IntProperty(
         name="Min Position",
         default=150,
@@ -300,42 +311,48 @@ class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
         
         split = layout.split()
         col = split.column()
-        col.alignment = 'RIGHT'
-        col.label(text="Position Min")
-        col.label(text="Max")
         col = split.column(align=True)
-        col.prop(servo_settings, "position_min", text="")
-        col.prop(servo_settings, "position_max", text="")
-        col.prop(servo_settings, "set_position_limits")
+        col.prop(servo_settings, "active")
         
-        if (servo_settings.set_position_limits == True):
+        if servo_settings.active == True:
             split = layout.split()
             col = split.column()
             col.alignment = 'RIGHT'
-            col.label(text="Limit Start")
-            col.label(text="End")
+            col.label(text="Position Min")
+            col.label(text="Max")
             col = split.column(align=True)
-            col.prop(servo_settings, "position_limit_start", text="")
-            col.prop(servo_settings, "position_limit_end", text="")
-        
-        split = layout.split()
-        col = split.column()
-        col.alignment = 'RIGHT'
-        col.label(text="Neutral Angle")
-        col.label(text="Rotation Range")
-        col = split.column(align=True)
-        col.prop(servo_settings, "neutral_angle", text="")
-        col.prop(servo_settings, "rotation_range", text="")
-        
-        split = layout.split()
-        col = split.column()
-        col.alignment = 'RIGHT'
-        col.label(text="Rotation Axis")
-        col.label(text="Multiplier")
-        col = split.column(align=True)
-        col.prop(servo_settings, "rotation_axis", text="")
-        col.prop(servo_settings, "multiplier", text="")
-        col.prop(servo_settings, "reverse_direction")
+            col.prop(servo_settings, "position_min", text="")
+            col.prop(servo_settings, "position_max", text="")
+            col.prop(servo_settings, "set_position_limits")
+            
+            if servo_settings.set_position_limits == True:
+                split = layout.split()
+                col = split.column()
+                col.alignment = 'RIGHT'
+                col.label(text="Limit Start")
+                col.label(text="End")
+                col = split.column(align=True)
+                col.prop(servo_settings, "position_limit_start", text="")
+                col.prop(servo_settings, "position_limit_end", text="")
+            
+            split = layout.split()
+            col = split.column()
+            col.alignment = 'RIGHT'
+            col.label(text="Neutral Angle")
+            col.label(text="Rotation Range")
+            col = split.column(align=True)
+            col.prop(servo_settings, "neutral_angle", text="")
+            col.prop(servo_settings, "rotation_range", text="")
+            
+            split = layout.split()
+            col = split.column()
+            col.alignment = 'RIGHT'
+            col.label(text="Rotation Axis")
+            col.label(text="Multiplier")
+            col = split.column(align=True)
+            col.prop(servo_settings, "rotation_axis", text="")
+            col.prop(servo_settings, "multiplier", text="")
+            col.prop(servo_settings, "reverse_direction")
 
 
 classes = (
