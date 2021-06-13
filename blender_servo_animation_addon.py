@@ -38,8 +38,9 @@ class SERVOANIMATION_converter:
         for pose_bone in pose_bones:
             bone = pose_bone.bone
             servo_settings = bone.servo_settings
+            rotation_euler = pose_bone.matrix_channel.to_euler()
             rotation_axis_index = int(servo_settings.rotation_axis)
-            rotation_in_degrees = round(math.degrees(pose_bone.rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
+            rotation_in_degrees = round(math.degrees(rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
             
             if servo_settings.reverse_direction == True:
                 rotation_in_degrees = rotation_in_degrees * -1
@@ -126,6 +127,8 @@ class SERVOANIMATION_OT_export_arduino(bpy.types.Operator, bpy_extras.io_utils.E
                     content = content + 'PROGMEM '
                     
                 content = content + '= {' + ', '.join(positions[bone_name]) + '};\n'
+            
+            content = content + '\n'
         except RuntimeError as error:
             scene.frame_set(original_frame)
             self.report({'ERROR'}, str(error))
