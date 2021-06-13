@@ -36,6 +36,6 @@ void loop() {
 
     // Copy and adjust the following two lines for each additional servo / bone
     int positionValue = pgm_read_word_near(Bone + frame);
-    pwm.setPWM(SERVONUM, 0, pulse);
+    pwm.setPWM(SERVONUM, 0, positionValue);
   }
 }
