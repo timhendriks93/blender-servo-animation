@@ -33,7 +33,6 @@ Make sure to select a specific bone within the armature while in Edit or Pose mo
 | Position Limit End     | Same as `Position Limit Start`, but for the end value                                                                                                                                                 |
 | Neutral Angle          | The assumed neutral angle of the servo in degrees (typically half the rotation range) which should be adjusted carefully, since the servo will first move to its 'natural' neutral angle when powered |
 | Rotation Range         | The manufactured rotation range of the servo in degrees (typically 180)                                                                                                                               |
-| Euler Rotation Axis    | The Euler rotation axis (X, Y or Z) of the bone rotation representing the servo movement                                                                                                              |
 | Multiplier             | Multilplier to increase or decrease the rotation to adjust the intensity within a specific build                                                                                                      |
 | Reverse Direction      | Whether the applied rotation should be reversed when converting to position value which might be necessary to reflect the servo's positioning within a specific build                                 |
 
