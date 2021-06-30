@@ -40,18 +40,18 @@ class SERVOANIMATION_converter:
         for pose_bone in pose_bones:
             bone = pose_bone.bone
             servo_settings = bone.servo_settings
-            _, axis_angle = pose_bone.matrix_channel.to_quaternion().to_axis_angle()
-            rotation_in_degrees = math.degrees(axis_angle)
-            
-            if frame == 1:
-                self.neutrals[bone.name] = rotation_in_degrees
+            quaternion = pose_bone.matrix_channel.to_quaternion()
 
-            rotation_diff = rotation_in_degrees - self.neutrals[bone.name]
+            if frame == 1:
+                self.neutrals[bone.name] = quaternion
+
+            rotation_diff = quaternion.rotation_difference(self.neutrals[bone.name])
+            rotation_in_degrees = math.degrees(rotation_diff.angle)
             
             if servo_settings.reverse_direction == True:
-                rotation_diff = rotation_diff * -1
+                rotation_in_degrees = rotation_in_degrees * -1
             
-            angle = servo_settings.neutral_angle - rotation_diff
+            angle = servo_settings.neutral_angle - rotation_in_degrees
             position = round(self.range_map(angle, 0, servo_settings.rotation_range, servo_settings.position_min, servo_settings.position_max), precision)
             
             check_min = servo_settings.position_min
@@ -372,7 +372,7 @@ def register():
 
     bpy.types.Bone.servo_settings = bpy.props.PointerProperty(type=SERVOANIMATION_PG_servo_settings)
     bpy.types.EditBone.servo_settings = bpy.props.PointerProperty(type=SERVOANIMATION_PG_servo_settings)
-    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
+    # bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 
 def unregister():
