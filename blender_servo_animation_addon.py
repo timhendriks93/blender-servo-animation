@@ -26,6 +26,24 @@ class SERVOANIMATION_converter:
     def range_map(self, value, fromLow, fromHigh, toLow, toHigh):
         return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow
     
+    def matrix_visual(self, pose_bone):
+        bone = pose_bone.bone
+
+        matrix_pose_bone = pose_bone.matrix
+        matrix_bone = bone.matrix_local
+
+        if bone.parent:
+            matrix_parent_bone = bone.parent.matrix_local.copy()
+            matrix_parent_pose_bone = pose_bone.parent.matrix.copy()
+        else:
+            matrix_parent_bone = mathutils.Matrix()
+            matrix_parent_pose_bone = mathutils.Matrix()
+
+        matrix_bone_inverted = matrix_bone.copy().inverted()
+        matrix_parent_pose_bone_inverted = matrix_parent_pose_bone.copy().inverted()
+
+        return matrix_bone_inverted @ matrix_parent_bone @ matrix_parent_pose_bone_inverted @ matrix_pose_bone
+    
     def prepare_dictionaries(self, pose_bones):
         self.positions = {}
         self.neutrals = {}
@@ -40,7 +58,7 @@ class SERVOANIMATION_converter:
         for pose_bone in pose_bones:
             bone = pose_bone.bone
             servo_settings = bone.servo_settings
-            rotation_euler = pose_bone.matrix_channel.to_euler()
+            rotation_euler = self.matrix_visual(pose_bone).to_euler()
             rotation_axis_index = int(servo_settings.rotation_axis)
             rotation_in_degrees = round(math.degrees(rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
             
