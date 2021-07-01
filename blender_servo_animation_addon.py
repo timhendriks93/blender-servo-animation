@@ -6,7 +6,7 @@ bl_info = {
     "location": "Bone Properties > Servo Settings | File > Import-Export",
     "description": "Enables servo settings for bones and exports armature animations as servo position values",
     "warning": "",
-    "wiki_url": "",
+    "wiki_url": "https://github.com/timhendriks93/blender-servo-animation#readme",
     "support": "COMMUNITY",
     "category": "Import-Export",
 }
@@ -43,14 +43,6 @@ class SERVOANIMATION_converter:
         matrix_parent_pose_bone_inverted = matrix_parent_pose_bone.copy().inverted()
 
         return matrix_bone_inverted @ matrix_parent_bone @ matrix_parent_pose_bone_inverted @ matrix_pose_bone
-    
-    def prepare_dictionaries(self, pose_bones):
-        self.positions = {}
-        self.neutrals = {}
-        
-        for pose_bone in pose_bones:
-            bone = pose_bone.bone
-            self.positions[bone.name] = []
             
     def calculate_positions_for_frame(self, frame, pose_bones, scene, precision):
         scene.frame_set(frame)
@@ -89,11 +81,13 @@ class SERVOANIMATION_converter:
         pose_bones = []
         scene = context.scene
         
+        self.positions = {}
+        self.neutrals = {}
+        
         for pose_bone in context.object.pose.bones:
             if pose_bone.bone.servo_settings.active == True:
                 pose_bones.append(pose_bone)
-
-        self.prepare_dictionaries(pose_bones)
+                self.positions[pose_bone.bone.name] = []
         
         if precision == 0:
             precision = None
