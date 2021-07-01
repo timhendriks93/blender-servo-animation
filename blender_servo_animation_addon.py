@@ -14,6 +14,7 @@ bl_info = {
 import bpy
 import bpy_extras
 import math
+import mathutils
 import re
 import json
 import operator
