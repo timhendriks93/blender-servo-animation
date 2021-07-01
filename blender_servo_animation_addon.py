@@ -40,8 +40,9 @@ class SERVOANIMATION_converter:
         for pose_bone in pose_bones:
             bone = pose_bone.bone
             servo_settings = bone.servo_settings
-            _, axis_angle = pose_bone.matrix_channel.to_quaternion().to_axis_angle()
-            rotation_in_degrees = math.degrees(axis_angle)
+            rotation_euler = pose_bone.matrix_channel.to_euler()
+            rotation_axis_index = int(servo_settings.rotation_axis)
+            rotation_in_degrees = round(math.degrees(rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
             
             if frame == 1:
                 self.neutrals[bone.name] = rotation_in_degrees
@@ -292,6 +293,15 @@ class SERVOANIMATION_PG_servo_settings(bpy.types.PropertyGroup):
         max=360,
         description="The manufactured rotation range of the servo in degrees (typically 180)"
     )
+    rotation_axis: bpy.props.EnumProperty(
+        name="Euler Rotation Axis",
+        default=0,
+        items=[
+            ('0', 'X', "X Euler rotation axis"),
+            ('1', 'Y', "Y Euler rotation axis"),
+            ('2', 'Z', "Z Euler rotation axis")
+        ]
+    )
 
 
 class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
@@ -347,8 +357,10 @@ class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
             split = layout.split()
             col = split.column()
             col.alignment = 'RIGHT'
+            col.label(text="Rotation Axis")
             col.label(text="Multiplier")
             col = split.column(align=True)
+            col.prop(servo_settings, "rotation_axis", text="")
             col.prop(servo_settings, "multiplier", text="")
             col.prop(servo_settings, "reverse_direction")
 
