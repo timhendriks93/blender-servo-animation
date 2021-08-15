@@ -22,7 +22,6 @@ import operator
 
 class SERVOANIMATION_converter:
     positions = {}
-    neutrals = {}
     
     def range_map(self, value, fromLow, fromHigh, toLow, toHigh):
         return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow
@@ -54,16 +53,11 @@ class SERVOANIMATION_converter:
             rotation_euler = self.matrix_visual(pose_bone).to_euler()
             rotation_axis_index = int(servo_settings.rotation_axis)
             rotation_in_degrees = round(math.degrees(rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
-            
-            if frame == 1:
-                self.neutrals[bone.name] = rotation_in_degrees
 
-            rotation_diff = rotation_in_degrees - self.neutrals[bone.name]
-            
             if servo_settings.reverse_direction == True:
-                rotation_diff = rotation_diff * -1
+                rotation_in_degrees = rotation_in_degrees * -1
             
-            angle = servo_settings.neutral_angle - rotation_diff
+            angle = servo_settings.neutral_angle - rotation_in_degrees
             position = round(self.range_map(angle, 0, servo_settings.rotation_range, servo_settings.position_min, servo_settings.position_max), precision)
             
             check_min = servo_settings.position_min
@@ -83,7 +77,6 @@ class SERVOANIMATION_converter:
         scene = context.scene
         
         self.positions = {}
-        self.neutrals = {}
         
         for pose_bone in context.object.pose.bones:
             if pose_bone.bone.servo_settings.active == True:
