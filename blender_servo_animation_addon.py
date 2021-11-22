@@ -6,7 +6,7 @@ bl_info = {
     "location": "Bone Properties > Servo Settings | File > Import-Export",
     "description": "Enables servo settings for bones and exports armature animations as servo position values",
     "warning": "",
-    "wiki_url": "",
+    "wiki_url": "https://github.com/timhendriks93/blender-servo-animation#readme",
     "support": "COMMUNITY",
     "category": "Import-Export",
 }
@@ -14,6 +14,7 @@ bl_info = {
 import bpy
 import bpy_extras
 import math
+import mathutils
 import re
 import json
 import operator
@@ -25,12 +26,23 @@ class SERVOANIMATION_converter:
     def range_map(self, value, fromLow, fromHigh, toLow, toHigh):
         return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow
     
-    def prepare_positions_dictionary(self, pose_bones):
-        self.positions = {}
-        
-        for pose_bone in pose_bones:
-            bone = pose_bone.bone
-            self.positions[bone.name] = []
+    def matrix_visual(self, pose_bone):
+        bone = pose_bone.bone
+
+        matrix_pose_bone = pose_bone.matrix
+        matrix_bone = bone.matrix_local
+
+        if bone.parent:
+            matrix_parent_bone = bone.parent.matrix_local.copy()
+            matrix_parent_pose_bone = pose_bone.parent.matrix.copy()
+        else:
+            matrix_parent_bone = mathutils.Matrix()
+            matrix_parent_pose_bone = mathutils.Matrix()
+
+        matrix_bone_inverted = matrix_bone.copy().inverted()
+        matrix_parent_pose_bone_inverted = matrix_parent_pose_bone.copy().inverted()
+
+        return matrix_bone_inverted @ matrix_parent_bone @ matrix_parent_pose_bone_inverted @ matrix_pose_bone
             
     def calculate_positions_for_frame(self, frame, pose_bones, scene, precision):
         scene.frame_set(frame)
@@ -38,9 +50,10 @@ class SERVOANIMATION_converter:
         for pose_bone in pose_bones:
             bone = pose_bone.bone
             servo_settings = bone.servo_settings
+            rotation_euler = self.matrix_visual(pose_bone).to_euler()
             rotation_axis_index = int(servo_settings.rotation_axis)
-            rotation_in_degrees = round(math.degrees(pose_bone.rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
-            
+            rotation_in_degrees = round(math.degrees(rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
+
             if servo_settings.reverse_direction == True:
                 rotation_in_degrees = rotation_in_degrees * -1
             
@@ -63,11 +76,12 @@ class SERVOANIMATION_converter:
         pose_bones = []
         scene = context.scene
         
+        self.positions = {}
+        
         for pose_bone in context.object.pose.bones:
             if pose_bone.bone.servo_settings.active == True:
                 pose_bones.append(pose_bone)
-
-        self.prepare_positions_dictionary(pose_bones)
+                self.positions[pose_bone.bone.name] = []
         
         if precision == 0:
             precision = None
@@ -126,6 +140,8 @@ class SERVOANIMATION_OT_export_arduino(bpy.types.Operator, bpy_extras.io_utils.E
                     content = content + 'PROGMEM '
                     
                 content = content + '= {' + ', '.join(positions[bone_name]) + '};\n'
+            
+            content = content + '\n'
         except RuntimeError as error:
             scene.frame_set(original_frame)
             self.report({'ERROR'}, str(error))
