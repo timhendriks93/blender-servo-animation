@@ -13,7 +13,7 @@ Note that this Add-on is compatible with Blender version 2.80 or higher.
 3. Click the `Install...` button, select the previously downloaded file and click `Install Add-on`.
 4. Enable the Add-on by enabling the checkbox in the Add-ons list.
 
-## Usage
+## Using the Add-on
 
 ### Providing Servo Settings
 
