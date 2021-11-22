@@ -39,6 +39,16 @@ Make sure to select a specific bone within the armature while in Edit or Pose mo
 
 Note that the correct settings vary between different servo brands and models. Be careful not to damage the servo when finding the min and max position values. The range of motion of a servo can be limited depending on your specific build design. In this case you can use the position limit values to avoid damage to your build.
 
+### Choosing a position value range
+
+The default position min and max values are based on servo pulse lengths as they are required when using a library to control a servo driver module, like the PCA9685. It is also possible to use a different kind of value range. For example, to use the default Arduino Servo library, you can use a degrees value range by setting min to `0` and max to `180`.
+
+### Animating the armature
+
+When animating your armature you can benefit from all the exciting animation features Blender has to offer. Apart from animating every bone/servo separately, you can also use IK ([Inverse Kinematics](https://www.youtube.com/watch?v=S-2v_CKmVE8)) to let the Add-On calculate the positions of multiple servos automatically.
+
+When thinking of animatronic or robotic projects, you could animate a head or arm without having to worry about the individual bones/servos that make up the neck mechanism or arm segments. To further illustrate this, you can also find an [example of a neck mechanism](examples/IK/ik.blend) to learn about the armature and constraints setup.
+
 ### Exporting
 
 Once all servo settings are provided and the animation is completed, you can calculate and export the servo position values. There are two different formats to choose from:
@@ -50,8 +60,8 @@ Make sure to select the armature containing the bones/servos you want to export 
 
 ![Servo Settings panel](screenshots/export_menu.png)
 
-## Final thoughts
+## Using the exported data
 
-The default position min and max values are based on servo pulse lengths as they are required when using a library to control a servo driver module, like the PCA9685. It is also possible to use a different kind of value range. For example, to use the default Arduino Servo library, you can use a degrees value range by setting min to `0` and max to `180`.
+This repository contains some [examples](examples) about how to use the exported data with micro controllers. You'll find some Arduino project examples with a very basic program to play back the exported animation.
 
-You will also find an [example Arduino project](examples/ArduinoBlenderServoAnimation/ArduinoBlenderServoAnimation.ino) to test your animation with the help of a micro controller and a single servo.
+Of course you can also implement a more sophisticated solution, e.g. by adding a start and stop logic, choosing from multiple animations or handling multiple servos in a more efficient way. Since you'll most likely want to animate more than one servo, you can also find a basic example on how to [control multiple servos using a PCA9685 PWM module](examples/ArduinoPCA9685/ArduinoPCA9685.ino).
