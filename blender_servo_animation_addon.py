@@ -98,6 +98,7 @@ class SERVOANIMATION_OT_export_arduino(bpy.types.Operator, bpy_extras.io_utils.E
     bl_description = "Save an Arduino header file with servo position values from an armature"
     
     filename_ext = ".h"
+    position_chunk_size = 50
     
     filter_glob: bpy.props.StringProperty(
         default="*.h",
@@ -128,18 +129,24 @@ class SERVOANIMATION_OT_export_arduino(bpy.types.Operator, bpy_extras.io_utils.E
         try:
             converter = SERVOANIMATION_converter()
             positions = converter.calculate_positions(context, self.precision)
-            frame_count = scene.frame_end - scene.frame_start + 1;
+            frame_count = scene.frame_end - scene.frame_start + 1
             variable_type = 'int' if self.precision == 0 else 'float'
             content = '/*\n  Servo Position value Animation\n\n  FPS: ' + str(scene.render.fps) + '\n  Frames: ' + str(frame_count) + '\n  Armature: ' + str(context.object.name) + '\n*/\n\n'
             
             for bone_name in positions:
+                bone_positions = positions[bone_name]
                 variable_name = re.sub('[^a-zA-Z0-9_]', '', bone_name)
                 content = content + 'const ' + variable_type + ' ' + variable_name + '[' + str(frame_count) + '] '
                 
                 if self.use_progmem == True:
                     content = content + 'PROGMEM '
-                    
-                content = content + '= {' + ', '.join(positions[bone_name]) + '};\n'
+                
+                content = content + '= {\n'
+
+                for i in range(0, len(bone_positions), self.position_chunk_size):
+                    content = content + '  ' + ', '.join(bone_positions[i:i + self.position_chunk_size]) + ',\n'
+                
+                content = content + '};\n'
             
             content = content + '\n'
         except RuntimeError as error:
@@ -195,7 +202,7 @@ class SERVOANIMATION_OT_export_json(bpy.types.Operator, bpy_extras.io_utils.Expo
                 "armature": context.object.name,
                 "positions": positions
             }
-            content = json.dumps(data)
+            content = json.dumps(data, indent = 4)
         except RuntimeError as error:
             scene.frame_set(original_frame)
             self.report({'ERROR'}, str(error))
