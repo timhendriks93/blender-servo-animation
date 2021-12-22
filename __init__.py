@@ -6,7 +6,6 @@ import math
 import bpy_extras
 import bpy
 
-from .classes.convert import SERVOANIMATION_converter
 from .classes.property_group import SERVOANIMATION_PG_servo_settings
 from .classes.panel import SERVOANIMATION_PT_servo_settings
 from .classes.json_export import SERVOANIMATION_OT_export_json

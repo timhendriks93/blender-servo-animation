@@ -2,7 +2,7 @@ import bpy
 
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
-from .convert import SERVOANIMATION_converter
+from .converter import SERVOANIMATION_converter
 
 
 class SERVOANIMATION_OT_export_json(Operator, ExportHelper):

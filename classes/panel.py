@@ -1,7 +1,7 @@
 import bpy
 
 from bpy.types import Panel
-from .convert import SERVOANIMATION_converter
+from .converter import SERVOANIMATION_converter
 
 
 class SERVOANIMATION_PT_servo_settings(Panel):
