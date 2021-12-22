@@ -43,32 +43,41 @@ class SERVOANIMATION_converter:
         matrix_parent_pose_bone_inverted = matrix_parent_pose_bone.copy().inverted()
 
         return matrix_bone_inverted @ matrix_parent_bone @ matrix_parent_pose_bone_inverted @ matrix_pose_bone
+    
+    def calculate_position(self, pose_bone, precision):
+        servo_settings = pose_bone.bone.servo_settings
+        rotation_euler = self.matrix_visual(pose_bone).to_euler()
+        rotation_axis_index = int(servo_settings.rotation_axis)
+        rotation_in_degrees = round(math.degrees(rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
+
+        if servo_settings.reverse_direction == True:
+            rotation_in_degrees = rotation_in_degrees * -1
+        
+        angle = servo_settings.neutral_angle - rotation_in_degrees
+        in_range = True
+        position = round(self.range_map(angle, 0, servo_settings.rotation_range, servo_settings.position_min, servo_settings.position_max), precision)
+
+        check_min = servo_settings.position_min
+        check_max = servo_settings.position_max
+        
+        if servo_settings.set_position_limits == True:
+            check_min = servo_settings.position_limit_start
+            check_max = servo_settings.position_limit_end
+        
+        if position < check_min or position > check_max:
+            in_range = False
+        
+        return position, in_range
             
     def calculate_positions_for_frame(self, frame, pose_bones, scene, precision):
         scene.frame_set(frame)
             
         for pose_bone in pose_bones:
             bone = pose_bone.bone
-            servo_settings = bone.servo_settings
-            rotation_euler = self.matrix_visual(pose_bone).to_euler()
-            rotation_axis_index = int(servo_settings.rotation_axis)
-            rotation_in_degrees = round(math.degrees(rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
-
-            if servo_settings.reverse_direction == True:
-                rotation_in_degrees = rotation_in_degrees * -1
+            position, in_range = self.calculate_position(pose_bone, precision)
             
-            angle = servo_settings.neutral_angle - rotation_in_degrees
-            position = round(self.range_map(angle, 0, servo_settings.rotation_range, servo_settings.position_min, servo_settings.position_max), precision)
-            
-            check_min = servo_settings.position_min
-            check_max = servo_settings.position_max
-            
-            if servo_settings.set_position_limits == True:
-                check_min = servo_settings.position_limit_start
-                check_max = servo_settings.position_limit_end
-            
-            if position < check_min or position > check_max:
-                raise RuntimeError('Calculated position ' + str(position) + ' for bone ' + bone.name + ' is out of range (' + str(check_min) + ' - ' + str(check_max) + ') at frame ' + str(frame) + '.')
+            if in_range == False:
+                raise RuntimeError('Calculated position ' + str(position) + ' for bone ' + bone.name + ' is out of range at frame ' + str(frame) + '.')
             
             self.positions[bone.name].append(str(position))
             
@@ -376,6 +385,23 @@ class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
             col.prop(servo_settings, "rotation_axis", text="")
             col.prop(servo_settings, "multiplier", text="")
             col.prop(servo_settings, "reverse_direction")
+
+            if context.active_pose_bone is not None:
+                converter = SERVOANIMATION_converter()
+                position, in_range = converter.calculate_position(context.active_pose_bone, None)
+
+                split = layout.split()
+                col = split.column()
+                col.alignment = 'RIGHT'
+                col.label(text="Current frame")
+                col.label(text="Current position value")
+                col = split.column(align=True)
+                col.label(text=str(context.scene.frame_current))
+                col.label(text=str(position))
+
+                if in_range == False:
+                    box = layout.box()
+                    box.label(text="Position is out of range", icon="ERROR")
 
 
 classes = (
