@@ -1,3 +1,11 @@
+import operator
+import json
+import re
+import mathutils
+import math
+import bpy_extras
+import bpy
+
 bl_info = {
     "name": "Export Animation as Servo Position Values",
     "author": "Tim Hendriks",
@@ -11,21 +19,13 @@ bl_info = {
     "category": "Import-Export",
 }
 
-import bpy
-import bpy_extras
-import math
-import mathutils
-import re
-import json
-import operator
-
 
 class SERVOANIMATION_converter:
     positions = {}
-    
+
     def range_map(self, value, fromLow, fromHigh, toLow, toHigh):
         return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow
-    
+
     def matrix_visual(self, pose_bone):
         bone = pose_bone.bone
 
@@ -43,61 +43,65 @@ class SERVOANIMATION_converter:
         matrix_parent_pose_bone_inverted = matrix_parent_pose_bone.copy().inverted()
 
         return matrix_bone_inverted @ matrix_parent_bone @ matrix_parent_pose_bone_inverted @ matrix_pose_bone
-    
+
     def calculate_position(self, pose_bone, precision):
         servo_settings = pose_bone.bone.servo_settings
         rotation_euler = self.matrix_visual(pose_bone).to_euler()
         rotation_axis_index = int(servo_settings.rotation_axis)
-        rotation_in_degrees = round(math.degrees(rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
+        rotation_in_degrees = round(math.degrees(
+            rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
 
         if servo_settings.reverse_direction == True:
             rotation_in_degrees = rotation_in_degrees * -1
-        
+
         angle = servo_settings.neutral_angle - rotation_in_degrees
         in_range = True
-        position = round(self.range_map(angle, 0, servo_settings.rotation_range, servo_settings.position_min, servo_settings.position_max), precision)
+        position = round(self.range_map(angle, 0, servo_settings.rotation_range,
+                         servo_settings.position_min, servo_settings.position_max), precision)
 
         check_min = servo_settings.position_min
         check_max = servo_settings.position_max
-        
+
         if servo_settings.set_position_limits == True:
             check_min = servo_settings.position_limit_start
             check_max = servo_settings.position_limit_end
-        
+
         if position < check_min or position > check_max:
             in_range = False
-        
+
         return position, in_range
-            
+
     def calculate_positions_for_frame(self, frame, pose_bones, scene, precision):
         scene.frame_set(frame)
-            
+
         for pose_bone in pose_bones:
             bone = pose_bone.bone
             position, in_range = self.calculate_position(pose_bone, precision)
-            
+
             if in_range == False:
-                raise RuntimeError('Calculated position ' + str(position) + ' for bone ' + bone.name + ' is out of range at frame ' + str(frame) + '.')
-            
+                raise RuntimeError('Calculated position %d for bone %s is out of range at frame %d.' % (
+                    position, bone.name, frame))
+
             self.positions[bone.name].append(str(position))
-            
+
     def calculate_positions(self, context, precision):
         pose_bones = []
         scene = context.scene
-        
+
         self.positions = {}
-        
+
         for pose_bone in context.object.pose.bones:
             if pose_bone.bone.servo_settings.active == True:
                 pose_bones.append(pose_bone)
                 self.positions[pose_bone.bone.name] = []
-        
+
         if precision == 0:
             precision = None
-        
+
         for frame in range(scene.frame_start, scene.frame_end + 1):
-            self.calculate_positions_for_frame(frame, pose_bones, scene, precision)
-            
+            self.calculate_positions_for_frame(
+                frame, pose_bones, scene, precision)
+
         return self.positions
 
 
@@ -105,10 +109,10 @@ class SERVOANIMATION_OT_export_arduino(bpy.types.Operator, bpy_extras.io_utils.E
     bl_idname = "export_anim.servo_positions_arduino"
     bl_label = "Export Animation Servo Positions (.h)"
     bl_description = "Save an Arduino header file with servo position values from an armature"
-    
+
     filename_ext = ".h"
     position_chunk_size = 50
-    
+
     filter_glob: bpy.props.StringProperty(
         default="*.h",
         options={'HIDDEN'},
@@ -134,52 +138,56 @@ class SERVOANIMATION_OT_export_arduino(bpy.types.Operator, bpy_extras.io_utils.E
     def execute(self, context):
         scene = context.scene
         original_frame = scene.frame_current
-        
+
         try:
             converter = SERVOANIMATION_converter()
             positions = converter.calculate_positions(context, self.precision)
             frame_count = scene.frame_end - scene.frame_start + 1
             variable_type = 'int' if self.precision == 0 else 'float'
-            content = '/*\n  Servo Position value Animation\n\n  FPS: ' + str(scene.render.fps) + '\n  Frames: ' + str(frame_count) + '\n  Armature: ' + str(context.object.name) + '\n*/\n\n'
-            
+            content = '/*\n  Blender Animation Servo Positions\n\n  FPS: %d\n  Frames: %d\n  Armature: %s\n*/\n\n' % (
+                scene.render.fps, frame_count, context.object.name)
+
             for bone_name in positions:
                 bone_positions = positions[bone_name]
                 variable_name = re.sub('[^a-zA-Z0-9_]', '', bone_name)
-                content = content + 'const ' + variable_type + ' ' + variable_name + '[' + str(frame_count) + '] '
-                
+                content += 'const %s %s[%d] ' % (variable_type,
+                                                 variable_name, frame_count)
+
                 if self.use_progmem == True:
-                    content = content + 'PROGMEM '
-                
-                content = content + '= {\n'
+                    content += 'PROGMEM '
+
+                content += '= {\n'
 
                 for i in range(0, len(bone_positions), self.position_chunk_size):
-                    content = content + '  ' + ', '.join(bone_positions[i:i + self.position_chunk_size]) + ',\n'
-                
-                content = content + '};\n'
-            
-            content = content + '\n'
+                    content += '  ' + \
+                        ', '.join(
+                            bone_positions[i:i + self.position_chunk_size]) + ',\n'
+
+                content += '};\n'
+
+            content += '\n'
         except RuntimeError as error:
             scene.frame_set(original_frame)
             self.report({'ERROR'}, str(error))
-            
+
             return {'CANCELLED'}
-            
+
         scene.frame_set(original_frame)
-        
+
         f = open(self.filepath, 'w', encoding='utf-8')
         f.write(content)
         f.close()
-            
+
         return {'FINISHED'}
-    
-    
+
+
 class SERVOANIMATION_OT_export_json(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     bl_idname = "export_anim.servo_positions_json"
     bl_label = "Export Animation Servo Positions (.json)"
     bl_description = "Save a JSON file with servo position values from an armature"
-    
+
     filename_ext = ".json"
-    
+
     filter_glob: bpy.props.StringProperty(
         default="*.json",
         options={'HIDDEN'},
@@ -200,30 +208,30 @@ class SERVOANIMATION_OT_export_json(bpy.types.Operator, bpy_extras.io_utils.Expo
     def execute(self, context):
         scene = context.scene
         original_frame = scene.frame_current
-        
+
         try:
             converter = SERVOANIMATION_converter()
             positions = converter.calculate_positions(context, self.precision)
             data = {
-                "description": 'Servo Position value Animation',
+                "description": 'Blender Animation Servo Positions',
                 "fps": scene.render.fps,
                 "frames": scene.frame_end - scene.frame_start + 1,
                 "armature": context.object.name,
                 "positions": positions
             }
-            content = json.dumps(data, indent = 4)
+            content = json.dumps(data, indent=4)
         except RuntimeError as error:
             scene.frame_set(original_frame)
             self.report({'ERROR'}, str(error))
-            
+
             return {'CANCELLED'}
-            
+
         scene.frame_set(original_frame)
-        
+
         f = open(self.filepath, 'w', encoding='utf-8')
         f.write(content)
         f.close()
-            
+
         return {'FINISHED'}
 
 
@@ -235,22 +243,27 @@ class SERVOANIMATION_PG_servo_settings(bpy.types.PropertyGroup):
             return max_value
         else:
             return value
-        
+
     def update_position_min(self, context):
-        self["position_min"] = self.range_limit_value(self.position_min, None, self.position_max)
-            
+        self["position_min"] = self.range_limit_value(
+            self.position_min, None, self.position_max)
+
     def update_position_max(self, context):
-        self["position_max"] = self.range_limit_value(self.position_max, self.position_min, None)
-            
+        self["position_max"] = self.range_limit_value(
+            self.position_max, self.position_min, None)
+
     def update_position_limit_start(self, context):
-        self["position_limit_start"] = self.range_limit_value(self.position_limit_start, self.position_min, self.position_limit_end)
-            
+        self["position_limit_start"] = self.range_limit_value(
+            self.position_limit_start, self.position_min, self.position_limit_end)
+
     def update_position_limit_end(self, context):
-        self["position_limit_end"] = self.range_limit_value(self.position_limit_end, self.position_limit_start, self.position_max)
-            
+        self["position_limit_end"] = self.range_limit_value(
+            self.position_limit_end, self.position_limit_start, self.position_max)
+
     def update_neutral_angle(self, context):
-        self["neutral_angle"] = self.range_limit_value(self.neutral_angle, None, self.rotation_range)
-    
+        self["neutral_angle"] = self.range_limit_value(
+            self.neutral_angle, None, self.rotation_range)
+
     active: bpy.props.BoolProperty(
         name="Provide Servo Settings",
         description="Provide servo settings for this bone"
@@ -340,12 +353,12 @@ class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         servo_settings = context.active_bone.servo_settings
-        
+
         split = layout.split()
         col = split.column()
         col = split.column(align=True)
         col.prop(servo_settings, "active")
-        
+
         if servo_settings.active == True:
             split = layout.split()
             col = split.column()
@@ -356,7 +369,7 @@ class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
             col.prop(servo_settings, "position_min", text="")
             col.prop(servo_settings, "position_max", text="")
             col.prop(servo_settings, "set_position_limits")
-            
+
             if servo_settings.set_position_limits == True:
                 split = layout.split()
                 col = split.column()
@@ -366,7 +379,7 @@ class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
                 col = split.column(align=True)
                 col.prop(servo_settings, "position_limit_start", text="")
                 col.prop(servo_settings, "position_limit_end", text="")
-            
+
             split = layout.split()
             col = split.column()
             col.alignment = 'RIGHT'
@@ -375,7 +388,7 @@ class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
             col = split.column(align=True)
             col.prop(servo_settings, "neutral_angle", text="")
             col.prop(servo_settings, "rotation_range", text="")
-            
+
             split = layout.split()
             col = split.column()
             col.alignment = 'RIGHT'
@@ -388,7 +401,8 @@ class SERVOANIMATION_PT_servo_settings(bpy.types.Panel):
 
             if context.active_pose_bone is not None:
                 converter = SERVOANIMATION_converter()
-                position, in_range = converter.calculate_position(context.active_pose_bone, None)
+                position, in_range = converter.calculate_position(
+                    context.active_pose_bone, None)
 
                 split = layout.split()
                 col = split.column()
@@ -413,16 +427,20 @@ classes = (
 
 
 def menu_func_export(self, context):
-    self.layout.operator(SERVOANIMATION_OT_export_arduino.bl_idname, text="Animation Servo Positions (.h)")
-    self.layout.operator(SERVOANIMATION_OT_export_json.bl_idname, text="Animation Servo Positions (.json)")
+    self.layout.operator(SERVOANIMATION_OT_export_arduino.bl_idname,
+                         text="Animation Servo Positions (.h)")
+    self.layout.operator(SERVOANIMATION_OT_export_json.bl_idname,
+                         text="Animation Servo Positions (.json)")
 
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Bone.servo_settings = bpy.props.PointerProperty(type=SERVOANIMATION_PG_servo_settings)
-    bpy.types.EditBone.servo_settings = bpy.props.PointerProperty(type=SERVOANIMATION_PG_servo_settings)
+    bpy.types.Bone.servo_settings = bpy.props.PointerProperty(
+        type=SERVOANIMATION_PG_servo_settings)
+    bpy.types.EditBone.servo_settings = bpy.props.PointerProperty(
+        type=SERVOANIMATION_PG_servo_settings)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 
@@ -433,7 +451,7 @@ def unregister():
     del bpy.types.Bone.servo_settings
     del bpy.types.EditBone.servo_settings
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
-    
+
 
 if __name__ == "__main__":
     register()
