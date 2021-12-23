@@ -1,12 +1,12 @@
-import mathutils
 import math
+import mathutils
 
 
-class SERVOANIMATION_converter:
+class ServoAnimationConverter:
     positions = {}
 
-    def range_map(self, value, fromLow, fromHigh, toLow, toHigh):
-        return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow
+    def range_map(self, value, from_low, from_high, to_low, to_high):
+        return (value - from_low) * (to_high - to_low) / (from_high - from_low) + to_low
 
     def matrix_visual(self, pose_bone):
         bone = pose_bone.bone
@@ -24,7 +24,12 @@ class SERVOANIMATION_converter:
         matrix_bone_inverted = matrix_bone.copy().inverted()
         matrix_parent_pose_bone_inverted = matrix_parent_pose_bone.copy().inverted()
 
-        return matrix_bone_inverted @ matrix_parent_bone @ matrix_parent_pose_bone_inverted @ matrix_pose_bone
+        return (
+            matrix_bone_inverted
+            @ matrix_parent_bone
+            @ matrix_parent_pose_bone_inverted
+            @ matrix_pose_bone
+        )
 
     def calculate_position(self, pose_bone, precision):
         servo_settings = pose_bone.bone.servo_settings
@@ -33,7 +38,7 @@ class SERVOANIMATION_converter:
         rotation_in_degrees = round(math.degrees(
             rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
 
-        if servo_settings.reverse_direction == True:
+        if servo_settings.reverse_direction:
             rotation_in_degrees = rotation_in_degrees * -1
 
         angle = servo_settings.neutral_angle - rotation_in_degrees
@@ -44,7 +49,7 @@ class SERVOANIMATION_converter:
         check_min = servo_settings.position_min
         check_max = servo_settings.position_max
 
-        if servo_settings.set_position_limits == True:
+        if servo_settings.set_position_limits:
             check_min = servo_settings.position_limit_start
             check_max = servo_settings.position_limit_end
 
@@ -60,9 +65,11 @@ class SERVOANIMATION_converter:
             bone = pose_bone.bone
             position, in_range = self.calculate_position(pose_bone, precision)
 
-            if in_range == False:
-                raise RuntimeError('Calculated position %d for bone %s is out of range at frame %d.' % (
-                    position, bone.name, frame))
+            if not in_range:
+                raise RuntimeError(
+                    'Calculated position %d for bone %s is out of range at frame %d.' %
+                    (position, bone.name, frame)
+                )
 
             self.positions[bone.name].append(str(position))
 
@@ -73,7 +80,7 @@ class SERVOANIMATION_converter:
         self.positions = {}
 
         for pose_bone in context.object.pose.bones:
-            if pose_bone.bone.servo_settings.active == True:
+            if pose_bone.bone.servo_settings.active:
                 pose_bones.append(pose_bone)
                 self.positions[pose_bone.bone.name] = []
 

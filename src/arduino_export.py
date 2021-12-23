@@ -1,11 +1,12 @@
+import re
 import bpy
 
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
-from .converter import SERVOANIMATION_converter
+from .converter import ServoAnimationConverter
 
 
-class SERVOANIMATION_OT_export_arduino(Operator, ExportHelper):
+class ServoAnimationArduinoExport(Operator, ExportHelper):
     bl_idname = "export_anim.servo_positions_arduino"
     bl_label = "Export Animation Servo Positions (.h)"
     bl_description = "Save an Arduino header file with servo position values from an armature"
@@ -27,7 +28,10 @@ class SERVOANIMATION_OT_export_arduino(Operator, ExportHelper):
     )
     use_progmem: bpy.props.BoolProperty(
         name="Add PROGMEM modifier",
-        description="Add the PROGMEM modifier to each position array which enables an Arduino micro controller to handle large arrays",
+        description=(
+            "Add the PROGMEM modifier to each position array which enables "
+            "an Arduino micro controller to handle large arrays"
+        ),
         default=True
     )
 
@@ -40,20 +44,25 @@ class SERVOANIMATION_OT_export_arduino(Operator, ExportHelper):
         original_frame = scene.frame_current
 
         try:
-            converter = SERVOANIMATION_converter()
+            converter = ServoAnimationConverter()
             positions = converter.calculate_positions(context, self.precision)
-            frame_count = scene.frame_end - scene.frame_start + 1
+            frames = scene.frame_end - scene.frame_start + 1
             variable_type = 'int' if self.precision == 0 else 'float'
-            content = '/*\n  Blender Animation Servo Positions\n\n  FPS: %d\n  Frames: %d\n  Armature: %s\n*/\n\n' % (
-                scene.render.fps, frame_count, context.object.name)
+            seconds = round(frames / scene.render.fps)
+            filename = bpy.path.basename(bpy.context.blend_data.filepath)
+            content = (
+                '/*\n  Blender Animation Servo Positions\n\n  '
+                'FPS: %d\n  Frames: %d\n  Seconds: %d\n  Bones: %d\n  '
+                'Armature: %s\n  File: %s\n*/\n\n'
+            ) % (scene.render.fps, frames, seconds, len(positions), context.object.name, filename)
 
             for bone_name in positions:
                 bone_positions = positions[bone_name]
                 variable_name = re.sub('[^a-zA-Z0-9_]', '', bone_name)
                 content += 'const %s %s[%d] ' % (variable_type,
-                                                 variable_name, frame_count)
+                                                 variable_name, frames)
 
-                if self.use_progmem == True:
+                if self.use_progmem:
                     content += 'PROGMEM '
 
                 content += '= {\n'
@@ -74,8 +83,8 @@ class SERVOANIMATION_OT_export_arduino(Operator, ExportHelper):
 
         scene.frame_set(original_frame)
 
-        f = open(self.filepath, 'w', encoding='utf-8')
-        f.write(content)
-        f.close()
+        file = open(self.filepath, 'w', encoding='utf-8')
+        file.write(content)
+        file.close()
 
         return {'FINISHED'}

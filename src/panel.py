@@ -1,10 +1,8 @@
-import bpy
-
 from bpy.types import Panel
-from .converter import SERVOANIMATION_converter
+from .converter import ServoAnimationConverter
 
 
-class SERVOANIMATION_PT_servo_settings(Panel):
+class ServoAnimationPanel(Panel):
     bl_label = "Servo Settings"
     bl_idname = "BONE_PT_servo"
     bl_space_type = 'PROPERTIES'
@@ -13,7 +11,7 @@ class SERVOANIMATION_PT_servo_settings(Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.active_bone is not None)
+        return context.active_bone is not None
 
     def draw(self, context):
         layout = self.layout
@@ -24,7 +22,7 @@ class SERVOANIMATION_PT_servo_settings(Panel):
         col = split.column(align=True)
         col.prop(servo_settings, "active")
 
-        if servo_settings.active == True:
+        if servo_settings.active:
             split = layout.split()
             col = split.column()
             col.alignment = 'RIGHT'
@@ -35,7 +33,7 @@ class SERVOANIMATION_PT_servo_settings(Panel):
             col.prop(servo_settings, "position_max", text="")
             col.prop(servo_settings, "set_position_limits")
 
-            if servo_settings.set_position_limits == True:
+            if servo_settings.set_position_limits:
                 split = layout.split()
                 col = split.column()
                 col.alignment = 'RIGHT'
@@ -65,7 +63,7 @@ class SERVOANIMATION_PT_servo_settings(Panel):
             col.prop(servo_settings, "reverse_direction")
 
             if context.active_pose_bone is not None:
-                converter = SERVOANIMATION_converter()
+                converter = ServoAnimationConverter()
                 position, in_range = converter.calculate_position(
                     context.active_pose_bone, None)
 
@@ -78,6 +76,6 @@ class SERVOANIMATION_PT_servo_settings(Panel):
                 col.label(text=str(context.scene.frame_current))
                 col.label(text=str(position))
 
-                if in_range == False:
+                if not in_range:
                     box = layout.box()
                     box.label(text="Position is out of range", icon="ERROR")

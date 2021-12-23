@@ -1,15 +1,15 @@
 import operator
 import json
 import re
-import mathutils
 import math
+import mathutils
 import bpy_extras
 import bpy
 
-from .classes.property_group import SERVOANIMATION_PG_servo_settings
-from .classes.panel import SERVOANIMATION_PT_servo_settings
-from .classes.json_export import SERVOANIMATION_OT_export_json
-from .classes.arduino_export import SERVOANIMATION_OT_export_arduino
+from .src.property_group import ServoAnimationPropertyGroup
+from .src.panel import ServoAnimationPanel
+from .src.json_export import ServoAnimationJsonExport
+from .src.arduino_export import ServoAnimationArduinoExport
 
 bl_info = {
     "name": "Export Animation as Servo Position Values",
@@ -17,7 +17,7 @@ bl_info = {
     "version": (1, 0, 0),
     "blender": (2, 80, 0),
     "location": "Bone Properties > Servo Settings | File > Import-Export",
-    "description": "Enables servo settings for bones and exports armature animations as servo position values",
+    "description": "Exports armature animations as servo position values",
     "warning": "",
     "wiki_url": "https://github.com/timhendriks93/blender-servo-animation#readme",
     "support": "COMMUNITY",
@@ -26,17 +26,17 @@ bl_info = {
 
 
 classes = (
-    SERVOANIMATION_PG_servo_settings,
-    SERVOANIMATION_PT_servo_settings,
-    SERVOANIMATION_OT_export_arduino,
-    SERVOANIMATION_OT_export_json
+    ServoAnimationPropertyGroup,
+    ServoAnimationPanel,
+    ServoAnimationArduinoExport,
+    ServoAnimationJsonExport
 )
 
 
-def menu_func_export(self, context):
-    self.layout.operator(SERVOANIMATION_OT_export_arduino.bl_idname,
+def menu_func_export(self, _):
+    self.layout.operator(ServoAnimationArduinoExport.bl_idname,
                          text="Animation Servo Positions (.h)")
-    self.layout.operator(SERVOANIMATION_OT_export_json.bl_idname,
+    self.layout.operator(ServoAnimationJsonExport.bl_idname,
                          text="Animation Servo Positions (.json)")
 
 
@@ -45,9 +45,9 @@ def register():
         bpy.utils.register_class(cls)
 
     bpy.types.Bone.servo_settings = bpy.props.PointerProperty(
-        type=SERVOANIMATION_PG_servo_settings)
+        type=ServoAnimationPropertyGroup)
     bpy.types.EditBone.servo_settings = bpy.props.PointerProperty(
-        type=SERVOANIMATION_PG_servo_settings)
+        type=ServoAnimationPropertyGroup)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 

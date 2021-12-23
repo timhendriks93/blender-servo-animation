@@ -1,11 +1,12 @@
+import json
 import bpy
 
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
-from .converter import SERVOANIMATION_converter
+from .converter import ServoAnimationConverter
 
 
-class SERVOANIMATION_OT_export_json(Operator, ExportHelper):
+class ServoAnimationJsonExport(Operator, ExportHelper):
     bl_idname = "export_anim.servo_positions_json"
     bl_label = "Export Animation Servo Positions (.json)"
     bl_description = "Save a JSON file with servo position values from an armature"
@@ -34,13 +35,17 @@ class SERVOANIMATION_OT_export_json(Operator, ExportHelper):
         original_frame = scene.frame_current
 
         try:
-            converter = SERVOANIMATION_converter()
+            converter = ServoAnimationConverter()
             positions = converter.calculate_positions(context, self.precision)
+            frames = scene.frame_end - scene.frame_start + 1
             data = {
                 "description": 'Blender Animation Servo Positions',
                 "fps": scene.render.fps,
-                "frames": scene.frame_end - scene.frame_start + 1,
+                "frames": frames,
+                "seconds": round(frames / scene.render.fps),
+                "bones": len(positions),
                 "armature": context.object.name,
+                "file": bpy.path.basename(bpy.context.blend_data.filepath),
                 "positions": positions
             }
             content = json.dumps(data, indent=4)
@@ -52,8 +57,8 @@ class SERVOANIMATION_OT_export_json(Operator, ExportHelper):
 
         scene.frame_set(original_frame)
 
-        f = open(self.filepath, 'w', encoding='utf-8')
-        f.write(content)
-        f.close()
+        file = open(self.filepath, 'w', encoding='utf-8')
+        file.write(content)
+        file.close()
 
         return {'FINISHED'}
