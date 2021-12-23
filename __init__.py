@@ -57,4 +57,3 @@ def unregister():
 
     del bpy.types.Bone.servo_settings
     del bpy.types.EditBone.servo_settings
-    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
