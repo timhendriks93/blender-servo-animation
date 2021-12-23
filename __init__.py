@@ -17,9 +17,9 @@ bl_info = {
     "version": (1, 0, 0),
     "blender": (2, 80, 0),
     "location": "Bone Properties > Servo Settings | File > Import-Export",
-    "description": "Exports armature animations as servo position values",
+    "description": "Exports armature animations as servo position values.",
     "warning": "",
-    "wiki_url": "https://github.com/timhendriks93/blender-servo-animation#readme",
+    "doc_url": "https://github.com/timhendriks93/blender-servo-animation#readme",
     "support": "COMMUNITY",
     "category": "Import-Export",
 }
