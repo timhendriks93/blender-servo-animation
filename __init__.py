@@ -14,7 +14,7 @@ from .src.arduino_export import ServoAnimationArduinoExport
 bl_info = {
     "name": "Export Animation as Servo Position Values",
     "author": "Tim Hendriks",
-    "version": (1, 0, 0),
+    "version": (1, 2, 0),
     "blender": (2, 80, 0),
     "location": "Bone Properties > Servo Settings | File > Import-Export",
     "description": "Exports armature animations as servo position values.",
