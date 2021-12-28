@@ -15,7 +15,12 @@ class BaseExport:
 
     @classmethod
     def poll(cls, context):
-        return context.object and context.object.type == 'ARMATURE'
+        if not context.object or context.object.type != 'ARMATURE':
+            return False
+        for pose_bone in context.object.pose.bones:
+            if pose_bone.bone.servo_settings.active:
+                return True
+        return False
 
     def execute(self, context):
         start = time.time()
