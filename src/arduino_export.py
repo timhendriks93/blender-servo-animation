@@ -1,4 +1,5 @@
 import re
+import time
 import bpy
 
 from bpy.types import Operator
@@ -40,6 +41,7 @@ class ServoAnimationArduinoExport(Operator, ExportHelper):
         return context.object and context.object.type == 'ARMATURE'
 
     def execute(self, context):
+        start = time.time()
         scene = context.scene
         original_frame = scene.frame_current
 
@@ -86,5 +88,9 @@ class ServoAnimationArduinoExport(Operator, ExportHelper):
         file = open(self.filepath, 'w', encoding='utf-8')
         file.write(content)
         file.close()
+
+        end = time.time()
+        duration = end - start
+        self.report({'OPERATOR'}, 'Animation servo positions exported after %d seconds' % duration)
 
         return {'FINISHED'}

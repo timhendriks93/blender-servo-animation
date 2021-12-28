@@ -42,7 +42,6 @@ class ServoAnimationConverter:
             rotation_in_degrees = rotation_in_degrees * -1
 
         angle = servo_settings.neutral_angle - rotation_in_degrees
-        in_range = True
         position = round(self.range_map(angle, 0, servo_settings.rotation_range,
                          servo_settings.position_min, servo_settings.position_max), precision)
 
@@ -55,6 +54,8 @@ class ServoAnimationConverter:
 
         if position < check_min or position > check_max:
             in_range = False
+        else:
+            in_range = True
 
         return position, in_range
 
@@ -76,6 +77,9 @@ class ServoAnimationConverter:
     def calculate_positions(self, context, precision):
         pose_bones = []
         scene = context.scene
+        window_manager = context.window_manager
+        start = scene.frame_start
+        end = scene.frame_end + 1
 
         self.positions = {}
 
@@ -87,8 +91,13 @@ class ServoAnimationConverter:
         if precision == 0:
             precision = None
 
-        for frame in range(scene.frame_start, scene.frame_end + 1):
+        window_manager.progress_begin(min=start, max=end)
+
+        for frame in range(start, end):
             self.calculate_positions_for_frame(
                 frame, pose_bones, scene, precision)
+            window_manager.progress_update(frame)
+
+        window_manager.progress_end()
 
         return self.positions
