@@ -8,9 +8,9 @@ Animate your robot or animatronic project and take advantage of Blender's animat
 
 Note that this Add-on is compatible with Blender version 2.80 or higher.
 
-1. Download the `blender_servo_animation_addon.py` file.
+1. Download the [latest version of the Add-on](https://github.com/timhendriks93/blender-servo-animation/archive/refs/heads/main.zip) as a ZIP archive.
 2. Open Blender and go to `File > Preferences > Add-ons`.
-3. Click the `Install...` button, select the previously downloaded file and click `Install Add-on`.
+3. Click the `Install...` button, select the previously downloaded ZIP and click `Install Add-on`.
 4. Enable the Add-on by enabling the checkbox in the Add-ons list.
 
 ## Using the Add-on
@@ -56,7 +56,7 @@ Once all servo settings are provided and the animation is completed, you can cal
 1. `Animation Servo Positions (.h)`: An Arduino/C/C++ style header file which can be easily included in an Arduino project.
 2. `Animation Servo Positions (.json)`: A simple (non-formatted) JSON file which can be used in a more generic way.
 
-Make sure to select the armature containing the bones/servos you want to export and select the desired format in the `File > Export` menu:
+Make sure to select the armature containing the bones/servos you want to export and choose the desired format in the `File > Export` menu:
 
 ![Servo Settings panel](screenshots/export_menu.png)
 
