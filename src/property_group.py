@@ -12,23 +12,23 @@ class ServoAnimationPropertyGroup(PropertyGroup):
         else:
             return value
 
-    def update_position_min(self, _):
+    def update_position_min(self, _context):
         self["position_min"] = self.range_limit_value(
             self.position_min, None, self.position_max)
 
-    def update_position_max(self, _):
+    def update_position_max(self, _context):
         self["position_max"] = self.range_limit_value(
             self.position_max, self.position_min, None)
 
-    def update_position_limit_start(self, _):
+    def update_position_limit_start(self, _context):
         self["position_limit_start"] = self.range_limit_value(
             self.position_limit_start, self.position_min, self.position_limit_end)
 
-    def update_position_limit_end(self, _):
+    def update_position_limit_end(self, _context):
         self["position_limit_end"] = self.range_limit_value(
             self.position_limit_end, self.position_limit_start, self.position_max)
 
-    def update_neutral_angle(self, _):
+    def update_neutral_angle(self, _context):
         self["neutral_angle"] = self.range_limit_value(
             self.neutral_angle, None, self.rotation_range)
 
