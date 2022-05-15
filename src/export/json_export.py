@@ -19,14 +19,17 @@ class JsonExport(Operator, BaseExport, ExportHelper):
         maxlen=255
     )
 
-    def export(self, fps, frames, seconds, bones, positions, armature, filename):
+    def export(self, positions, context):
+        fps, frames, seconds = self.get_time_meta(context.scene)
+        filename = self.get_filename()
+
         data = {
             "description": 'Blender Animation Servo Positions',
             "fps": fps,
             "frames": frames,
             "seconds": seconds,
-            "bones": bones,
-            "armature": armature,
+            "bones": len(positions),
+            "armature": context.object.name,
             "file": filename,
             "positions": positions
         }

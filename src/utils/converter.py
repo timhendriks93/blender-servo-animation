@@ -87,8 +87,8 @@ def calculate_positions(context, precision):
 
             if not in_range:
                 raise RuntimeError(
-                    'Calculated position %d for bone %s is out of range at frame %d.' %
-                    (position, bone.name, frame)
+                    f"Calculated position {position} for bone {bone.name} "
+                    + f"is out of range at frame {frame}."
                 )
 
             positions[bone.name].append(str(position))

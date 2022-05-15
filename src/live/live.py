@@ -2,9 +2,8 @@ import sys
 import glob
 import serial
 
-import bpy
-
 from ..utils.converter import calculate_position
+from ..utils.servo_settings import get_active_pose_bones
 
 COMMAND_START = 0x3C
 COMMAND_END = 0x3E
@@ -20,7 +19,7 @@ class Live:
         self.serial_ports.clear()
 
         if sys.platform.startswith('win'):
-            ports = ['COM%s' % (i + 1) for i in range(256)]
+            ports = [f"COM{i + 1}" for i in range(256)]
         elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
             ports = glob.glob('/dev/tty[A-Za-z]*')
         elif sys.platform.startswith('darwin'):
@@ -39,7 +38,7 @@ class Live:
     def get_serial_ports(self):
         return self.serial_ports
 
-    def on_frame_change_pre(self, scene):
+    def on_frame_change_pre(self, _scene):
         if not self.is_connected():
             return
         # for obj in scene.objects:
@@ -56,18 +55,20 @@ class Live:
     def on_frame_change_post(self, scene):
         if not self.is_connected():
             return
-        for obj in scene.objects:
-            if obj.type != "ARMATURE":
+
+        for pose_bone in get_active_pose_bones(scene):
+            servo_settings = pose_bone.bone.servo_settings
+
+            if not servo_settings.active:
                 continue
-            for pose_bone in obj.pose.bones:
-                servo_settings = pose_bone.bone.servo_settings
-                if not servo_settings.active:
-                    continue
-                position, in_range = calculate_position(
-                    pose_bone, None)
-                if not in_range:
-                    continue
-                self.send_position(servo_settings.servo_id, position)
+
+            position, in_range = calculate_position(
+                pose_bone, None)
+
+            if not in_range:
+                continue
+
+            self.send_position(servo_settings.servo_id, position)
 
     def send_position(self, servo_id, position):
         command = [COMMAND_START, servo_id]
@@ -76,12 +77,12 @@ class Live:
 
         try:
             self.serial_connection.write(command)
-            print("Sent %d - %d" % (servo_id, position))
+            print(f"Sent {servo_id} - {position}")
         except serial.SerialException:
             self.close_serial_connection()
 
     def open_serial_connection(self, port, baud_rate):
-        print("Opening Serial Connection for port %s" % port)
+        print(f"Opening Serial Connection for port {port}")
         try:
             self.serial_connection = serial.Serial(port, baud_rate)
             return True

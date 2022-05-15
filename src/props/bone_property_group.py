@@ -4,13 +4,13 @@ from bpy.types import PropertyGroup
 
 
 class BonePropertyGroup(PropertyGroup):
-    def range_limit_value(self, value, min_value, max_value):
+    @classmethod
+    def range_limit_value(cls, value, min_value, max_value):
         if min_value is not None and value < min_value:
             return min_value
-        elif max_value is not None and value > max_value:
+        if max_value is not None and value > max_value:
             return max_value
-        else:
-            return value
+        return value
 
     def update_position_min(self, _context):
         self["position_min"] = self.range_limit_value(

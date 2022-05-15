@@ -24,34 +24,37 @@ class BaseExport:
 
     def execute(self, context):
         start = time.time()
-        scene = context.scene
-        original_frame = scene.frame_current
+        original_frame = context.scene.frame_current
 
         try:
             positions = calculate_positions(context, self.precision)
-            fps = scene.render.fps
-            frames = scene.frame_end - scene.frame_start + 1
-            seconds = round(frames / scene.render.fps)
-            bones = len(positions)
-            armature = context.object.name
-            filename = bpy.path.basename(bpy.context.blend_data.filepath)
-            content = self.export(fps, frames, seconds,
-                                  bones, positions, armature, filename)
+            content = self.export(positions, context)
         except RuntimeError as error:
-            scene.frame_set(original_frame)
+            context.scene.frame_set(original_frame)
             self.report({'ERROR'}, str(error))
 
             return {'CANCELLED'}
 
-        scene.frame_set(original_frame)
+        context.scene.frame_set(original_frame)
 
-        file = open(self.filepath, 'w', encoding='utf-8')
-        file.write(content)
-        file.close()
+        with open(self.filepath, 'w', encoding='utf-8') as file:
+            file.write(content)
 
         end = time.time()
-        duration = end - start
+        duration = round(end - start)
         self.report(
-            {'INFO'}, 'Animation servo positions exported after %d seconds' % duration)
+            {'INFO'}, f"Animation servo positions exported after {duration} seconds")
 
         return {'FINISHED'}
+
+    @classmethod
+    def get_time_meta(cls, scene):
+        fps = scene.render.fps
+        frames = scene.frame_end - scene.frame_start + 1
+        seconds = round(frames / scene.render.fps)
+
+        return fps, frames, seconds
+
+    @classmethod
+    def get_filename(cls):
+        return bpy.path.basename(bpy.context.blend_data.filepath)

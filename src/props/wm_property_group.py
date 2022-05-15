@@ -5,15 +5,16 @@ from bpy.types import PropertyGroup
 from ..live.live import live_controller
 
 
+def get_serial_port_items(_self, _context):
+    items = []
+
+    for port in live_controller.get_serial_ports():
+        items.append((port, port, ""))
+
+    return items
+
+
 class WindowManagerPropertyGroup(PropertyGroup):
-    def get_serial_port_items(self, _):
-        items = []
-
-        for port in live_controller.get_serial_ports():
-            items.append((port, port, ""))
-
-        return items
-
     def update_serial_connection(self, _):
         live_controller.close_serial_connection()
         if self.live_mode is False or self.serial_port == '':
