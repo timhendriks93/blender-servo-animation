@@ -26,6 +26,17 @@ class ServoAnimationPanel(Panel):
             split = layout.split()
             col = split.column()
             col.alignment = 'RIGHT'
+            col.label(text="Servo ID")
+            col = split.column(align=True)
+            col.prop(servo_settings, "servo_id", text="")
+
+            if self.has_unique_servo_id(context.active_bone, context.scene) is False:
+                box = layout.box()
+                box.label(text="Servo ID is not unique", icon="ERROR")
+
+            split = layout.split()
+            col = split.column()
+            col.alignment = 'RIGHT'
             col.label(text="Position Min")
             col.label(text="Max")
             col = split.column(align=True)
@@ -79,3 +90,15 @@ class ServoAnimationPanel(Panel):
                 if not in_range:
                     box = layout.box()
                     box.label(text="Position is out of range", icon="ERROR")
+
+    def has_unique_servo_id(self, bone, scene):
+        for obj in scene.objects:
+            if obj.type != "ARMATURE":
+                continue
+            for pose_bone in obj.pose.bones:
+                servo_settings = pose_bone.bone.servo_settings
+                if not servo_settings.active or pose_bone.bone.name == bone.name:
+                    continue
+                if servo_settings.servo_id == bone.servo_settings.servo_id:
+                    return False
+        return True
