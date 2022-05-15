@@ -2,10 +2,10 @@ import bpy
 
 from bpy.types import PropertyGroup
 
-from .live import live_controller
+from ..live.live import live_controller
 
 
-class ServoAnimationWindowManagerPropertyGroup(PropertyGroup):
+class WindowManagerPropertyGroup(PropertyGroup):
     def get_serial_port_items(self, _):
         items = []
 
@@ -14,14 +14,12 @@ class ServoAnimationWindowManagerPropertyGroup(PropertyGroup):
 
         return items
 
-
     def update_serial_connection(self, _):
         live_controller.close_serial_connection()
         if self.live_mode is False or self.serial_port == '':
             return
         if live_controller.open_serial_connection(self.serial_port, self.baud_rate) is False:
             self.live_mode = False
-
 
     live_mode: bpy.props.BoolProperty(
         name="Live Mode",

@@ -4,7 +4,7 @@ import serial
 
 import bpy
 
-from .converter import ServoAnimationConverter
+from ..utils.converter import calculate_position
 
 COMMAND_START = 0x3C
 COMMAND_END = 0x3E
@@ -13,12 +13,8 @@ COMMAND_END = 0x3E
 class Live:
     serial_ports = []
     serial_connection = None
-    converter = None
     current_frame = 0
     cache = {}
-
-    def __init__(self):
-        self.converter = ServoAnimationConverter()
 
     def scan_serial_ports(self):
         self.serial_ports.clear()
@@ -67,7 +63,7 @@ class Live:
                 servo_settings = pose_bone.bone.servo_settings
                 if not servo_settings.active:
                     continue
-                position, in_range = self.converter.calculate_position(
+                position, in_range = calculate_position(
                     pose_bone, None)
                 if not in_range:
                     continue

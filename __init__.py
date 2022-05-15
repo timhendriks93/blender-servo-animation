@@ -1,22 +1,14 @@
-import operator
-import json
-import re
-import math
-import mathutils
-import bpy_extras
 import bpy
-import serial
 
 from bpy.app.handlers import persistent
 
-from .src.bone_property_group import ServoAnimationBonePropertyGroup
-from .src.wm_property_group import ServoAnimationWindowManagerPropertyGroup
-from .src.panel import ServoAnimationPanel
-from .src.json_export import ServoAnimationJsonExport
-from .src.arduino_export import ServoAnimationArduinoExport
-from .src.converter import ServoAnimationConverter
-from .src.timeline_menu import ServoAnimationTimelineMenu
-from .src.live import live_controller
+from .src.props.bone_property_group import BonePropertyGroup
+from .src.props.wm_property_group import WindowManagerPropertyGroup
+from .src.ui.bone_panel import BonePanel
+from .src.export.json_export import JsonExport
+from .src.export.arduino_export import ArduinoExport
+from .src.ui.timeline_menu import TimelineMenu
+from .src.live.live import live_controller
 
 bl_info = {
     "name": "Export Animation as Servo Position Values",
@@ -33,12 +25,12 @@ bl_info = {
 
 
 classes = (
-    ServoAnimationBonePropertyGroup,
-    ServoAnimationWindowManagerPropertyGroup,
-    ServoAnimationPanel,
-    ServoAnimationArduinoExport,
-    ServoAnimationJsonExport,
-    ServoAnimationTimelineMenu
+    BonePropertyGroup,
+    WindowManagerPropertyGroup,
+    BonePanel,
+    ArduinoExport,
+    JsonExport,
+    TimelineMenu
 )
 
 
@@ -53,12 +45,12 @@ def on_frame_change_post(scene):
 
 
 def menu_func_export(self, _):
-    self.layout.operator(ServoAnimationArduinoExport.bl_idname)
-    self.layout.operator(ServoAnimationJsonExport.bl_idname)
+    self.layout.operator(ArduinoExport.bl_idname)
+    self.layout.operator(JsonExport.bl_idname)
 
 
 def menu_func_timeline(self, _):
-    self.layout.menu(ServoAnimationTimelineMenu.bl_idname)
+    self.layout.menu(TimelineMenu.bl_idname)
 
 
 def register():
@@ -66,11 +58,11 @@ def register():
         bpy.utils.register_class(cls)
 
     bpy.types.Bone.servo_settings = bpy.props.PointerProperty(
-        type=ServoAnimationBonePropertyGroup)
+        type=BonePropertyGroup)
     bpy.types.EditBone.servo_settings = bpy.props.PointerProperty(
-        type=ServoAnimationBonePropertyGroup)
+        type=BonePropertyGroup)
     bpy.types.WindowManager.servo_animation = bpy.props.PointerProperty(
-        type=ServoAnimationWindowManagerPropertyGroup)
+        type=WindowManagerPropertyGroup)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     bpy.types.TIME_MT_editor_menus.append(menu_func_timeline)
     bpy.app.handlers.frame_change_pre.append(on_frame_change_pre)

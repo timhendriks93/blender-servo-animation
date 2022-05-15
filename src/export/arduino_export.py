@@ -6,7 +6,7 @@ from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
 
 
-class ServoAnimationArduinoExport(Operator, BaseExport, ExportHelper):
+class ArduinoExport(Operator, BaseExport, ExportHelper):
     bl_idname = "export_anim.servo_positions_arduino"
     bl_label = "Export Animation Servo Positions (.h)"
     bl_description = "Save an Arduino header file with servo position values from an armature"

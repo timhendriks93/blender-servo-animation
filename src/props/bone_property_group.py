@@ -3,7 +3,7 @@ import bpy
 from bpy.types import PropertyGroup
 
 
-class ServoAnimationBonePropertyGroup(PropertyGroup):
+class BonePropertyGroup(PropertyGroup):
     def range_limit_value(self, value, min_value, max_value):
         if min_value is not None and value < min_value:
             return min_value

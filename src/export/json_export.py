@@ -6,7 +6,7 @@ from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
 
 
-class ServoAnimationJsonExport(Operator, BaseExport, ExportHelper):
+class JsonExport(Operator, BaseExport, ExportHelper):
     bl_idname = "export_anim.servo_positions_json"
     bl_label = "Export Animation Servo Positions (.json)"
     bl_description = "Save a JSON file with servo position values from an armature"

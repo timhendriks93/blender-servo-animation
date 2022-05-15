@@ -1,8 +1,9 @@
+
 from bpy.types import Panel
-from .converter import ServoAnimationConverter
+from ..utils.converter import calculate_position
 
 
-class ServoAnimationPanel(Panel):
+class BonePanel(Panel):
     bl_label = "Servo Settings"
     bl_idname = "BONE_PT_servo"
     bl_space_type = 'PROPERTIES'
@@ -74,8 +75,7 @@ class ServoAnimationPanel(Panel):
             col.prop(servo_settings, "reverse_direction")
 
             if context.active_pose_bone is not None:
-                converter = ServoAnimationConverter()
-                position, in_range = converter.calculate_position(
+                position, in_range = calculate_position(
                     context.active_pose_bone, None)
 
                 split = layout.split()

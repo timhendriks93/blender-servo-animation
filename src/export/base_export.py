@@ -1,7 +1,7 @@
 import time
 import bpy
 
-from .converter import ServoAnimationConverter
+from ..utils.converter import calculate_positions
 
 
 class BaseExport:
@@ -28,8 +28,7 @@ class BaseExport:
         original_frame = scene.frame_current
 
         try:
-            converter = ServoAnimationConverter()
-            positions = converter.calculate_positions(context, self.precision)
+            positions = calculate_positions(context, self.precision)
             fps = scene.render.fps
             frames = scene.frame_end - scene.frame_start + 1
             seconds = round(frames / scene.render.fps)

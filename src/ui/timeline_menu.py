@@ -1,11 +1,11 @@
 from bpy.types import Menu
 
-from .json_export import ServoAnimationJsonExport
-from .arduino_export import ServoAnimationArduinoExport
-from .live import live_controller
+from ..export.json_export import JsonExport
+from ..export.arduino_export import ArduinoExport
+from ..live.live import live_controller
 
 
-class ServoAnimationTimelineMenu(Menu):
+class TimelineMenu(Menu):
     bl_label = "Servo Animation"
     bl_idname = "SERVO_ANIM_MT_timeline"
 
@@ -17,8 +17,8 @@ class ServoAnimationTimelineMenu(Menu):
             servo_animation.live_mode = False
 
         layout = self.layout
-        layout.operator(ServoAnimationArduinoExport.bl_idname)
-        layout.operator(ServoAnimationJsonExport.bl_idname)
+        layout.operator(ArduinoExport.bl_idname)
+        layout.operator(JsonExport.bl_idname)
         layout.separator()
         layout.prop_menu_enum(servo_animation, "baud_rate")
         layout.prop_menu_enum(servo_animation, "serial_port")
