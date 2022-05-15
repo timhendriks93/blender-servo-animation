@@ -1,5 +1,6 @@
 import sys
 import glob
+import time
 import serial
 import bpy
 
@@ -13,8 +14,68 @@ COMMAND_END = 0x3E
 class UartController:
     serial_ports = []
     serial_connection = None
-    current_frame = 0
-    cache = {}
+    frame = None
+    positions = {}
+
+    def handle_frame_jump(self, scene):
+        diffs = []
+        new_positions = {}
+        for pose_bone in get_active_pose_bones(scene):
+            position, in_range = calculate_position(pose_bone, None)
+            if in_range:
+                servo_id = pose_bone.bone.servo_settings.servo_id
+                new_positions[servo_id] = position
+                diffs.append(abs(position - self.positions[servo_id]))
+        steps = max(diffs)
+        print(f"start frame jump handling with {steps} steps")
+        window_manager = bpy.context.window_manager
+        window_manager.progress_begin(0, steps)
+        for step in range(steps):
+            window_manager.progress_update(step)
+            for servo_id, position in new_positions.items():
+                target_position = self.positions[servo_id]
+                if position == target_position:
+                    continue
+                if position > target_position:
+                    new_position = target_position + 1
+                else:
+                    new_position = target_position - 1
+                self.send_position(servo_id, new_position)
+            time.sleep(.01)
+
+        window_manager.progress_end()
+        print("finished frame jump handling")
+
+    def on_frame_change_post(self, scene):
+        if not self.is_connected():
+            return
+
+        frame_jump = self.frame is not None and abs(
+            scene.frame_current - self.frame) > 10
+
+        if frame_jump:
+            self.handle_frame_jump(scene)
+        else:
+            for pose_bone in get_active_pose_bones(scene):
+                position, in_range = calculate_position(pose_bone, None)
+
+                if in_range:
+                    self.send_position(
+                        pose_bone.bone.servo_settings.servo_id, position)
+
+        self.frame = scene.frame_current
+
+    def send_position(self, servo_id, position):
+        command = [COMMAND_START, servo_id]
+        command += position.to_bytes(2, 'big')
+        command += [COMMAND_END]
+
+        try:
+            self.serial_connection.write(command)
+            self.positions[servo_id] = position
+            print(f"Sent {servo_id} - {position}")
+        except serial.SerialException:
+            self.close_serial_connection()
 
     def scan_serial_ports(self):
         self.serial_ports.clear()
@@ -39,54 +100,12 @@ class UartController:
     def get_serial_ports(self):
         return self.serial_ports
 
-    def on_frame_change_pre(self, _scene):
-        if not self.is_connected():
-            return
-        # for obj in scene.objects:
-        #     if obj.type != "ARMATURE":
-        #         continue
-        #     for pose_bone in obj.pose.bones:
-        #         servo_settings = pose_bone.bone.servo_settings
-        #         if not servo_settings.active or self.cache.has_key(servo_settings.servo_id):
-        #             continue
-        #         position, _ = self.converter.calculate_position(
-        #             pose_bone, None)
-        #         self.cache[servo_settings.servo_id] = position
-
-    def on_frame_change_post(self, scene):
-        if not self.is_connected():
-            return
-
-        for pose_bone in get_active_pose_bones(scene):
-            servo_settings = pose_bone.bone.servo_settings
-
-            if not servo_settings.active:
-                continue
-
-            position, in_range = calculate_position(
-                pose_bone, None)
-
-            if not in_range:
-                continue
-
-            self.send_position(servo_settings.servo_id, position)
-
-    def send_position(self, servo_id, position):
-        command = [COMMAND_START, servo_id]
-        command += position.to_bytes(2, 'big')
-        command += [COMMAND_END]
-
-        try:
-            self.serial_connection.write(command)
-            print(f"Sent {servo_id} - {position}")
-        except serial.SerialException:
-            self.close_serial_connection()
-
     def open_serial_connection(self):
         servo_animation = bpy.context.window_manager.servo_animation
         port = servo_animation.serial_port
         baud_rate = servo_animation.baud_rate
-        print(f"Opening Serial Connection for port {port} with baud rate {baud_rate}")
+        print(
+            f"Opening Serial Connection for port {port} with baud rate {baud_rate}")
         try:
             self.serial_connection = serial.Serial(port, baud_rate)
             return True

@@ -35,11 +35,6 @@ classes = (
 
 
 @persistent
-def on_frame_change_pre(scene):
-    uart_controller.on_frame_change_pre(scene)
-
-
-@persistent
 def on_frame_change_post(scene):
     uart_controller.on_frame_change_post(scene)
 
@@ -65,7 +60,6 @@ def register():
         type=WindowManagerPropertyGroup)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     bpy.types.TIME_MT_editor_menus.append(menu_func_timeline)
-    bpy.app.handlers.frame_change_pre.append(on_frame_change_pre)
     bpy.app.handlers.frame_change_post.append(on_frame_change_post)
 
 
@@ -78,5 +72,4 @@ def unregister():
     del bpy.types.WindowManager.servo_animation
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     bpy.types.TIME_MT_editor_menus.remove(menu_func_timeline)
-    bpy.app.handlers.frame_change_pre.remove(on_frame_change_pre)
     bpy.app.handlers.frame_change_post.remove(on_frame_change_post)
