@@ -2,7 +2,7 @@ from bpy.types import Menu
 
 from ..export.json_export import JsonExport
 from ..export.arduino_export import ArduinoExport
-from ..live.live import live_controller
+from ..utils.uart import uart_controller
 
 
 class TimelineMenu(Menu):
@@ -10,10 +10,10 @@ class TimelineMenu(Menu):
     bl_idname = "SERVO_ANIM_MT_timeline"
 
     def draw(self, context):
-        live_controller.scan_serial_ports()
+        uart_controller.scan_serial_ports()
         servo_animation = context.window_manager.servo_animation
 
-        if not live_controller.is_connected():
+        if not uart_controller.is_connected():
             servo_animation.live_mode = False
 
         layout = self.layout

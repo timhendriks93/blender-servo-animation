@@ -2,6 +2,7 @@ import time
 import bpy
 
 from ..utils.converter import calculate_positions
+from ..utils.uart import uart_controller
 
 
 class BaseExport:
@@ -24,18 +25,24 @@ class BaseExport:
 
     def execute(self, context):
         start = time.time()
+        servo_animation = context.window_manager.servo_animation
         original_frame = context.scene.frame_current
+        original_live_mode = servo_animation.live_mode
+
+        uart_controller.close_serial_connection()
 
         try:
             positions = calculate_positions(context, self.precision)
             content = self.export(positions, context)
         except RuntimeError as error:
-            context.scene.frame_set(original_frame)
             self.report({'ERROR'}, str(error))
 
             return {'CANCELLED'}
+        finally:
+            context.scene.frame_set(original_frame)
 
-        context.scene.frame_set(original_frame)
+            if original_live_mode is True:
+                uart_controller.open_serial_connection()
 
         with open(self.filepath, 'w', encoding='utf-8') as file:
             file.write(content)

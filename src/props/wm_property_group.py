@@ -2,13 +2,13 @@ import bpy
 
 from bpy.types import PropertyGroup
 
-from ..live.live import live_controller
+from ..utils.uart import uart_controller
 
 
 def get_serial_port_items(_self, _context):
     items = []
 
-    for port in live_controller.get_serial_ports():
+    for port in uart_controller.get_serial_ports():
         items.append((port, port, ""))
 
     return items
@@ -16,10 +16,10 @@ def get_serial_port_items(_self, _context):
 
 class WindowManagerPropertyGroup(PropertyGroup):
     def update_serial_connection(self, _):
-        live_controller.close_serial_connection()
+        uart_controller.close_serial_connection()
         if self.live_mode is False or self.serial_port == '':
             return
-        if live_controller.open_serial_connection(self.serial_port, self.baud_rate) is False:
+        if uart_controller.open_serial_connection() is False:
             self.live_mode = False
 
     live_mode: bpy.props.BoolProperty(

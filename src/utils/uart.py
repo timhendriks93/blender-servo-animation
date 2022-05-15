@@ -1,6 +1,7 @@
 import sys
 import glob
 import serial
+import bpy
 
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
@@ -9,7 +10,7 @@ COMMAND_START = 0x3C
 COMMAND_END = 0x3E
 
 
-class Live:
+class UartController:
     serial_ports = []
     serial_connection = None
     current_frame = 0
@@ -81,8 +82,11 @@ class Live:
         except serial.SerialException:
             self.close_serial_connection()
 
-    def open_serial_connection(self, port, baud_rate):
-        print(f"Opening Serial Connection for port {port}")
+    def open_serial_connection(self):
+        servo_animation = bpy.context.window_manager.servo_animation
+        port = servo_animation.serial_port
+        baud_rate = servo_animation.baud_rate
+        print(f"Opening Serial Connection for port {port} with baud rate {baud_rate}")
         try:
             self.serial_connection = serial.Serial(port, baud_rate)
             return True
@@ -99,4 +103,4 @@ class Live:
         return isinstance(self.serial_connection, serial.Serial) and self.serial_connection.is_open
 
 
-live_controller = Live()
+uart_controller = UartController()

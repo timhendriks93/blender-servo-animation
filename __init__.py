@@ -8,7 +8,7 @@ from .src.ui.bone_panel import BonePanel
 from .src.export.json_export import JsonExport
 from .src.export.arduino_export import ArduinoExport
 from .src.ui.timeline_menu import TimelineMenu
-from .src.live.live import live_controller
+from .src.utils.uart import uart_controller
 
 bl_info = {
     "name": "Export Animation as Servo Position Values",
@@ -36,12 +36,12 @@ classes = (
 
 @persistent
 def on_frame_change_pre(scene):
-    live_controller.on_frame_change_pre(scene)
+    uart_controller.on_frame_change_pre(scene)
 
 
 @persistent
 def on_frame_change_post(scene):
-    live_controller.on_frame_change_post(scene)
+    uart_controller.on_frame_change_post(scene)
 
 
 def menu_func_export(self, _):
