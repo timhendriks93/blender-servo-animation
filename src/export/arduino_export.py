@@ -6,7 +6,7 @@ from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
 
 
-class ServoAnimationArduinoExport(Operator, BaseExport, ExportHelper):
+class ArduinoExport(Operator, BaseExport, ExportHelper):
     bl_idname = "export_anim.servo_positions_arduino"
     bl_label = "Export Animation Servo Positions (.h)"
     bl_description = "Save an Arduino header file with servo position values from an armature"
@@ -28,19 +28,22 @@ class ServoAnimationArduinoExport(Operator, BaseExport, ExportHelper):
         default=True
     )
 
-    def export(self, fps, frames, seconds, bones, positions, armature, filename):
+    def export(self, positions, context):
         variable_type = 'int' if self.precision == 0 else 'float'
+        fps, frames, seconds = self.get_time_meta(context.scene)
+        filename = self.get_filename()
+
         content = (
-            '/*\n  Blender Animation Servo Positions\n\n  '
-            'FPS: %d\n  Frames: %d\n  Seconds: %d\n  Bones: %d\n  '
-            'Armature: %s\n  File: %s\n*/\n\n'
-        ) % (fps, frames, seconds, bones, armature, filename)
+            "/*\n  Blender Animation Servo Positions\n\n  "
+            f"FPS: {fps}\n  Frames: {frames}\n  Seconds: {seconds}\n  "
+            f"Bones: {len(positions)}\n  Armature: {context.object.name}\n  "
+            f"File: {filename}\n*/\n\n"
+        )
 
         for bone_name in positions:
             bone_positions = positions[bone_name]
             variable_name = re.sub('[^a-zA-Z0-9_]', '', bone_name)
-            content += 'const %s %s[%d] ' % (variable_type,
-                                             variable_name, frames)
+            content += f"const {variable_type} {variable_name}[{frames}] "
 
             if self.use_progmem:
                 content += 'PROGMEM '

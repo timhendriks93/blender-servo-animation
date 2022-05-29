@@ -6,7 +6,7 @@ from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
 
 
-class ServoAnimationJsonExport(Operator, BaseExport, ExportHelper):
+class JsonExport(Operator, BaseExport, ExportHelper):
     bl_idname = "export_anim.servo_positions_json"
     bl_label = "Export Animation Servo Positions (.json)"
     bl_description = "Save a JSON file with servo position values from an armature"
@@ -19,14 +19,17 @@ class ServoAnimationJsonExport(Operator, BaseExport, ExportHelper):
         maxlen=255
     )
 
-    def export(self, fps, frames, seconds, bones, positions, armature, filename):
+    def export(self, positions, context):
+        fps, frames, seconds = self.get_time_meta(context.scene)
+        filename = self.get_filename()
+
         data = {
             "description": 'Blender Animation Servo Positions',
             "fps": fps,
             "frames": frames,
             "seconds": seconds,
-            "bones": bones,
-            "armature": armature,
+            "bones": len(positions),
+            "armature": context.object.name,
             "file": filename,
             "positions": positions
         }

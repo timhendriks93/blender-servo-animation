@@ -3,14 +3,14 @@ import bpy
 from bpy.types import PropertyGroup
 
 
-class ServoAnimationPropertyGroup(PropertyGroup):
-    def range_limit_value(self, value, min_value, max_value):
+class BonePropertyGroup(PropertyGroup):
+    @classmethod
+    def range_limit_value(cls, value, min_value, max_value):
         if min_value is not None and value < min_value:
             return min_value
-        elif max_value is not None and value > max_value:
+        if max_value is not None and value > max_value:
             return max_value
-        else:
-            return value
+        return value
 
     def update_position_min(self, _context):
         self["position_min"] = self.range_limit_value(
@@ -35,6 +35,13 @@ class ServoAnimationPropertyGroup(PropertyGroup):
     active: bpy.props.BoolProperty(
         name="Provide Servo Settings",
         description="Provide servo settings for this bone"
+    )
+    servo_id: bpy.props.IntProperty(
+        name="Servo ID",
+        default=0,
+        min=0,
+        max=256,
+        description="The unique servo ID used to send live data via UART"
     )
     position_min: bpy.props.IntProperty(
         name="Min Position",
