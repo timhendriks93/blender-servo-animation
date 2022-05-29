@@ -1,6 +1,5 @@
 import sys
 import glob
-import time
 import serial
 import bpy
 
@@ -14,17 +13,23 @@ COMMAND_END = 0x3E
 class UartController:
     serial_ports = []
     serial_connection = None
+    position_log = {}
 
     def on_frame_change_post(self, scene):
         if not self.is_connected():
             return
 
         for pose_bone in get_active_pose_bones(scene):
+            bone = pose_bone.bone
+            previous_position = self.position_log.get(bone.name)
             position, in_range = calculate_position(pose_bone, None)
 
-            if in_range:
-                self.send_position(
-                    pose_bone.bone.servo_settings.servo_id, position)
+            if not in_range or previous_position == position:
+                continue
+
+            self.send_position(
+                pose_bone.bone.servo_settings.servo_id, position)
+            self.position_log[bone.name] = position
 
     def send_position(self, servo_id, position):
         command = [COMMAND_START, servo_id]
