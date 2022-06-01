@@ -6,7 +6,7 @@ from ..utils.uart import UART_CONTROLLER
 
 
 class MenuPanel(Panel):
-    bl_label = "Servo Animation"
+    bl_label = "Servo Positions"
     bl_idname = "TIMELINE_PT_servo"
     bl_space_type = 'SEQUENCE_EDITOR'
     bl_region_type = 'WINDOW'
@@ -19,6 +19,10 @@ class MenuPanel(Panel):
             servo_animation.live_mode = False
 
         layout = self.layout
+
+        if not UART_CONTROLLER.has_serial_ports():
+            box = layout.box()
+            box.label(text="No serial port available", icon="ERROR")
 
         split = layout.split()
         col = split.column()

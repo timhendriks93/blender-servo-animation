@@ -65,6 +65,9 @@ class UartController:
     def get_serial_ports(self):
         return self.serial_ports
 
+    def has_serial_ports(self):
+        return len(self.get_serial_ports()) > 0
+
     def open_serial_connection(self):
         servo_animation = bpy.context.window_manager.servo_animation
         port = servo_animation.serial_port
