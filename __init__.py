@@ -5,9 +5,9 @@ from bpy.app.handlers import persistent
 from .src.props.bone_property_group import BonePropertyGroup
 from .src.props.wm_property_group import WindowManagerPropertyGroup
 from .src.ui.bone_panel import BonePanel
+from .src.ui.menu_panel import MenuPanel
 from .src.export.json_export import JsonExport
 from .src.export.arduino_export import ArduinoExport
-from .src.ui.timeline_menu import TimelineMenu
 from .src.utils.uart import UART_CONTROLLER
 
 bl_info = {
@@ -28,9 +28,9 @@ classes = (
     BonePropertyGroup,
     WindowManagerPropertyGroup,
     BonePanel,
+    MenuPanel,
     ArduinoExport,
-    JsonExport,
-    TimelineMenu
+    JsonExport
 )
 
 
@@ -45,7 +45,7 @@ def menu_func_export(self, _):
 
 
 def menu_func_timeline(self, _):
-    self.layout.menu(TimelineMenu.bl_idname)
+    self.layout.popover(MenuPanel.bl_idname)
 
 
 def register():
