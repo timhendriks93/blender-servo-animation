@@ -9,6 +9,10 @@ from ..utils.servo_settings import get_active_pose_bones
 COMMAND_START = 0x3C
 COMMAND_END = 0x3E
 
+COMMAND_TYPE_HANDSHAKE = 0
+COMMAND_TYPE_MOVE_SERVO = 1
+COMMAND_TYPE_FRAME_JUMP = 2
+
 
 class UartController:
     serial_ports = []
@@ -32,13 +36,12 @@ class UartController:
             self.position_log[bone.name] = position
 
     def send_position(self, servo_id, position):
-        command = [COMMAND_START, servo_id]
+        command = [COMMAND_START, COMMAND_TYPE_MOVE_SERVO, servo_id]
         command += position.to_bytes(2, 'big')
         command += [COMMAND_END]
 
         try:
             self.serial_connection.write(command)
-            print(f"Sent {servo_id} - {position}")
         except serial.SerialException:
             self.close_serial_connection()
 
