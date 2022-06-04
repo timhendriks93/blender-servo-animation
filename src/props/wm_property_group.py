@@ -43,3 +43,8 @@ class WindowManagerPropertyGroup(PropertyGroup):
             ("192500", "192500", "")
         ]
     )
+    frame_jump_handling: bpy.props.BoolProperty(
+        name="Frame Jump Handling",
+        description="Slowly move the servos to their new position when jumping between frames",
+        default=True
+    )

@@ -25,10 +25,11 @@ class UartController:
         if not self.is_connected():
             return
 
+        servo_animation = bpy.context.window_manager.servo_animation
         frame_jump = self.frame is not None and abs(
             scene.frame_current - self.frame) > 10
 
-        if frame_jump:
+        if frame_jump and servo_animation.frame_jump_handling:
             self.handle_frame_jump(scene)
         else:
             self.handle_default(scene)
