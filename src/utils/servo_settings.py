@@ -6,8 +6,7 @@ def get_active_pose_bones(scene):
             continue
 
         for pose_bone in obj.pose.bones:
-            if not pose_bone.bone.servo_settings.active:
-                continue
-            pose_bones.append(pose_bone)
+            if pose_bone.bone.servo_settings.active:
+                pose_bones.append(pose_bone)
 
     return pose_bones
