@@ -1,37 +1,35 @@
 import bpy
 
 from bpy.types import PropertyGroup
+from ..utils.servo_settings import range_limit_value
+
+
+def update_position_min(self, _context):
+    self["position_min"] = range_limit_value(
+        self.position_min, None, self.position_max)
+
+
+def update_position_max(self, _context):
+    self["position_max"] = range_limit_value(
+        self.position_max, self.position_min, None)
+
+
+def update_position_limit_start(self, _context):
+    self["position_limit_start"] = range_limit_value(
+        self.position_limit_start, self.position_min, self.position_limit_end)
+
+
+def update_position_limit_end(self, _context):
+    self["position_limit_end"] = range_limit_value(
+        self.position_limit_end, self.position_limit_start, self.position_max)
+
+
+def update_neutral_angle(self, _context):
+    self["neutral_angle"] = range_limit_value(
+        self.neutral_angle, None, self.rotation_range)
 
 
 class BonePropertyGroup(PropertyGroup):
-    @classmethod
-    def range_limit_value(cls, value, min_value, max_value):
-        if min_value is not None and value < min_value:
-            return min_value
-        if max_value is not None and value > max_value:
-            return max_value
-        return value
-
-    def update_position_min(self, _context):
-        self["position_min"] = self.range_limit_value(
-            self.position_min, None, self.position_max)
-
-    def update_position_max(self, _context):
-        self["position_max"] = self.range_limit_value(
-            self.position_max, self.position_min, None)
-
-    def update_position_limit_start(self, _context):
-        self["position_limit_start"] = self.range_limit_value(
-            self.position_limit_start, self.position_min, self.position_limit_end)
-
-    def update_position_limit_end(self, _context):
-        self["position_limit_end"] = self.range_limit_value(
-            self.position_limit_end, self.position_limit_start, self.position_max)
-
-    def update_neutral_angle(self, _context):
-        self["neutral_angle"] = self.range_limit_value(
-            self.neutral_angle, None, self.rotation_range)
-
     active: bpy.props.BoolProperty(
         name="Provide Servo Settings",
         description="Provide servo settings for this bone"
@@ -56,7 +54,8 @@ class BonePropertyGroup(PropertyGroup):
         default=600,
         min=0,
         max=10000,
-        description="The maximum position value before the servo physically stops moving"
+        description="The maximum position value before the servo physically stops moving",
+        update=update_position_max
     )
     position_limit_start: bpy.props.IntProperty(
         name="Position Limit Start",
@@ -66,7 +65,8 @@ class BonePropertyGroup(PropertyGroup):
         description=(
             "The minimum position value before the servo is "
             "supposed to stop moving within a specific build"
-        )
+        ),
+        update=update_position_limit_start
     )
     position_limit_end: bpy.props.IntProperty(
         name="Position Limit End",
@@ -76,7 +76,8 @@ class BonePropertyGroup(PropertyGroup):
         description=(
             "The maximum position value before the servo is supposed to "
             "stop moving within a specific build"
-        )
+        ),
+        update=update_position_limit_end
     )
     neutral_angle: bpy.props.IntProperty(
         name="Neutral Angle",
@@ -87,7 +88,8 @@ class BonePropertyGroup(PropertyGroup):
             "The assumed neutral angle of the servo in degrees (typically half the rotation range) "
             "which should be adjusted carefully, since the servo will first move to its 'natural' "
             "neutral angle when powered"
-        )
+        ),
+        update=update_neutral_angle
     )
     reverse_direction: bpy.props.BoolProperty(
         name="Reverse Direction",
