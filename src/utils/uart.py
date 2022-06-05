@@ -1,7 +1,6 @@
-import sys
-import glob
 import time
 import serial
+import serial.tools.list_ports
 import bpy
 
 from ..utils.converter import calculate_position
@@ -35,17 +34,6 @@ class UartController:
             self.handle_default(scene)
 
         self.frame = scene.frame_current
-
-    def send_position(self, servo_id, position):
-        command = [COMMAND_START, COMMAND_TYPE_MOVE_SERVO, servo_id]
-        command += position.to_bytes(2, 'big')
-        command += [COMMAND_END]
-
-        try:
-            self.serial_connection.write(command)
-            self.positions[servo_id] = position
-        except serial.SerialException:
-            self.close_serial_connection()
 
     def handle_default(self, scene):
         for pose_bone in get_active_pose_bones(scene):
@@ -93,25 +81,22 @@ class UartController:
 
         window_manager.progress_end()
 
+    def send_position(self, servo_id, position):
+        command = [COMMAND_START, COMMAND_TYPE_MOVE_SERVO, servo_id]
+        command += position.to_bytes(2, 'big')
+        command += [COMMAND_END]
+
+        try:
+            self.serial_connection.write(command)
+            self.positions[servo_id] = position
+        except serial.SerialException:
+            self.close_serial_connection()
+
     def scan_serial_ports(self):
         self.serial_ports.clear()
 
-        if sys.platform.startswith('win'):
-            ports = [f"COM{i + 1}" for i in range(256)]
-        elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
-            ports = glob.glob('/dev/tty[A-Za-z]*')
-        elif sys.platform.startswith('darwin'):
-            ports = glob.glob('/dev/tty.*')
-        else:
-            ports = []
-
-        for port in ports:
-            try:
-                tmp_connection = serial.Serial(port)
-                tmp_connection.close()
-                self.serial_ports.append(port)
-            except (OSError, serial.SerialException):
-                pass
+        for port in serial.tools.list_ports.comports():
+            self.serial_ports.append(port.device)
 
     def get_serial_ports(self):
         return self.serial_ports
@@ -136,6 +121,7 @@ class UartController:
             print("Closing serial connection")
             self.serial_connection.close()
         self.serial_connection = None
+        self.positions = {}
 
     def is_connected(self):
         return isinstance(self.serial_connection, serial.Serial) and self.serial_connection.is_open
