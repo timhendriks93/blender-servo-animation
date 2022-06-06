@@ -2,6 +2,7 @@
 from bpy.types import Panel
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
+from ..utils.uart import UART_CONTROLLER
 
 
 class BonePanel(Panel):
@@ -75,7 +76,7 @@ class BonePanel(Panel):
         col.prop(servo_settings, "reverse_direction")
 
         if context.active_pose_bone is not None:
-            self.draw_current(context)
+            self.draw_current(servo_settings.servo_id, context)
 
     def draw_limit(self, servo_settings):
         layout = self.layout
@@ -88,7 +89,7 @@ class BonePanel(Panel):
         col.prop(servo_settings, "position_limit_start", text="")
         col.prop(servo_settings, "position_limit_end", text="")
 
-    def draw_current(self, context):
+    def draw_current(self, servo_id, context):
         layout = self.layout
         position, in_range = calculate_position(
             context.active_pose_bone, None)
@@ -105,6 +106,8 @@ class BonePanel(Panel):
         if not in_range:
             box = layout.box()
             box.label(text="Position is out of range", icon="ERROR")
+        elif UART_CONTROLLER.is_connected():
+            UART_CONTROLLER.send_position(servo_id, position)
 
     @classmethod
     def has_unique_servo_id(cls, bone, scene):
