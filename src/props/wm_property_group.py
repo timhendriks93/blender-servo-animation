@@ -34,7 +34,7 @@ class WindowManagerPropertyGroup(PropertyGroup):
     live_mode: bpy.props.BoolProperty(
         name="Live Mode",
         update=toggle_serial_connection,
-        description="Send UART commands on each frame change"
+        description="Send live position values via a serial connection"
     )
     serial_port: bpy.props.EnumProperty(
         name="Serial Port",
