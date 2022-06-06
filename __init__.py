@@ -36,7 +36,7 @@ classes = (
 
 @persistent
 def on_frame_change_post(scene):
-    UART_CONTROLLER.on_frame_change_post(scene)
+    UART_CONTROLLER.update_positions(scene)
 
 
 def menu_func_export(self, _):

@@ -33,7 +33,7 @@ class MenuPanel(Panel):
         col.prop_menu_enum(servo_animation, "serial_port")
         col.prop_menu_enum(servo_animation, "baud_rate")
         col.separator()
-        col.prop(servo_animation, "frame_jump_handling")
+        col.prop(servo_animation, "position_jump_handling")
 
         layout.separator()
 

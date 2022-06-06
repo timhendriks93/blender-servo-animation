@@ -11,53 +11,49 @@ COMMAND_END = 0x3E
 
 COMMAND_TYPE_HANDSHAKE = 0
 COMMAND_TYPE_MOVE_SERVO = 1
-COMMAND_TYPE_FRAME_JUMP = 2
+COMMAND_TYPE_POSITION_JUMP = 2
 
 
 class UartController:
     positions = {}
     serial_ports = {}
     serial_connection = None
-    frame = None
 
-    def on_frame_change_post(self, scene):
+    def update_positions(self, scene):
         if not self.is_connected():
             return
 
+        diffs = []
+        target_positions = {}
         servo_animation = bpy.context.window_manager.servo_animation
-        frame_jump = self.frame is not None and abs(
-            scene.frame_current - self.frame) > 10
 
-        if frame_jump and servo_animation.frame_jump_handling:
-            self.handle_frame_jump(scene)
-        else:
-            self.handle_default(scene)
-
-        self.frame = scene.frame_current
-
-    def handle_default(self, scene):
         for pose_bone in get_active_pose_bones(scene):
-            bone = pose_bone.bone
-            position, in_range = calculate_position(pose_bone, None)
+            target_position, in_range = calculate_position(pose_bone, None)
 
             if not in_range:
                 continue
 
-            self.send_position(bone.servo_settings.servo_id, position)
+            servo_id = pose_bone.bone.servo_settings.servo_id
+            target_positions[servo_id] = target_position
 
-    def handle_frame_jump(self, scene):
-        diffs = []
-        target_positions = {}
-
-        for pose_bone in get_active_pose_bones(scene):
-            target_position, in_range = calculate_position(pose_bone, None)
-            if in_range:
-                servo_id = pose_bone.bone.servo_settings.servo_id
-                target_positions[servo_id] = target_position
+            if servo_id in self.positions:
                 diffs.append(abs(target_position - self.positions[servo_id]))
 
-        steps = max(diffs)
+        if len(diffs) > 0:
+            steps = max(diffs)
+        else:
+            steps = 0
 
+        if steps > 20 and servo_animation.position_jump_handling:
+            self.handle_position_jump(target_positions, steps)
+        else:
+            self.handle_default(target_positions)
+
+    def handle_default(self, target_positions):
+        for servo_id, target_position in target_positions.items():
+            self.send_position(servo_id, target_position)
+
+    def handle_position_jump(self, target_positions, steps):
         if bpy.context.screen.is_animation_playing:
             bpy.ops.screen.animation_cancel(restore_frame=False)
 
@@ -87,6 +83,9 @@ class UartController:
         command += position.to_bytes(2, 'big')
         command += [COMMAND_END]
 
+        if servo_id == 4:
+            print(position)
+
         try:
             self.serial_connection.write(command)
             self.positions[servo_id] = position
@@ -110,7 +109,7 @@ class UartController:
         port = servo_animation.serial_port
         baud_rate = servo_animation.baud_rate
         print(
-            f"Opening Serial Connection for port {port} with baud rate {baud_rate}")
+            f"Opening serial connection for port {port} with baud rate {baud_rate}")
         try:
             self.serial_connection = serial.Serial(
                 port=port, baudrate=baud_rate)
