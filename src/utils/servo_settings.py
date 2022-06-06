@@ -18,3 +18,13 @@ def range_limit_value(value, min_value, max_value):
     if max_value is not None and value > max_value:
         return max_value
     return value
+
+
+def has_unique_servo_id(bone, scene):
+    for pose_bone in get_active_pose_bones(scene):
+        if pose_bone.bone.name == bone.name:
+            continue
+        if pose_bone.bone.servo_settings.servo_id == bone.servo_settings.servo_id:
+            return False
+
+    return True
