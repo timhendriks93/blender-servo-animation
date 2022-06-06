@@ -19,28 +19,28 @@ class MenuPanel(Panel):
             servo_animation.live_mode = False
 
         layout = self.layout
+        layout.use_property_split = True
 
         if not UART_CONTROLLER.has_serial_ports():
             box = layout.box()
             box.label(text="No serial port available", icon="ERROR")
 
-        split = layout.split()
-        col = split.column()
-        col.alignment = 'RIGHT'
-        col.label(text="Live Mode")
-        col = split.column(align=True)
-        col.prop(servo_animation, "live_mode", text="Enable")
-        col.prop_menu_enum(servo_animation, "serial_port")
-        col.prop_menu_enum(servo_animation, "baud_rate")
-        col.separator()
+        col = layout.column()
+        col.prop(servo_animation, "live_mode")
+
+        col = layout.column(align=True)
+        col.active = servo_animation.live_mode
+        col.prop(servo_animation, "serial_port")
+        col.prop(servo_animation, "baud_rate")
+
+        col = layout.column()
+        col.active = servo_animation.live_mode
         col.prop(servo_animation, "position_jump_handling")
 
         layout.separator()
 
-        split = layout.split()
-        col = split.column()
-        col.alignment = 'RIGHT'
+        col = layout.column()
         col.label(text="Export")
-        col = split.column(align=True)
-        col.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
-        col.operator(JsonExport.bl_idname, text="JSON (.json)")
+        row = col.row(align=True)
+        row.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
+        row.operator(JsonExport.bl_idname, text="JSON (.json)")

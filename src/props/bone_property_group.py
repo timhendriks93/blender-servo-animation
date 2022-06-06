@@ -58,7 +58,7 @@ class BonePropertyGroup(PropertyGroup):
         update=update_position_max
     )
     position_limit_start: bpy.props.IntProperty(
-        name="Position Limit Start",
+        name="Limit Start",
         default=150,
         min=0,
         max=10000,
@@ -69,7 +69,7 @@ class BonePropertyGroup(PropertyGroup):
         update=update_position_limit_start
     )
     position_limit_end: bpy.props.IntProperty(
-        name="Position Limit End",
+        name="Limit End",
         default=600,
         min=0,
         max=10000,
@@ -100,7 +100,7 @@ class BonePropertyGroup(PropertyGroup):
         )
     )
     set_position_limits: bpy.props.BoolProperty(
-        name="Set Position Limits",
+        name="Limit Positions",
         description=(
             "Define a position range to limit the calculated position values "
             "according to a specific build"
