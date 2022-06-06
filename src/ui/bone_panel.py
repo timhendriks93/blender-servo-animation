@@ -1,7 +1,7 @@
 
 from bpy.types import Panel
 from ..utils.converter import calculate_position
-from ..utils.servo_settings import get_active_pose_bones
+from ..utils.servo_settings import has_unique_servo_id
 from ..utils.uart import UART_CONTROLLER
 
 
@@ -25,7 +25,7 @@ class BonePanel(Panel):
         col = split.column(align=True)
         col.prop(servo_settings, "servo_id", text="")
 
-        if self.has_unique_servo_id(context.active_bone, context.scene) is False:
+        if has_unique_servo_id(context.active_bone, context.scene) is False:
             box = layout.box()
             box.label(text="Servo ID is not unique", icon="ERROR")
 
@@ -108,13 +108,3 @@ class BonePanel(Panel):
             box.label(text="Position is out of range", icon="ERROR")
         elif UART_CONTROLLER.is_connected():
             UART_CONTROLLER.send_position(servo_id, position)
-
-    @classmethod
-    def has_unique_servo_id(cls, bone, scene):
-        for pose_bone in get_active_pose_bones(scene):
-            if pose_bone.bone.name == bone.name:
-                continue
-            if pose_bone.bone.servo_settings.servo_id == bone.servo_settings.servo_id:
-                return False
-
-        return True
