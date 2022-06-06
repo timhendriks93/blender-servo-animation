@@ -15,10 +15,10 @@ COMMAND_TYPE_FRAME_JUMP = 2
 
 
 class UartController:
-    serial_ports = []
+    positions = {}
+    serial_ports = {}
     serial_connection = None
     frame = None
-    positions = {}
 
     def on_frame_change_post(self, scene):
         if not self.is_connected():
@@ -38,14 +38,12 @@ class UartController:
     def handle_default(self, scene):
         for pose_bone in get_active_pose_bones(scene):
             bone = pose_bone.bone
-            servo_id = bone.servo_settings.servo_id
-            previous_position = self.positions.get(servo_id)
             position, in_range = calculate_position(pose_bone, None)
 
-            if not in_range or previous_position == position:
+            if not in_range:
                 continue
 
-            self.send_position(servo_id, position)
+            self.send_position(bone.servo_settings.servo_id, position)
 
     def handle_frame_jump(self, scene):
         diffs = []
@@ -82,6 +80,9 @@ class UartController:
         window_manager.progress_end()
 
     def send_position(self, servo_id, position):
+        if position == self.positions.get(servo_id):
+            return
+
         command = [COMMAND_START, COMMAND_TYPE_MOVE_SERVO, servo_id]
         command += position.to_bytes(2, 'big')
         command += [COMMAND_END]
@@ -96,7 +97,7 @@ class UartController:
         self.serial_ports.clear()
 
         for port in serial.tools.list_ports.comports():
-            self.serial_ports.append(port.device)
+            self.serial_ports[port.device] = port
 
     def get_serial_ports(self):
         return self.serial_ports
@@ -111,7 +112,8 @@ class UartController:
         print(
             f"Opening Serial Connection for port {port} with baud rate {baud_rate}")
         try:
-            self.serial_connection = serial.Serial(port=port, baudrate=baud_rate)
+            self.serial_connection = serial.Serial(
+                port=port, baudrate=baud_rate)
             return True
         except serial.SerialException:
             return False
@@ -124,7 +126,11 @@ class UartController:
         self.positions = {}
 
     def is_connected(self):
-        return isinstance(self.serial_connection, serial.Serial) and self.serial_connection.is_open
+        return (
+            isinstance(self.serial_connection, serial.Serial)
+            and self.serial_connection.is_open
+            and self.serial_connection.port in self.serial_ports
+        )
 
 
 UART_CONTROLLER = UartController()
