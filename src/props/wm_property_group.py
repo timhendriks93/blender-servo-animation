@@ -25,7 +25,7 @@ def toggle_serial_connection(self, context):
         return
 
     if UART_CONTROLLER.open_serial_connection():
-        UART_CONTROLLER.on_frame_change_post(context.scene)
+        UART_CONTROLLER.update_positions(context.scene)
     else:
         self.live_mode = False
 
@@ -51,8 +51,11 @@ class WindowManagerPropertyGroup(PropertyGroup):
             ("192500", "192500", "")
         ]
     )
-    frame_jump_handling: bpy.props.BoolProperty(
-        name="Frame Jump Handling",
-        description="Slowly move the servos to their new position when jumping between frames",
+    position_jump_handling: bpy.props.BoolProperty(
+        name="Position Jump Handling",
+        description=(
+            "Slowly move the servos to their new position "
+            "when the position difference exceeds the threshold"
+        ),
         default=True
     )
