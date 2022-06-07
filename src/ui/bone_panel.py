@@ -2,7 +2,6 @@
 from bpy.types import Panel
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import has_unique_servo_id
-from ..utils.uart import UART_CONTROLLER
 
 
 class BonePanel(Panel):
@@ -20,9 +19,6 @@ class BonePanel(Panel):
         servo_settings = context.active_bone.servo_settings
         layout = self.layout
         layout.prop(servo_settings, "active", text="")
-
-        if context.active_pose_bone is not None and UART_CONTROLLER.is_connected():
-            UART_CONTROLLER.update_positions(context.scene)
 
     def draw(self, context):
         layout = self.layout

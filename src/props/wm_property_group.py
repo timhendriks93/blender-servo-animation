@@ -1,7 +1,6 @@
 import bpy
 
 from bpy.types import PropertyGroup
-
 from ..utils.uart import UART_CONTROLLER
 
 
@@ -21,11 +20,14 @@ def close_serial_connection(_self, _context):
 def toggle_serial_connection(self, context):
     close_serial_connection(self, context)
 
+    if bpy.app.timers.is_registered(UART_CONTROLLER.timer):
+        bpy.app.timers.unregister(UART_CONTROLLER.timer)
+
     if not self.live_mode or self.serial_port == '':
         return
 
     if UART_CONTROLLER.open_serial_connection():
-        UART_CONTROLLER.update_positions(context.scene)
+        bpy.app.timers.register(UART_CONTROLLER.timer)
     else:
         self.live_mode = False
 
