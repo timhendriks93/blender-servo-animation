@@ -36,7 +36,8 @@ classes = (
 
 @persistent
 def on_frame_change_post(scene):
-    UART_CONTROLLER.update_positions(scene)
+    if bpy.context.screen.is_animation_playing:
+        UART_CONTROLLER.update_positions(scene)
 
 
 def menu_func_export(self, _):

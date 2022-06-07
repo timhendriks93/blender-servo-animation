@@ -1,4 +1,3 @@
-
 from bpy.types import Panel
 from ..export.json_export import JsonExport
 from ..export.arduino_export import ArduinoExport

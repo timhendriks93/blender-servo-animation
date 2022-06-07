@@ -19,6 +19,12 @@ class UartController:
     serial_ports = {}
     serial_connection = None
 
+    @classmethod
+    def timer(cls):
+        if not bpy.context.screen.is_animation_playing:
+            UART_CONTROLLER.update_positions(bpy.context.scene)
+        return .03
+
     def update_positions(self, scene):
         if not self.is_connected():
             return
@@ -82,9 +88,6 @@ class UartController:
         command = [COMMAND_START, COMMAND_TYPE_MOVE_SERVO, servo_id]
         command += position.to_bytes(2, 'big')
         command += [COMMAND_END]
-
-        if servo_id == 4:
-            print(position)
 
         try:
             self.serial_connection.write(command)
