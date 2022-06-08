@@ -9,10 +9,6 @@ from ..utils.servo_settings import get_active_pose_bones
 COMMAND_START = 0x3C
 COMMAND_END = 0x3E
 
-COMMAND_TYPE_HANDSHAKE = 0
-COMMAND_TYPE_MOVE_SERVO = 1
-COMMAND_TYPE_POSITION_JUMP = 2
-
 
 class UartController:
     positions = {}
@@ -85,7 +81,7 @@ class UartController:
         if position == self.positions.get(servo_id):
             return
 
-        command = [COMMAND_START, COMMAND_TYPE_MOVE_SERVO, servo_id]
+        command = [COMMAND_START, servo_id]
         command += position.to_bytes(2, 'big')
         command += [COMMAND_END]
 
