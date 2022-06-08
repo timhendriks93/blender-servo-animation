@@ -8,7 +8,7 @@ class MenuPanel(Panel):
     bl_label = "Servo Positions"
     bl_idname = "TIMELINE_PT_servo"
     bl_space_type = 'SEQUENCE_EDITOR'
-    bl_region_type = 'WINDOW'
+    bl_region_type = 'HEADER'
 
     def draw(self, context):
         UART_CONTROLLER.scan_serial_ports()
@@ -19,16 +19,22 @@ class MenuPanel(Panel):
 
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False
 
         if not UART_CONTROLLER.has_serial_ports():
             box = layout.box()
             box.label(text="No serial port available", icon="ERROR")
 
-        col = layout.column()
-        col.prop(servo_animation, "live_mode")
+        if servo_animation.live_mode:
+            button_text = "Disconnect"
+        else:
+            button_text = "Connect"
+
+        col = layout.column(heading="Live Mode")
+        col.prop(servo_animation, "live_mode", toggle=True, text=button_text)
 
         col = layout.column(align=True)
-        col.active = servo_animation.live_mode
+        col.active = not servo_animation.live_mode
         col.prop(servo_animation, "serial_port")
         col.prop(servo_animation, "baud_rate")
 

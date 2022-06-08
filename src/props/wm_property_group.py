@@ -36,7 +36,7 @@ class WindowManagerPropertyGroup(PropertyGroup):
     live_mode: bpy.props.BoolProperty(
         name="Live Mode",
         update=toggle_serial_connection,
-        description="Send live position values via a serial connection"
+        description="Start / stop sending live position values via the given serial connection"
     )
     serial_port: bpy.props.EnumProperty(
         name="Serial Port",
