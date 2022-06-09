@@ -46,7 +46,10 @@ class UartController:
         else:
             steps = 0
 
-        if steps > 20 and servo_animation.position_jump_handling:
+        if (
+            servo_animation.position_jump_handling
+            and steps > servo_animation.position_jump_threshold
+        ):
             self.handle_position_jump(target_positions, steps)
         else:
             self.handle_default(target_positions)
