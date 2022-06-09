@@ -41,6 +41,9 @@ class MenuPanel(Panel):
         col = layout.column()
         col.active = servo_animation.live_mode
         col.prop(servo_animation, "position_jump_handling")
+        col = layout.column()
+        col.active = servo_animation.live_mode and servo_animation.position_jump_handling
+        col.prop(servo_animation, "position_jump_threshold")
 
         layout.separator()
 

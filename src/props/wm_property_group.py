@@ -61,3 +61,10 @@ class WindowManagerPropertyGroup(PropertyGroup):
         ),
         default=True
     )
+    position_jump_threshold: bpy.props.IntProperty(
+        name="Threshold",
+        default=20,
+        min=2,
+        max=100,
+        description="The position difference value triggering position jump handling when exceeded"
+    )
