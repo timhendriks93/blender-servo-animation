@@ -19,7 +19,8 @@ class Blender:
         self.file = self.cwd + "/" + path
 
     def start(self):
-        command = f"blender {self.file} --background --python-console"
+        args = "--background --addons blender_servo_animation --python-console"
+        command = f"blender {self.file} {args}"
         self.spawn = pexpect.spawn(command, timeout=self.timeout)
 
     def send_lines(self, lines):
