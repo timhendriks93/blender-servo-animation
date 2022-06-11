@@ -20,8 +20,8 @@ jobs:
         pylint ./src
     - name: Install Blender
       run: |
-        apt-get update
-        apt-get install --no-install-recommends -y wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends -y wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
         wget https://download.blender.org/release/Blender3.2/blender-3.2.0-linux-x64.tar.xz
         tar xvf blender-3.2.0-linux-x64.tar.xz
         mv blender-3.2.0-linux-x64 /usr/local/blender
