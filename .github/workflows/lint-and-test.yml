@@ -24,9 +24,9 @@ jobs:
         sudo apt-get install --no-install-recommends -y wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
         wget https://download.blender.org/release/Blender3.2/blender-3.2.0-linux-x64.tar.xz
         tar xvf blender-3.2.0-linux-x64.tar.xz
-        mv blender-3.2.0-linux-x64 /usr/local/blender
-        ln -s /usr/local/blender/blender /usr/bin/blender
-        ln -s "$(pwd)" /usr/local/blender/3.2/scripts/addons/blender_servo_animation
+        sudo mv blender-3.2.0-linux-x64 /usr/local/blender
+        sudo ln -s /usr/local/blender/blender /usr/bin/blender
+        sudo ln -s "$(pwd)" /usr/local/blender/3.2/scripts/addons/blender_servo_animation
     - name: Run tests with pytest
       run: |
         pytest ./tests
