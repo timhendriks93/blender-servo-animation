@@ -1,12 +1,7 @@
-try:
-    import serial
-    import serial.tools.list_ports
-    SERIAL_MODULE = True
-except ImportError:
-    SERIAL_MODULE = False
-
 import time
 import bpy
+import serial
+import serial.tools.list_ports
 
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
@@ -133,8 +128,7 @@ class UartController:
 
     def is_connected(self):
         return (
-            SERIAL_MODULE
-            and isinstance(self.serial_connection, serial.Serial)
+            isinstance(self.serial_connection, serial.Serial)
             and self.serial_connection.is_open
             and self.serial_connection.port in self.serial_ports
         )

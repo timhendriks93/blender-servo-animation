@@ -1,3 +1,8 @@
+# pylint: disable=wrong-import-position
+import sys
+
+sys.path.append("vendor")
+
 import bpy
 
 from bpy.app.handlers import persistent
