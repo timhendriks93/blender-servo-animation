@@ -1,7 +1,7 @@
 from bpy.types import Panel
 from ..export.json_export import JsonExport
 from ..export.arduino_export import ArduinoExport
-from ..utils.uart import UART_CONTROLLER, SERIAL_MODULE
+from ..utils.uart import UART_CONTROLLER
 
 
 class MenuPanel(Panel):
@@ -11,23 +11,6 @@ class MenuPanel(Panel):
     bl_region_type = 'HEADER'
 
     def draw(self, context):
-        layout = self.layout
-
-        if SERIAL_MODULE:
-            self.draw_live_mode(context)
-            layout.separator()
-        else:
-            box = layout.box()
-            box.label(text="Live mode not available.", icon="ERROR")
-            box.label(text="Install missing dependency first.")
-
-        col = layout.column()
-        col.label(text="Export")
-        row = col.row(align=True)
-        row.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
-        row.operator(JsonExport.bl_idname, text="JSON (.json)")
-
-    def draw_live_mode(self, context):
         UART_CONTROLLER.scan_serial_ports()
         servo_animation = context.window_manager.servo_animation
 
@@ -61,3 +44,11 @@ class MenuPanel(Panel):
         col = layout.column()
         col.active = servo_animation.live_mode and servo_animation.position_jump_handling
         col.prop(servo_animation, "position_jump_threshold")
+
+        layout.separator()
+
+        col = layout.column()
+        col.label(text="Export")
+        row = col.row(align=True)
+        row.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
+        row.operator(JsonExport.bl_idname, text="JSON (.json)")
