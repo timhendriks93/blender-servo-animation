@@ -4,6 +4,7 @@ import bpy
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
+from ..utils.system import get_blend_filename
 
 
 class JsonExport(Operator, BaseExport, ExportHelper):
@@ -21,7 +22,7 @@ class JsonExport(Operator, BaseExport, ExportHelper):
 
     def export(self, positions, context):
         fps, frames, seconds = self.get_time_meta(context.scene)
-        filename = self.get_filename()
+        filename = get_blend_filename()
 
         data = {
             "description": 'Blender Animation Servo Positions',

@@ -4,6 +4,7 @@ import bpy
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
+from ..utils.system import get_blend_filename
 
 
 class ArduinoExport(Operator, BaseExport, ExportHelper):
@@ -31,7 +32,7 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
     def export(self, positions, context):
         variable_type = 'int' if self.precision == 0 else 'float'
         fps, frames, seconds = self.get_time_meta(context.scene)
-        filename = self.get_filename()
+        filename = get_blend_filename()
 
         content = (
             "/*\n  Blender Animation Servo Positions\n\n  "

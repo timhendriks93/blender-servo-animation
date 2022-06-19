@@ -1,19 +1,19 @@
-# pylint: disable=wrong-import-position
-import sys
+# pylint: disable=wrong-import-position,wrong-import-order
+from .src.utils.system import register_vendor_path
 
-sys.path.append("vendor")
+register_vendor_path()
 
 import bpy
-
-from bpy.app.handlers import persistent
 
 from .src.props.bone_property_group import BonePropertyGroup
 from .src.props.wm_property_group import WindowManagerPropertyGroup
 from .src.ui.bone_panel import BonePanel
 from .src.ui.menu_panel import MenuPanel
-from .src.export.json_export import JsonExport
-from .src.export.arduino_export import ArduinoExport
-from .src.utils.uart import UART_CONTROLLER
+from .src.ops.json_export import JsonExport
+from .src.ops.arduino_export import ArduinoExport
+from .src.ops.start_live_mode import StartLiveMode
+from .src.ops.stop_live_mode import StopLiveMode
+from .src.ops.live_mode import LiveMode
 
 bl_info = {
     "name": "Export Animation as Servo Position Values",
@@ -35,14 +35,11 @@ classes = (
     BonePanel,
     MenuPanel,
     ArduinoExport,
-    JsonExport
+    JsonExport,
+    StartLiveMode,
+    StopLiveMode,
+    LiveMode
 )
-
-
-@persistent
-def on_frame_change_post(scene):
-    if bpy.context.screen.is_animation_playing:
-        UART_CONTROLLER.update_positions(scene)
 
 
 def menu_func_export(self, _):
@@ -66,7 +63,6 @@ def register():
         type=WindowManagerPropertyGroup)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     bpy.types.TIME_MT_editor_menus.append(menu_func_timeline)
-    bpy.app.handlers.frame_change_post.append(on_frame_change_post)
 
 
 def unregister():
@@ -78,4 +74,3 @@ def unregister():
     del bpy.types.WindowManager.servo_animation
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     bpy.types.TIME_MT_editor_menus.remove(menu_func_timeline)
-    bpy.app.handlers.frame_change_post.remove(on_frame_change_post)

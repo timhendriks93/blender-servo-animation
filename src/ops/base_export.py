@@ -2,7 +2,6 @@ import time
 import bpy
 
 from ..utils.converter import calculate_positions
-from ..utils.uart import UART_CONTROLLER
 
 
 class BaseExport:
@@ -29,7 +28,8 @@ class BaseExport:
         original_frame = context.scene.frame_current
         original_live_mode = servo_animation.live_mode
 
-        UART_CONTROLLER.close_serial_connection()
+        if original_live_mode is True:
+            bpy.ops.export_anim.stop_live_mode()
 
         try:
             positions = calculate_positions(context, self.precision)
@@ -42,7 +42,7 @@ class BaseExport:
             context.scene.frame_set(original_frame)
 
             if original_live_mode is True:
-                UART_CONTROLLER.open_serial_connection()
+                bpy.ops.export_anim.start_live_mode()
 
         with open(self.filepath, 'w', encoding='utf-8') as file:
             file.write(content)
@@ -54,14 +54,10 @@ class BaseExport:
 
         return {'FINISHED'}
 
-    @classmethod
-    def get_time_meta(cls, scene):
+    @staticmethod
+    def get_time_meta(scene):
         fps = scene.render.fps
         frames = scene.frame_end - scene.frame_start + 1
         seconds = round(frames / scene.render.fps)
 
         return fps, frames, seconds
-
-    @classmethod
-    def get_filename(cls):
-        return bpy.path.basename(bpy.context.blend_data.filepath)
