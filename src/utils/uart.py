@@ -31,7 +31,7 @@ class UartController:
             self.serial_connection.write(command)
             self.positions[servo_id] = position
         except serial.SerialException:
-            self.close_serial_connection()
+            bpy.ops.export_anim.stop_live_mode()
 
     def scan_serial_ports(self):
         self.serial_ports.clear()
@@ -41,9 +41,6 @@ class UartController:
 
     def get_serial_ports(self):
         return self.serial_ports
-
-    def has_serial_ports(self):
-        return len(self.get_serial_ports()) > 0
 
     def open_serial_connection(self, port, baud_rate):
         try:
@@ -69,7 +66,10 @@ class UartController:
         return (
             isinstance(self.serial_connection, serial.Serial)
             and self.serial_connection.is_open
-            and self.serial_connection.port in self.serial_ports
+            and (
+                self.serial_connection.port in self.serial_ports
+                or bpy.app.background
+            )
         )
 
 

@@ -15,26 +15,25 @@ class StartLiveMode(Operator):
 
     @classmethod
     def poll(cls, context):
+        servo_animation = context.window_manager.servo_animation
         return (
-            not context.window_manager.servo_animation.live_mode
-            and not UART_CONTROLLER.is_connected()
+            not servo_animation.live_mode
+            and (
+                servo_animation.serial_port != ""
+                or bpy.app.background
+            )
         )
 
     def execute(self, context):
         servo_animation = context.window_manager.servo_animation
-
-        if self.properties.serial_port == "":
-            self.properties.serial_port = servo_animation.serial_port
-
-        if self.properties.baud_rate == 0:
-            self.properties.baud_rate = int(servo_animation.baud_rate)
+        UART_CONTROLLER.close_serial_connection()
 
         if UART_CONTROLLER.open_serial_connection(self.serial_port, self.baud_rate):
+            servo_animation.live_mode = True
             bpy.app.handlers.frame_change_post.append(
                 UART_CONTROLLER.update_positions)
             bpy.app.handlers.depsgraph_update_post.append(
                 UART_CONTROLLER.update_positions)
-            servo_animation.live_mode = True
             UART_CONTROLLER.update_positions(context.scene, None)
             self.report(
                 {'INFO'},
@@ -50,3 +49,9 @@ class StartLiveMode(Operator):
         )
 
         return {'CANCELLED'}
+
+    def invoke(self, context, _event):
+        self.serial_port = context.window_manager.servo_animation.serial_port
+        self.baud_rate = int(context.window_manager.servo_animation.baud_rate)
+
+        return self.execute(context)

@@ -23,10 +23,6 @@ class MenuPanel(Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        if not UART_CONTROLLER.has_serial_ports():
-            box = layout.box()
-            box.label(text="No serial port available", icon="ERROR")
-
         col = layout.column()
         col.label(text="Live Mode")
 
@@ -37,15 +33,13 @@ class MenuPanel(Panel):
             col.operator(StartLiveMode.bl_idname, text="Connect")
 
         col = layout.column(align=True)
-        col.active = not servo_animation.live_mode
         col.prop(servo_animation, "serial_port")
         col.prop(servo_animation, "baud_rate")
 
         col = layout.column()
-        col.active = servo_animation.live_mode
         col.prop(servo_animation, "position_jump_handling")
         col = layout.column()
-        col.active = servo_animation.live_mode and servo_animation.position_jump_handling
+        col.active = servo_animation.position_jump_handling
         col.prop(servo_animation, "position_jump_threshold")
 
         layout.separator()

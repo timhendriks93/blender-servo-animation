@@ -12,10 +12,7 @@ class StopLiveMode(Operator):
 
     @classmethod
     def poll(cls, context):
-        return (
-            context.window_manager.servo_animation.live_mode
-            and UART_CONTROLLER.is_connected()
-        )
+        return context.window_manager.servo_animation.live_mode
 
     def execute(self, context):
         servo_animation = context.window_manager.servo_animation
