@@ -11,6 +11,8 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
-        "vendor"
-    ]
+        "addon/vendor"
+    ],
+    "blender.addon.loadDirectory": "addon",
+    "blender.addon.moduleName": "servo_animation"
 }
