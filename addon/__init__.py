@@ -1,19 +1,19 @@
 # pylint: disable=wrong-import-position,wrong-import-order
-from .src.utils.system import register_vendor_path
+from .utils.system import register_vendor_path
 
 register_vendor_path()
 
 import bpy
 
-from .src.props.bone_property_group import BonePropertyGroup
-from .src.props.wm_property_group import WindowManagerPropertyGroup
-from .src.ui.bone_panel import BonePanel
-from .src.ui.menu_panel import MenuPanel
-from .src.ops.json_export import JsonExport
-from .src.ops.arduino_export import ArduinoExport
-from .src.ops.start_live_mode import StartLiveMode
-from .src.ops.stop_live_mode import StopLiveMode
-from .src.ops.live_mode import LiveMode
+from .props.bone_property_group import BonePropertyGroup
+from .props.wm_property_group import WindowManagerPropertyGroup
+from .ui.bone_panel import BonePanel
+from .ui.menu_panel import MenuPanel
+from .ops.json_export import JsonExport
+from .ops.arduino_export import ArduinoExport
+from .ops.start_live_mode import StartLiveMode
+from .ops.stop_live_mode import StopLiveMode
+from .ops.live_mode import LiveMode
 
 bl_info = {
     "name": "Export Animation as Servo Position Values",
