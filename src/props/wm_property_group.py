@@ -13,39 +13,23 @@ def get_serial_port_items(_self, _context):
     return items
 
 
-def close_serial_connection(_self, _context):
-    UART_CONTROLLER.close_serial_connection()
-
-
-def toggle_serial_connection(self, context):
-    close_serial_connection(self, context)
-
-    if bpy.app.timers.is_registered(UART_CONTROLLER.timer):
-        bpy.app.timers.unregister(UART_CONTROLLER.timer)
-
-    if not self.live_mode or self.serial_port == '':
-        return
-
-    if UART_CONTROLLER.open_serial_connection():
-        bpy.app.timers.register(UART_CONTROLLER.timer)
-    else:
-        self.live_mode = False
+def stop_live_mode(self, _context):
+    if self.live_mode:
+        bpy.ops.export_anim.stop_live_mode()
 
 
 class WindowManagerPropertyGroup(PropertyGroup):
     live_mode: bpy.props.BoolProperty(
-        name="Live Mode",
-        update=toggle_serial_connection,
-        description="Start / stop sending live position values via the given serial connection"
+        name="Live Mode"
     )
     serial_port: bpy.props.EnumProperty(
         name="Serial Port",
-        update=close_serial_connection,
+        update=stop_live_mode,
         items=get_serial_port_items
     )
     baud_rate: bpy.props.EnumProperty(
         name="Baud Rate",
-        update=close_serial_connection,
+        update=stop_live_mode,
         default="115200",
         items=[
             ("19200", "19200", ""),

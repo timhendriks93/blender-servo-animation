@@ -1,10 +1,6 @@
-import time
 import bpy
 import serial
 import serial.tools.list_ports
-
-from ..utils.converter import calculate_position
-from ..utils.servo_settings import get_active_pose_bones
 
 COMMAND_START = 0x3C
 COMMAND_END = 0x3E
@@ -12,73 +8,16 @@ COMMAND_END = 0x3E
 
 class UartController:
     positions = {}
-    serial_ports = {}
+    serial_ports = []
     serial_connection = None
+    handling = False
 
-    @classmethod
-    def timer(cls):
-        if not bpy.context.screen.is_animation_playing:
-            UART_CONTROLLER.update_positions(bpy.context.scene)
-        return .03
-
-    def update_positions(self, scene):
-        if not self.is_connected():
+    def update_positions(self, _scene, _depsgraph):
+        if self.handling:
             return
-
-        diffs = []
-        target_positions = {}
-        servo_animation = bpy.context.window_manager.servo_animation
-
-        for pose_bone in get_active_pose_bones(scene):
-            target_position, in_range = calculate_position(pose_bone, None)
-
-            if not in_range:
-                continue
-
-            servo_id = pose_bone.bone.servo_settings.servo_id
-            target_positions[servo_id] = target_position
-
-            if servo_id in self.positions:
-                diffs.append(abs(target_position - self.positions[servo_id]))
-
-        if len(diffs) > 0:
-            steps = max(diffs)
-        else:
-            steps = 0
-
-        if (
-            servo_animation.position_jump_handling
-            and steps > servo_animation.position_jump_threshold
-        ):
-            self.handle_position_jump(target_positions, steps)
-        else:
-            self.handle_default(target_positions)
-
-    def handle_default(self, target_positions):
-        for servo_id, target_position in target_positions.items():
-            self.send_position(servo_id, target_position)
-
-    def handle_position_jump(self, target_positions, steps):
-        if bpy.context.screen.is_animation_playing:
-            bpy.ops.screen.animation_cancel(restore_frame=False)
-
-        window_manager = bpy.context.window_manager
-        window_manager.progress_begin(0, steps)
-
-        for step in range(steps):
-            window_manager.progress_update(step)
-            for servo_id, target_position in target_positions.items():
-                previous_position = self.positions[servo_id]
-                if target_position == previous_position:
-                    continue
-                if target_position > previous_position:
-                    new_position = previous_position + 1
-                else:
-                    new_position = previous_position - 1
-                self.send_position(servo_id, new_position)
-            time.sleep(.01)
-
-        window_manager.progress_end()
+        self.handling = True
+        bpy.ops.export_anim.live_mode()
+        self.handling = False
 
     def send_position(self, servo_id, position):
         if position == self.positions.get(servo_id):
@@ -98,7 +37,7 @@ class UartController:
         self.serial_ports.clear()
 
         for port in serial.tools.list_ports.comports():
-            self.serial_ports[port.device] = port
+            self.serial_ports.append(port.device)
 
     def get_serial_ports(self):
         return self.serial_ports
@@ -106,12 +45,7 @@ class UartController:
     def has_serial_ports(self):
         return len(self.get_serial_ports()) > 0
 
-    def open_serial_connection(self):
-        servo_animation = bpy.context.window_manager.servo_animation
-        port = servo_animation.serial_port
-        baud_rate = servo_animation.baud_rate
-        print(
-            f"Opening serial connection for port {port} with baud rate {baud_rate}")
+    def open_serial_connection(self, port, baud_rate):
         try:
             self.serial_connection = serial.Serial(
                 port=port, baudrate=baud_rate)
@@ -120,11 +54,16 @@ class UartController:
             return False
 
     def close_serial_connection(self):
+        was_connected = False
+
         if self.is_connected():
-            print("Closing serial connection")
             self.serial_connection.close()
+            was_connected = True
+
         self.serial_connection = None
         self.positions = {}
+
+        return was_connected
 
     def is_connected(self):
         return (
