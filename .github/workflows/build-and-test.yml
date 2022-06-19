@@ -19,10 +19,10 @@ jobs:
       run: |
         pylint ./addon
     - name: Build add-on
-        run: |
-          cp -R addon servo_animation
-          cp README.md LICENSE servo_animation
-          zip -r servo_animation servo_animation
+      run: |
+        cp -R addon servo_animation
+        cp README.md LICENSE servo_animation
+        zip -r servo_animation servo_animation
     - name: Install Blender
       run: |
         sudo apt-get update
@@ -36,8 +36,8 @@ jobs:
       run: |
         pytest ./tests
     - name: Archive add-on ZIP
-        uses: actions/upload-artifact@v3
-        with:
-          name: servo_animation.zip
-          path: |
-            servo_animation.zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: servo_animation.zip
+        path: |
+          servo_animation.zip
