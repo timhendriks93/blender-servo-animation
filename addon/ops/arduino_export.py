@@ -42,7 +42,7 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
         )
 
         for bone_name in positions:
-            bone_positions = positions[bone_name]
+            bone_positions = list(map(str, positions[bone_name]))
             variable_name = re.sub('[^a-zA-Z0-9_]', '', bone_name)
             content += f"const {variable_type} {variable_name}[{frames}] "
 
