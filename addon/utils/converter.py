@@ -91,7 +91,7 @@ def calculate_positions(context, precision):
                     + f"is out of range at frame {frame}."
                 )
 
-            positions[bone.name].append(str(position))
+            positions[bone.name].append(position)
 
         window_manager.progress_update(frame)
 

@@ -27,10 +27,10 @@ def test_json_export(blender):
     assert parsed["file"] == "example.blend"
     assert parsed["frames"] == 100
     assert len(parsed["positions"]["Bone"]) == 100
-    assert parsed["positions"]["Bone"][0] == "90"
-    assert parsed["positions"]["Bone"][32] == "45"
-    assert parsed["positions"]["Bone"][65] == "135"
-    assert parsed["positions"]["Bone"][99] == "90"
+    assert parsed["positions"]["Bone"][0] == 90
+    assert parsed["positions"]["Bone"][32] == 45
+    assert parsed["positions"]["Bone"][65] == 135
+    assert parsed["positions"]["Bone"][99] == 90
 
     os.remove(export_file)
 
