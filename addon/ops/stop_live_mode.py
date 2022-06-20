@@ -15,16 +15,21 @@ class StopLiveMode(Operator):
         return context.window_manager.servo_animation.live_mode
 
     def execute(self, context):
-        servo_animation = context.window_manager.servo_animation
-        was_connected = UART_CONTROLLER.close_serial_connection()
+        message = "Closed serial connection"
+
+        if UART_CONTROLLER.is_connected():
+            serial_port = UART_CONTROLLER.serial_connection.port
+            message += f" on port {serial_port}"
+
+        UART_CONTROLLER.close_serial_connection()
+
         bpy.app.handlers.frame_change_post.remove(
             UART_CONTROLLER.update_positions)
         bpy.app.handlers.depsgraph_update_post.remove(
             UART_CONTROLLER.update_positions)
-        servo_animation.live_mode = False
 
-        if was_connected:
-            self.report(
-                {'INFO'}, f"Closed serial connection on port {servo_animation.serial_port}")
+        context.window_manager.servo_animation.live_mode = False
+
+        self.report({'INFO'}, message)
 
         return {'FINISHED'}

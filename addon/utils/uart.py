@@ -51,16 +51,11 @@ class UartController:
             return False
 
     def close_serial_connection(self):
-        was_connected = False
-
         if self.is_connected():
             self.serial_connection.close()
-            was_connected = True
 
         self.serial_connection = None
         self.positions = {}
-
-        return was_connected
 
     def is_connected(self):
         return (
