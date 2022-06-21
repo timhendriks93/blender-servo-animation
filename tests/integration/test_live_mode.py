@@ -1,5 +1,3 @@
-import os
-import pty
 import time
 import pytest
 
@@ -16,9 +14,8 @@ COMMAND_END = b">"
     ],
     ids=['115200 baud rate', '19200 baud rate', '192500 baud rate']
 )
-def test_start_stop(blender, baud_rate, frame, position, servo_id):
-    sender, receiver = pty.openpty()
-    ttyname = os.ttyname(receiver)
+def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
+    ttyname = serial_stub.open()
 
     blender.set_file("examples/Simple/example.blend")
     blender.start()
@@ -35,17 +32,7 @@ def test_start_stop(blender, baud_rate, frame, position, servo_id):
     time.sleep(1)
     blender.close()
 
-    read_bytes = []
-
-    os.close(receiver)
-
-    try:
-        with os.fdopen(sender, "rb") as reader:
-            while len(reader.peek()) > 0:
-                byte = reader.read(1)
-                read_bytes.append(byte)
-    except OSError:
-        pass
+    read_bytes = serial_stub.read_bytes()
 
     assert len(read_bytes) == COMMAND_LENGTH
     assert read_bytes[0] == COMMAND_START
@@ -60,12 +47,17 @@ def test_start_stop(blender, baud_rate, frame, position, servo_id):
         (False, 20, 33, [90, 45]),
         (True, 20, 33, range(90, 44, -1)),
         (True, 20, 10, [90, 81]),
+        (True, 50, 33, [90, 45]),
     ],
-    ids=['Without handling', 'Threshold reached', 'Threshold not reached']
+    ids=[
+        'Without handling',
+        'Threshold reached',
+        'Threshold not reached - small frame jump',
+        'Threshold not reached - increased threshold'
+    ]
 )
-def test_position_jump_handling(blender, handling, threshold, frame, positions):
-    sender, receiver = pty.openpty()
-    ttyname = os.ttyname(receiver)
+def test_position_jump_handling(blender, serial_stub, handling, threshold, frame, positions):
+    ttyname = serial_stub.open()
     baud_rate = 115200
 
     blender.set_file("examples/Simple/example.blend")
@@ -83,17 +75,7 @@ def test_position_jump_handling(blender, handling, threshold, frame, positions):
     time.sleep(1)
     blender.close()
 
-    read_bytes = []
-
-    os.close(receiver)
-
-    try:
-        with os.fdopen(sender, "rb") as reader:
-            while len(reader.peek()) > 0:
-                byte = reader.read(1)
-                read_bytes.append(byte)
-    except OSError:
-        pass
+    read_bytes = serial_stub.read_bytes()
 
     assert len(read_bytes) == len(positions) * COMMAND_LENGTH
 
@@ -106,3 +88,29 @@ def test_position_jump_handling(blender, handling, threshold, frame, positions):
         assert int.from_bytes(read_bytes[offset + 1], 'big') == 0
         assert int.from_bytes(position_byte_a+position_byte_b, 'big') == position
         assert read_bytes[offset + 4] == COMMAND_END
+
+
+@pytest.mark.parametrize(
+    "serial_port, baud_rate",
+    [
+        ("/dev/ttyInvalid", 115200),
+        (None, -1),
+    ],
+    ids=['Invalid serial port', 'Invalid baud rate']
+)
+def test_invalid_serial_port(blender, serial_stub, serial_port, baud_rate):
+    ttyname = serial_stub.open()
+
+    if serial_port is None:
+        serial_port = ttyname
+
+    blender.set_file("examples/Simple/example.blend")
+    blender.start()
+    blender.send_lines([
+        "import bpy",
+        f"bpy.ops.export_anim.start_live_mode('EXEC_DEFAULT', serial_port='{serial_port}', baud_rate={baud_rate})"
+    ])
+    blender.expect(f"Failed to open serial connection for port {serial_port} with baud rate {baud_rate}")
+    blender.close()
+
+    assert len(serial_stub.read_bytes()) == 0

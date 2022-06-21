@@ -120,3 +120,27 @@ def test_json_arduino(blender, filename, precision, results):
         assert json_positions[frame] == position
 
     os.remove(export_file)
+
+
+@pytest.mark.parametrize(
+    "operator, filename",
+    [
+        ('export_anim.servo_positions_arduino', 'test.h'),
+        ('export_anim.servo_positions_json', 'test.json'),
+    ],
+    ids=['Arduino', 'JSON']
+)
+def test_no_servo_settings(blender, operator, filename):
+    export_file = blender.tmp(f"tests/tmp/{filename}")
+
+    blender.set_file("examples/Simple/example.blend")
+    blender.start()
+    blender.send_lines([
+        "import bpy",
+        "bpy.data.armatures['Armature'].bones['Bone'].servo_settings.active = False",
+        f"bpy.ops.{operator}(filepath='{export_file}')"
+    ])
+    blender.expect("RuntimeError")
+    blender.close()
+
+    assert not os.path.exists(export_file), "did not expect export file to be present"
