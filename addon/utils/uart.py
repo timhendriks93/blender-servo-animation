@@ -47,7 +47,7 @@ class UartController:
             self.serial_connection = serial.Serial(
                 port=port, baudrate=baud_rate)
             return True
-        except serial.SerialException:
+        except (serial.SerialException, ValueError):
             return False
 
     def close_serial_connection(self):

@@ -22,7 +22,7 @@ jobs:
       run: |
         cp -R addon servo_animation
         cp README.md LICENSE servo_animation
-        zip -r servo_animation servo_animation
+        zip -r blender_servo_animation_addon servo_animation
     - name: Install Blender
       run: |
         sudo apt-get update
@@ -38,6 +38,6 @@ jobs:
     - name: Archive add-on ZIP
       uses: actions/upload-artifact@v3
       with:
-        name: servo_animation.zip
+        name: blender_servo_animation_addon.zip
         path: |
-          servo_animation.zip
+          blender_servo_animation_addon.zip
