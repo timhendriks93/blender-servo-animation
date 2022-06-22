@@ -41,7 +41,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        blender_version: [Blender2.90/blender-2.90.0-linux64, Blender3.1/blender-3.1.0-linux-x64, Blender3.2/blender-3.2.0-linux-x64]
+        blender_version: 
+        - {dir: 2.90, file: blender-2.90.0-linux64, ext: tar.xz}
+        - {dir: 3.1, file: blender-3.1.0-linux-x64, ext: tar.xz}
+        - {dir: 3.2, file: blender-3.2.0-linux-x64, ext: tar.xz}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.10
@@ -56,10 +59,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install --no-install-recommends -y unzip wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
-        wget -O blender.tar.xz https://download.blender.org/release/${{ matrix.blender_version }}.tar.xz
-        mkdir blender
-        tar xf blender.tar.xz -C blender --strip-components 1
-        sudo mv blender /usr/local
+        wget https://download.blender.org/release/Blender${{ matrix.blender_version.dir }}/${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
+        tar xf ${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
+        sudo mv ${{ matrix.blender_version.file }} /usr/local/blender
         sudo ln -s /usr/local/blender/blender /usr/bin/blender
     - uses: actions/download-artifact@v3
       with:
@@ -67,7 +69,7 @@ jobs:
     - name: Install add-on
       run: |
         unzip blender_servo_animation_addon.zip
-        sudo ln -s "$(pwd)/servo_animation" /usr/local/blender/3.2/scripts/addons/servo_animation
+        sudo ln -s "$(pwd)/servo_animation" /usr/local/blender/${{ matrix.blender_version.dir }}/scripts/addons/servo_animation
     - name: Run tests with pytest
       run: |
         pytest ./tests
