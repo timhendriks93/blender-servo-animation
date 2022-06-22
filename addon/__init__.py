@@ -18,8 +18,8 @@ from .ops.live_mode import LiveMode
 bl_info = {
     "name": "Export Animation as Servo Position Values",
     "author": "Tim Hendriks",
-    "version": (1, 2, 0),
-    "blender": (2, 80, 0),
+    "version": (1, 3, 0),
+    "blender": (2, 90, 0),
     "location": "Bone Properties > Servo Settings | File > Import-Export",
     "description": "Exports armature animations as servo position values.",
     "warning": "",
