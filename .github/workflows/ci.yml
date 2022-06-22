@@ -42,9 +42,9 @@ jobs:
     strategy:
       matrix:
         blender_version: 
-        - {dir: 2.90, file: blender-2.90.0-linux64, ext: tar.xz}
-        - {dir: 3.1, file: blender-3.1.0-linux-x64, ext: tar.xz}
-        - {dir: 3.2, file: blender-3.2.0-linux-x64, ext: tar.xz}
+        - {dir: "2.90", file: blender-2.90.0-linux64, ext: tar.xz}
+        - {dir: "3.1", file: blender-3.1.0-linux-x64, ext: tar.xz}
+        - {dir: "3.2", file: blender-3.2.0-linux-x64, ext: tar.xz}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.10
