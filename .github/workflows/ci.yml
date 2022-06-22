@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        blender_version: [Blender2.90/blender-2.90.0-linux-x64, Blender3.1/blender-3.1.0-linux-x64, Blender3.2/blender-3.2.0-linux-x64]
+        blender_version: [Blender2.90/blender-2.90.0-linuxx64, Blender3.1/blender-3.1.0-linux-x64, Blender3.2/blender-3.2.0-linux-x64]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.10
