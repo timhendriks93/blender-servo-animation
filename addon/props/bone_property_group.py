@@ -38,7 +38,7 @@ class BonePropertyGroup(PropertyGroup):
         name="Servo ID",
         default=0,
         min=0,
-        max=256,
+        max=255,
         description="The unique servo ID used to send live data via UART"
     )
     position_min: bpy.props.IntProperty(
