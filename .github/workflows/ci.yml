@@ -63,8 +63,9 @@ jobs:
         sudo apt-get install --no-install-recommends -y unzip wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
-    - if: ${{ steps.cache-blender.outputs.cache-hit == 'false' }}
-      name: Download Blender
+    - name: Download Blender
+      if: ${{ steps.cache-blender.outputs.cache-hit == 'false' }}
+      continue-on-error: true
       run: |
         wget https://download.blender.org/release/Blender${{ matrix.blender_version.dir }}/${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
         tar xf ${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
