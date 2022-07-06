@@ -51,8 +51,8 @@ jobs:
       id: cache-blender
       uses: actions/cache@v3
       with:
-        path: /usr/local/blender
-        key: blender-${{ matrix.blender_version.dir }}
+        path: ${{ matrix.blender_version.file }}
+        key: blender-${{ matrix.blender_version.file }}
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
@@ -68,9 +68,9 @@ jobs:
       run: |
         wget https://download.blender.org/release/Blender${{ matrix.blender_version.dir }}/${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
         tar xf ${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
-        sudo mv ${{ matrix.blender_version.file }} /usr/local/blender
-    - name: Create Blender symlink
+    - name: Install Blender
       run: |
+        sudo mv ${{ matrix.blender_version.file }} /usr/local/blender
         sudo ln -s /usr/local/blender/blender /usr/bin/blender
     - uses: actions/download-artifact@v3
       with:
