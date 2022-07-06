@@ -47,21 +47,30 @@ jobs:
         - {dir: "3.2", file: blender-3.2.0-linux-x64, ext: tar.xz}
     steps:
     - uses: actions/checkout@v3
+    - name: Cache Blender
+      id: cache-blender
+      uses: actions/cache@v3
+      with:
+        path: /usr/local/blender
+        key: blender-${{ matrix.blender_version.dir }}
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install pytest pexpect
-    - name: Install Blender
-      run: |
         sudo apt-get update
         sudo apt-get install --no-install-recommends -y unzip wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+    - if: ${{ steps.cache-blender.outputs.cache-hit == 'false' }}
+      name: Download Blender
+      run: |
         wget https://download.blender.org/release/Blender${{ matrix.blender_version.dir }}/${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
         tar xf ${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
         sudo mv ${{ matrix.blender_version.file }} /usr/local/blender
+    - name: Create Blender symlink
+      run: |
         sudo ln -s /usr/local/blender/blender /usr/bin/blender
     - uses: actions/download-artifact@v3
       with:
