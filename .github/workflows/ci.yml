@@ -73,14 +73,14 @@ jobs:
         mv ${{ matrix.blender_version.file }} blender
     - name: Create Blender symlink
       run: |
-        sudo ln -s ./blender/blender /usr/bin/blender
+        sudo ln -s "$(pwd)/blender/blender" /usr/bin/blender
     - uses: actions/download-artifact@v3
       with:
         name: blender_servo_animation_addon.zip
     - name: Install add-on
       run: |
         unzip blender_servo_animation_addon.zip
-        sudo ln -s ./servo_animation ./blender/${{ matrix.blender_version.dir }}/scripts/addons/servo_animation
+        sudo ln -s "$(pwd)/servo_animation" "$(pwd)/blender/${{ matrix.blender_version.dir }}/scripts/addons/servo_animation"
     - name: Run tests with pytest
       run: |
         pytest ./tests
