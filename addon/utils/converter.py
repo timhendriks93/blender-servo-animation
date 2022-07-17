@@ -69,9 +69,10 @@ def calculate_positions(context, precision):
     positions = {}
 
     for pose_bone in context.object.pose.bones:
-        if pose_bone.bone.servo_settings.active:
+        servo_settings = pose_bone.bone.servo_settings
+        if servo_settings.active:
             pose_bones.append(pose_bone)
-            positions[pose_bone.bone.name] = []
+            positions[servo_settings.servo_id] = []
 
     if precision == 0:
         precision = None
@@ -91,7 +92,7 @@ def calculate_positions(context, precision):
                     + f"is out of range at frame {frame}."
                 )
 
-            positions[bone.name].append(position)
+            positions[bone.servo_settings.servo_id].append(position)
 
         window_manager.progress_update(frame)
 

@@ -5,6 +5,7 @@ from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
 from ..utils.system import get_blend_filename
+from ..utils.servo_settings import get_pose_bone_by_servo_id
 
 
 class ArduinoExport(Operator, BaseExport, ExportHelper):
@@ -35,16 +36,23 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
         filename = get_blend_filename()
 
         content = (
-            "/*\n  Blender Animation Servo Positions\n\n  "
+            "/*\n  Blender Servo Animation Positions\n\n  "
             f"FPS: {fps}\n  Frames: {frames}\n  Seconds: {seconds}\n  "
             f"Bones: {len(positions)}\n  Armature: {context.object.name}\n  "
-            f"File: {filename}\n*/\n\n"
+            f"File: {filename}\n*/\n"
         )
 
-        for bone_name in positions:
-            bone_positions = list(map(str, positions[bone_name]))
-            variable_name = re.sub('[^a-zA-Z0-9_]', '', bone_name)
-            content += f"const {variable_type} {variable_name}[{frames}] "
+        if self.use_progmem:
+            content += "\n#include <Arduino.h>\n"
+
+        for servo_id in positions:
+            pose_bone = get_pose_bone_by_servo_id(servo_id, context.scene)
+            bone_positions = list(map(str, positions[servo_id]))
+            variable_name = re.sub('[^a-zA-Z0-9_]', '', pose_bone.bone.name)
+            content += (
+                f"\n// Servo ID: {servo_id}\n"
+                f"const {variable_type} {variable_name}[{frames}] "
+            )
 
             if self.use_progmem:
                 content += 'PROGMEM '
