@@ -17,7 +17,7 @@ COMMAND_END = b">"
 def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
     ttyname = serial_stub.open()
 
-    blender.set_file("examples/Simple/example.blend")
+    blender.set_file("examples/Simple/simple.blend")
     blender.start()
     blender.send_lines([
         "import bpy",
@@ -60,7 +60,7 @@ def test_position_jump_handling(blender, serial_stub, handling, threshold, frame
     ttyname = serial_stub.open()
     baud_rate = 115200
 
-    blender.set_file("examples/Simple/example.blend")
+    blender.set_file("examples/Simple/simple.blend")
     blender.start()
     blender.send_lines([
         "import bpy",
@@ -104,7 +104,7 @@ def test_invalid_serial_port(blender, serial_stub, serial_port, baud_rate):
     if serial_port is None:
         serial_port = ttyname
 
-    blender.set_file("examples/Simple/example.blend")
+    blender.set_file("examples/Simple/simple.blend")
     blender.start()
     blender.send_lines([
         "import bpy",
