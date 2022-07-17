@@ -51,10 +51,10 @@ def test_json_export(blender, filename, precision, results):
 
     assert parsed["file"] == "simple.blend"
     assert parsed["frames"] == 100
-    assert len(parsed["positions"]["Bone"]) == 100
+    assert len(parsed["servos"]["0"]["positions"]) == 100
 
     for frame, position in results.items():
-        assert parsed["positions"]["Bone"][frame] == position
+        assert parsed["servos"]["0"]["positions"][frame] == position
 
     os.remove(export_file)
 
@@ -83,7 +83,7 @@ def test_json_export(blender, filename, precision, results):
     ],
     ids=['Without precision', 'With precision']
 )
-def test_json_arduino(blender, filename, precision, results):
+def test_arduino_export(blender, filename, precision, results):
     export_file = blender.tmp(f"tests/tmp/{filename}")
 
     if os.path.exists(export_file):

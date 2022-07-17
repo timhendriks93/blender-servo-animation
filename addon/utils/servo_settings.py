@@ -12,6 +12,14 @@ def get_active_pose_bones(scene):
     return pose_bones
 
 
+def get_pose_bone_by_servo_id(servo_id, scene):
+    for pose_bone in get_active_pose_bones(scene):
+        if pose_bone.bone.servo_settings.servo_id == servo_id:
+            return pose_bone
+
+    return None
+
+
 def range_limit_value(value, min_value, max_value):
     if min_value is not None and value < min_value:
         return min_value
