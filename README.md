@@ -4,6 +4,8 @@ Export your Blender animation to servo position values. They can be used with an
 
 Animate your robot or animatronic project and take advantage of Blender's animation tools!
 
+Also check out the [Blender Servo Animation Arduino Library](https://github.com/timhendriks93/blender-servo-animation-arduino) which is specifically designed to work with this add-on.
+
 ## Features
 
 - Represent servos through armature bones
@@ -36,7 +38,7 @@ The underlying principle is that each bone represents a servo motor in the real 
 | Property | Description |
 | -------- | ----------- |
 | Servo ID | Unique number between `0` and `255` to identify this servo (used to send serial commands) |
-| Position Min | The minimum position value to identify this servorvo physically stops moving |
+| Position Min | The minimum position value to identify this servo physically stops moving |
 | Position Max | Same as `Position Min`, but for the maximum value |
 | Set Position Limits | Define a position range to limit the calculated position values according to a specific build |
 | Position Limit Start | The minimum position value before the servo is supposed to stop moving within a specific build |
@@ -44,7 +46,7 @@ The underlying principle is that each bone represents a servo motor in the real 
 | Neutral Angle | The assumed neutral angle of the servo in degrees (typically half the rotation range) which should be adjusted carefully, since the servo will first move to its 'natural' neutral angle when powered |
 | Rotation Range | The manufactured rotation range of the servo in degrees (typically `180`) |
 | Euler Rotation Axis | The Euler rotation axis (`X`, `Y` or `Z`) of the bone rotation representing the servo movement |
-| Multiplier | Multilplier to increase or decrease the rotation to adjust the intensity within a specific build |
+| Multiplier | Multiplier to increase or decrease the rotation to adjust the intensity within a specific build |
 | Reverse Direction | Whether the applied rotation should be reversed when converting to position value which might be necessary to reflect the servo's positioning within a specific build |
 
 ### Choosing a Position Value Range
@@ -75,6 +77,8 @@ Make sure to select the armature containing the bones/servos you want to export 
 
 ![Servo Settings panel](screenshots/export_menu.png)
 
+Alternatively, you can also trigger the export via the timeline menu which is shown in the live mode section below.
+
 ### Export Formats
 
 There are two different formats to choose from:
@@ -84,9 +88,9 @@ There are two different formats to choose from:
 
 ### Using the Exported Data
 
-This repository contains some [examples](examples) about how to use the exported data with micro controllers. You'll find some Arduino project examples with a very basic program to play back the exported animation.
+For projects which involve an Arduino compatible microcontroller, the easiest way to work with the exported data is by using the dedicated [Blender Servo Animation Arduino Library](https://github.com/timhendriks93/blender-servo-animation-arduino). This library allows you to map the exported positions to a servo representation and add custom logic to actually send servo control signals. Check out the library's repository for more details and some read-to-use examples.
 
-Of course you can also implement a more sophisticated solution, e.g. by adding a start and stop logic, choosing from multiple animations or handling multiple servos in a more efficient way. Since you'll most likely want to animate more than one servo, you can also find a basic example on how to [control multiple servos using a PCA9685 PWM module](examples/ArduinoPCA9685/ArduinoPCA9685.ino).
+Apart from using the library, it is also possible to write use the exported data in any other kind of program. Especially the JSON format simply represents a list of position values which can be easily parsed via code.
 
 ## Live Mode via Serial Connection
 
@@ -127,3 +131,7 @@ The protocol defines in which order and pattern individual bytes are transferred
 | Hexadecimal | 0x3C | 0x00 | 0x01 | 0x77 | 0x3E |
 
 The position value is split into 2 bytes (high and low), while the first byte is the most significant one.
+
+### Reading Serial Commands on an Arduino
+
+Instead of writing your own logic to read and interpret the serial commands, you can also use the [Blender Servo Animation Arduino Library](https://github.com/timhendriks93/blender-servo-animation-arduino) which has a built-in support for the live mode. Check out the library's repository for more details and some read-to-use examples.
