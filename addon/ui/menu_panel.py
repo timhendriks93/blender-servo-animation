@@ -13,11 +13,13 @@ class MenuPanel(Panel):
     bl_region_type = 'HEADER'
 
     def draw(self, context):
-        UART_CONTROLLER.scan_serial_ports()
         servo_animation = context.window_manager.servo_animation
 
-        if not UART_CONTROLLER.is_connected():
-            servo_animation.live_mode = False
+        if servo_animation.live_mode_method == "SERIAL":
+            UART_CONTROLLER.scan_serial_ports()
+
+            if not UART_CONTROLLER.is_connected():
+                servo_animation.live_mode = False
 
         layout = self.layout
         layout.use_property_split = True
@@ -33,8 +35,14 @@ class MenuPanel(Panel):
             col.operator(StartLiveMode.bl_idname, text="Connect")
 
         col = layout.column(align=True)
-        col.prop(servo_animation, "serial_port")
-        col.prop(servo_animation, "baud_rate")
+        col.prop(servo_animation, "live_mode_method")
+
+        if servo_animation.live_mode_method == "SERIAL":
+            col.prop(servo_animation, "serial_port")
+            col.prop(servo_animation, "baud_rate")
+        elif servo_animation.live_mode_method == "WEB_SOCKET":
+            col.prop(servo_animation, "socket_ip")
+            col.prop(servo_animation, "socket_port")
 
         col = layout.column()
         col.prop(servo_animation, "position_jump_handling")
