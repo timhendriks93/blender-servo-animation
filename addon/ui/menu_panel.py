@@ -3,7 +3,6 @@ from ..ops.json_export import JsonExport
 from ..ops.arduino_export import ArduinoExport
 from ..ops.start_live_mode import StartLiveMode
 from ..ops.stop_live_mode import StopLiveMode
-from ..utils.uart import get_serial_ports
 from ..utils.live import LIVE_MODE_CONTROLLER, METHOD_SERIAL, METHOD_WEB_SOCKET
 
 
