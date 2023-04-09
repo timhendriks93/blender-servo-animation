@@ -3,7 +3,7 @@ import bpy
 
 from bpy.types import Operator
 
-from ..utils.uart import UART_CONTROLLER
+from ..utils.live import LIVE_MODE_CONTROLLER
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
 
@@ -15,10 +15,7 @@ class LiveMode(Operator):
 
     @classmethod
     def poll(cls, context):
-        return (
-            context.window_manager.servo_animation.live_mode
-            and UART_CONTROLLER.is_connected()
-        )
+        return context.window_manager.servo_animation.live_mode
 
     def execute(self, context):
         diffs = []
@@ -34,9 +31,9 @@ class LiveMode(Operator):
             servo_id = pose_bone.bone.servo_settings.servo_id
             target_positions[servo_id] = target_position
 
-            if servo_id in UART_CONTROLLER.positions:
+            if servo_id in LIVE_MODE_CONTROLLER.positions:
                 diffs.append(
-                    abs(target_position - UART_CONTROLLER.positions[servo_id]))
+                    abs(target_position - LIVE_MODE_CONTROLLER.positions[servo_id]))
 
         if len(diffs) > 0:
             steps = max(diffs)
@@ -56,7 +53,7 @@ class LiveMode(Operator):
     @staticmethod
     def handle_default(target_positions):
         for servo_id, target_position in target_positions.items():
-            UART_CONTROLLER.send_position(servo_id, target_position)
+            LIVE_MODE_CONTROLLER.send_position(servo_id, target_position)
 
     @staticmethod
     def handle_position_jump(target_positions, steps, context):
@@ -69,14 +66,14 @@ class LiveMode(Operator):
         for step in range(steps):
             window_manager.progress_update(step)
             for servo_id, target_position in target_positions.items():
-                previous_position = UART_CONTROLLER.positions[servo_id]
+                previous_position = LIVE_MODE_CONTROLLER.positions[servo_id]
                 if target_position == previous_position:
                     continue
                 if target_position > previous_position:
                     new_position = previous_position + 1
                 else:
                     new_position = previous_position - 1
-                UART_CONTROLLER.send_position(servo_id, new_position)
+                LIVE_MODE_CONTROLLER.send_position(servo_id, new_position)
             time.sleep(.01)
 
         window_manager.progress_end()

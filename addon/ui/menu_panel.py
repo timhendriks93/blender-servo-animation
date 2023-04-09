@@ -3,7 +3,8 @@ from ..ops.json_export import JsonExport
 from ..ops.arduino_export import ArduinoExport
 from ..ops.start_live_mode import StartLiveMode
 from ..ops.stop_live_mode import StopLiveMode
-from ..utils.uart import UART_CONTROLLER
+from ..utils.uart import get_serial_ports
+from ..utils.live import LIVE_MODE_CONTROLLER, METHOD_SERIAL, METHOD_WEB_SOCKET
 
 
 class MenuPanel(Panel):
@@ -15,11 +16,11 @@ class MenuPanel(Panel):
     def draw(self, context):
         servo_animation = context.window_manager.servo_animation
 
-        if servo_animation.live_mode_method == "SERIAL":
-            UART_CONTROLLER.scan_serial_ports()
-
-            if not UART_CONTROLLER.is_connected():
-                servo_animation.live_mode = False
+        if (
+            not LIVE_MODE_CONTROLLER.has_open_serial_connection()
+            and not LIVE_MODE_CONTROLLER.has_open_web_socket_connection()
+        ):
+            servo_animation.live_mode = False
 
         layout = self.layout
         layout.use_property_split = True
@@ -35,12 +36,13 @@ class MenuPanel(Panel):
             col.operator(StartLiveMode.bl_idname, text="Connect")
 
         col = layout.column(align=True)
+        col.enabled = not servo_animation.live_mode
         col.prop(servo_animation, "live_mode_method")
 
-        if servo_animation.live_mode_method == "SERIAL":
+        if servo_animation.live_mode_method == METHOD_SERIAL:
             col.prop(servo_animation, "serial_port")
             col.prop(servo_animation, "baud_rate")
-        elif servo_animation.live_mode_method == "WEB_SOCKET":
+        elif servo_animation.live_mode_method == METHOD_WEB_SOCKET:
             col.prop(servo_animation, "socket_ip")
             col.prop(servo_animation, "socket_port")
 

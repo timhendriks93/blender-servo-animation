@@ -1,28 +1,22 @@
-import re
 import bpy
 
 from bpy.types import PropertyGroup
-from ..utils.uart import UART_CONTROLLER
-
-IP_ADDRESS_REGEX = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
+from ..utils.web import is_ip
+from ..utils.uart import get_serial_ports
+from ..utils.live import METHOD_SERIAL, METHOD_WEB_SOCKET
 
 
 def get_serial_port_items(_self, _context):
     items = []
 
-    for port in UART_CONTROLLER.get_serial_ports():
+    for port in get_serial_ports():
         items.append((port, port, ""))
 
     return items
 
 
-def stop_live_mode(self, _context):
-    if self.live_mode:
-        bpy.ops.export_anim.stop_live_mode()
-
-
 def set_ip_address(self, value):
-    if not re.match(IP_ADDRESS_REGEX, value):
+    if not is_ip(value):
         raise ValueError("Invalid IP address")
     self.ip_address = value
 
@@ -37,21 +31,18 @@ class WindowManagerPropertyGroup(PropertyGroup):
     )
     live_mode_method: bpy.props.EnumProperty(
         name="Method",
-        update=stop_live_mode,
         items=[
-            ("SERIAL", "Serial", "Connect via USB"),
-            ("WEB_SOCKET", "Web Socket", "Connect via a web socket"),
+            (METHOD_SERIAL, "Serial", "Connect via USB"),
+            (METHOD_WEB_SOCKET, "Web Socket", "Connect via a web socket"),
         ],
         default=0
     )
     serial_port: bpy.props.EnumProperty(
         name="Serial Port",
-        update=stop_live_mode,
         items=get_serial_port_items
     )
     baud_rate: bpy.props.EnumProperty(
         name="Baud Rate",
-        update=stop_live_mode,
         default="115200",
         items=[
             ("19200", "19200", ""),
