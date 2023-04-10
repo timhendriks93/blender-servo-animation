@@ -16,14 +16,9 @@ class StartSerialLiveMode(Operator, BaseLiveMode):
 
     @classmethod
     def poll(cls, context):
-        servo_animation = context.window_manager.servo_animation
-
         return (
-            not servo_animation.live_mode
-            and (
-                servo_animation.serial_port != ""
-                or bpy.app.background
-            )
+            super().poll(context)
+            and context.window_manager.servo_animation.serial_port != ""
         )
 
     def execute(self, context):
@@ -41,12 +36,7 @@ class StartSerialLiveMode(Operator, BaseLiveMode):
 
             return {'CANCELLED'}
 
-        servo_animation.live_mode = True
-        bpy.app.handlers.frame_change_post.append(
-            LIVE_MODE_CONTROLLER.update_positions)
-        bpy.app.handlers.depsgraph_update_post.append(
-            LIVE_MODE_CONTROLLER.update_positions)
-        LIVE_MODE_CONTROLLER.update_positions(context.scene, None)
+        self.register_handlers(context)
 
         self.report(
             {'INFO'},
