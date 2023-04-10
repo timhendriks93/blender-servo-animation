@@ -3,7 +3,7 @@ import bpy
 from bpy.types import PropertyGroup
 from ..utils.web import is_ip
 from ..utils.uart import get_serial_ports
-from ..utils.live import METHOD_SERIAL, METHOD_WEB_SOCKET
+from ..ops.base_live_mode import BaseLiveMode
 
 
 def get_serial_port_items(_self, _context):
@@ -31,11 +31,8 @@ class WindowManagerPropertyGroup(PropertyGroup):
     )
     live_mode_method: bpy.props.EnumProperty(
         name="Method",
-        items=[
-            (METHOD_SERIAL, "Serial", "Connect via USB"),
-            (METHOD_WEB_SOCKET, "Web Socket", "Connect via a web socket"),
-        ],
-        default=0
+        items=BaseLiveMode.get_method_items(),
+        default=BaseLiveMode.METHOD_SERIAL
     )
     serial_port: bpy.props.EnumProperty(
         name="Serial Port",

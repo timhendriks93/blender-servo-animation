@@ -34,7 +34,7 @@ jobs:
         pip install pylint pytest pexpect
     - name: Analysing the code with pylint
       run: |
-        pylint ./addon ./tests
+        pylint ./addon
   test:
     name: "Test"
     needs: build

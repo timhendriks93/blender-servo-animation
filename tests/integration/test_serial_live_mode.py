@@ -5,7 +5,6 @@ COMMAND_LENGTH = 5
 COMMAND_START = b"<"
 COMMAND_END = b">"
 
-# pylint: disable=R0913
 
 @pytest.mark.parametrize(
     "baud_rate, frame, position, servo_id",
@@ -26,8 +25,8 @@ def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
         f"bpy.context.scene.frame_set({frame})",
         f"bpy.data.armatures['Armature'].bones['Bone'].servo_settings.servo_id = {servo_id}",
         "".join((
-            "bpy.ops.export_anim.start_live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', baud_rate={baud_rate}",
+            "bpy.ops.export_anim.start_serial_live_mode(",
+            f"'EXEC_DEFAULT', serial_port='{tty_name}', baud_rate={baud_rate}",
             ")"
         ))
     ])
@@ -70,8 +69,8 @@ def test_position_jump_handling(blender, serial_stub, handling, threshold, frame
     blender.send_lines([
         "import bpy",
         "".join((
-            "bpy.ops.export_anim.start_live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', baud_rate={baud_rate}",
+            "bpy.ops.export_anim.start_serial_live_mode(",
+            f"'EXEC_DEFAULT', serial_port='{tty_name}', baud_rate={baud_rate}",
             ")"
         ))
     ])
@@ -118,8 +117,8 @@ def test_invalid_serial_port(blender, serial_stub, serial_port, baud_rate):
     blender.send_lines([
         "import bpy",
         "".join((
-            "bpy.ops.export_anim.start_live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{serial_port}', baud_rate={baud_rate}",
+            "bpy.ops.export_anim.start_serial_live_mode(",
+            f"'EXEC_DEFAULT', serial_port='{serial_port}', baud_rate={baud_rate}",
             ")"
         ))
     ])
