@@ -6,6 +6,8 @@ Animate your robot or animatronic project and take advantage of Blender's animat
 
 Also check out the [Blender Servo Animation Arduino Library](https://github.com/timhendriks93/blender-servo-animation-arduino) which is specifically designed to work with this add-on.
 
+[![Continuous Integration](https://github.com/timhendriks93/blender-servo-animation/actions/workflows/ci.yml/badge.svg)](https://github.com/timhendriks93/blender-servo-animation/actions/workflows/ci.yml)
+
 ## Features
 
 - Represent servos through armature bones

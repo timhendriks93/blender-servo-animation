@@ -8,17 +8,17 @@ COMMAND_END = b">"
 # pylint: disable=R0913
 
 @pytest.mark.parametrize(
-    "baud_rate, frame, position, servo_id",
+    "frame, position, servo_id",
     [
-        (115200, 1, 90, 0),
-        (19200, 33, 45, 1),
-        (192500, 66, 135, 12),
+        (1, 90, 0),
+        (33, 45, 1),
+        (66, 135, 12),
     ],
-    ids=['115200 baud rate', '19200 baud rate', '192500 baud rate']
+    ids=['Frame 1', 'Frame 33', 'Frame 66']
 )
-def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
-    tty_name = serial_stub.open()
-
+def test_start_stop(blender, socket_stub, frame, position, servo_id):
+    host = socket_stub.host
+    port = socket_stub.port
     blender.set_file("examples/Simple/simple.blend")
     blender.start()
     blender.send_lines([
@@ -27,18 +27,17 @@ def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
         f"bpy.data.armatures['Armature'].bones['Bone'].servo_settings.servo_id = {servo_id}",
         "".join((
             "bpy.ops.export_anim.start_live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', baud_rate={baud_rate}",
+            f"'EXEC_DEFAULT', method='WEB_SOCKET', socket_host='{host}', socket_port={port}",
             ")"
         ))
     ])
-    blender.expect(f"Opened serial connection on port {tty_name} with baud rate {baud_rate}")
+    blender.expect(f"Opened web socket connection with host {host} on port {port}")
     blender.send_line("bpy.ops.export_anim.stop_live_mode()")
-    blender.expect(f"Closed serial connection on port {tty_name}")
+    blender.expect(f"Closed web socket connection with host {host} and port {port}")
     blender.send_line("bpy.context.scene.frame_set(33)")
-    time.sleep(1)
     blender.close()
 
-    read_bytes = serial_stub.read_bytes()
+    read_bytes = socket_stub.received_data
 
     assert len(read_bytes) == COMMAND_LENGTH
     assert read_bytes[0] == COMMAND_START
@@ -62,30 +61,29 @@ def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
         'Threshold not reached - increased threshold'
     ]
 )
-def test_position_jump_handling(blender, serial_stub, handling, threshold, frame, positions):
-    tty_name = serial_stub.open()
-    baud_rate = 115200
-
+def test_position_jump_handling(blender, socket_stub, handling, threshold, frame, positions):
+    host = socket_stub.host
+    port = socket_stub.port
     blender.set_file("examples/Simple/simple.blend")
     blender.start()
     blender.send_lines([
         "import bpy",
         "".join((
             "bpy.ops.export_anim.start_live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', baud_rate={baud_rate}",
+            f"'EXEC_DEFAULT', method='WEB_SOCKET', socket_host='{host}', socket_port={port}",
             ")"
         ))
     ])
-    blender.expect(f"Opened serial connection on port {tty_name} with baud rate {baud_rate}")
+    blender.expect(f"Opened web socket connection with host {host} on port {port}")
     blender.send_lines([
         f"bpy.context.window_manager.servo_animation.position_jump_handling = {handling}",
         f"bpy.context.window_manager.servo_animation.position_jump_threshold = {threshold}",
         f"bpy.context.scene.frame_set({frame})"
     ])
-    time.sleep(1)
+    time.sleep(.5)
     blender.close()
 
-    read_bytes = serial_stub.read_bytes()
+    read_bytes = socket_stub.received_data
 
     assert len(read_bytes) == len(positions) * COMMAND_LENGTH
 
@@ -101,30 +99,23 @@ def test_position_jump_handling(blender, serial_stub, handling, threshold, frame
 
 
 @pytest.mark.parametrize(
-    "serial_port, baud_rate",
+    "socket_host, socket_port",
     [
-        ("/dev/ttyInvalid", 115200),
-        (None, -1),
+        ("127.0.0.1234", 80),
+        ("127.0.0.1", 1234)
     ],
-    ids=['Invalid serial port', 'Invalid baud rate']
+    ids=['Invalid IP', 'Invalid port']
 )
-def test_invalid_serial_port(blender, serial_stub, serial_port, baud_rate):
-    tty_name = serial_stub.open()
-
-    if serial_port is None:
-        serial_port = tty_name
-
+def test_invalid_connection(blender, socket_host, socket_port):
     blender.set_file("examples/Simple/simple.blend")
     blender.start()
     blender.send_lines([
         "import bpy",
         "".join((
             "bpy.ops.export_anim.start_live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{serial_port}', baud_rate={baud_rate}",
+            f"'EXEC_DEFAULT', method='WEB_SOCKET', socket_host='{socket_host}', socket_port={socket_port}",
             ")"
         ))
     ])
-    blender.expect(f"Failed to open serial connection on port {serial_port} with baud rate {baud_rate}")
+    blender.expect(f"Failed to open web socket connection with host {socket_host} on port {socket_port}")
     blender.close()
-
-    assert len(serial_stub.read_bytes()) == 0

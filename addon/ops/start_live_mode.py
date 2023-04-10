@@ -59,10 +59,10 @@ class StartLiveMode(Operator):
             servo_animation.live_mode = False
             self.report(
                 {'ERROR'},
-                (
+                "".join((
                     f"Failed to open web socket connection with host {self.socket_host} ",
                     f"on port {self.socket_port}"
-                )
+                ))
             )
 
             return {'CANCELLED'}
