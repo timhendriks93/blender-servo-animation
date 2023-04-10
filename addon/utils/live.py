@@ -12,31 +12,9 @@ COMMAND_END = 0x3E
 
 
 class LiveModeController:
-    positions = {}
     connection_method = None
     serial_connection = None
     tcp_connection = None
-
-    def send_position(self, servo_id, position):
-        if position == self.positions.get(servo_id):
-            return
-
-        command = [COMMAND_START, servo_id]
-        command += position.to_bytes(2, 'big')
-        command += [COMMAND_END]
-
-        try:
-            if self.connection_method == METHOD_SERIAL:
-                self.serial_connection.write(command)
-            elif self.connection_method == METHOD_WEB_SOCKET:
-                self.tcp_connection.send(bytes(command))
-
-            self.positions[servo_id] = position
-        except (
-            serial.SerialException, BlockingIOError, BrokenPipeError, ConnectionAbortedError,
-            ConnectionResetError, InterruptedError, TypeError
-        ):
-            bpy.ops.export_anim.stop_live_mode()
 
     def open_serial_connection(self, port, baud_rate):
         try:
@@ -57,7 +35,6 @@ class LiveModeController:
         self.serial_connection = None
         self.tcp_connection = None
         self.connection_method = None
-        self.positions = {}
 
     def has_open_serial_connection(self):
         return (

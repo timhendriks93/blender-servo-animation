@@ -1,9 +1,10 @@
 import time
 import bpy
+import serial
 
 from bpy.types import Operator
 
-from ..utils.live import LIVE_MODE_CONTROLLER
+from ..utils.live import LIVE_MODE_CONTROLLER, METHOD_SERIAL, METHOD_WEB_SOCKET
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
 
@@ -12,6 +13,11 @@ class LiveMode(Operator):
     bl_idname = "export_anim.live_mode"
     bl_label = "Live Mode Handling"
     bl_options = {'INTERNAL', 'BLOCKING'}
+
+    COMMAND_START = 0x3C
+    COMMAND_END = 0x3E
+
+    positions = {}
 
     @classmethod
     def poll(cls, context):
@@ -31,9 +37,9 @@ class LiveMode(Operator):
             servo_id = pose_bone.bone.servo_settings.servo_id
             target_positions[servo_id] = target_position
 
-            if servo_id in LIVE_MODE_CONTROLLER.positions:
+            if servo_id in self.positions:
                 diffs.append(
-                    abs(target_position - LIVE_MODE_CONTROLLER.positions[servo_id]))
+                    abs(target_position - self.positions[servo_id]))
 
         if len(diffs) > 0:
             steps = max(diffs)
@@ -46,17 +52,38 @@ class LiveMode(Operator):
         ):
             self.handle_position_jump(target_positions, steps, context)
         else:
-            self.handle_default(target_positions)
+            self.handle_default(target_positions, context)
 
         return {'FINISHED'}
 
-    @staticmethod
-    def handle_default(target_positions):
-        for servo_id, target_position in target_positions.items():
-            LIVE_MODE_CONTROLLER.send_position(servo_id, target_position)
+    def send_position(self, servo_id, position, context):
+        if position == self.positions.get(servo_id):
+            return
 
-    @staticmethod
-    def handle_position_jump(target_positions, steps, context):
+        command = [self.COMMAND_START, servo_id]
+        command += position.to_bytes(2, 'big')
+        command += [self.COMMAND_END]
+
+        servo_animation = context.window_manager.servo_animation
+
+        try:
+            if servo_animation.live_mode_method == METHOD_SERIAL:
+                LIVE_MODE_CONTROLLER.serial_connection.write(command)
+            elif servo_animation.live_mode_method == METHOD_WEB_SOCKET:
+                LIVE_MODE_CONTROLLER.tcp_connection.send(bytes(command))
+
+            self.positions[servo_id] = position
+        except (
+            serial.SerialException, BlockingIOError, BrokenPipeError, ConnectionAbortedError,
+            ConnectionResetError, InterruptedError, TypeError
+        ):
+            bpy.ops.export_anim.stop_live_mode()
+
+    def handle_default(self, target_positions, context):
+        for servo_id, target_position in target_positions.items():
+            self.send_position(servo_id, target_position, context)
+
+    def handle_position_jump(self, target_positions, steps, context):
         if context.screen.is_animation_playing:
             bpy.ops.screen.animation_cancel(restore_frame=False)
 
@@ -66,14 +93,14 @@ class LiveMode(Operator):
         for step in range(steps):
             window_manager.progress_update(step)
             for servo_id, target_position in target_positions.items():
-                previous_position = LIVE_MODE_CONTROLLER.positions[servo_id]
+                previous_position = self.positions[servo_id]
                 if target_position == previous_position:
                     continue
                 if target_position > previous_position:
                     new_position = previous_position + 1
                 else:
                     new_position = previous_position - 1
-                LIVE_MODE_CONTROLLER.send_position(servo_id, new_position)
+                self.send_position(servo_id, new_position, context)
             time.sleep(.01)
 
         window_manager.progress_end()
