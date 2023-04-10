@@ -64,12 +64,10 @@ class LiveMode(Operator):
         command += position.to_bytes(2, 'big')
         command += [self.COMMAND_END]
 
-        servo_animation = context.window_manager.servo_animation
-
         try:
-            if servo_animation.live_mode_method == METHOD_SERIAL:
+            if LIVE_MODE_CONTROLLER.connection_method == METHOD_SERIAL:
                 LIVE_MODE_CONTROLLER.serial_connection.write(command)
-            elif servo_animation.live_mode_method == METHOD_WEB_SOCKET:
+            elif LIVE_MODE_CONTROLLER.connection_method == METHOD_WEB_SOCKET:
                 LIVE_MODE_CONTROLLER.tcp_connection.send(bytes(command))
 
             self.positions[servo_id] = position
