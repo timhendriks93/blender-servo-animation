@@ -1,10 +1,9 @@
-import bpy
-
 from bpy.types import Operator
 from ..utils.live import LIVE_MODE_CONTROLLER
+from ..ops.base_live_mode import BaseLiveMode
 
 
-class StopLiveMode(Operator):
+class StopLiveMode(Operator, BaseLiveMode):
     bl_idname = "export_anim.stop_live_mode"
     bl_label = "Stop Live Mode"
     bl_description = "Stop sending live position values via the current live connection"
@@ -14,7 +13,7 @@ class StopLiveMode(Operator):
     def poll(cls, context):
         return context.window_manager.servo_animation.live_mode
 
-    def execute(self, context):
+    def execute(self, _context):
         if LIVE_MODE_CONTROLLER.has_open_serial_connection():
             serial_port = LIVE_MODE_CONTROLLER.serial_connection.port
             message = f"Closed serial connection on port {serial_port}"
@@ -26,12 +25,7 @@ class StopLiveMode(Operator):
 
         LIVE_MODE_CONTROLLER.close_open_connection()
 
-        bpy.app.handlers.frame_change_post.remove(
-            LIVE_MODE_CONTROLLER.update_positions)
-        bpy.app.handlers.depsgraph_update_post.remove(
-            LIVE_MODE_CONTROLLER.update_positions)
-
-        context.window_manager.servo_animation.live_mode = False
+        self.unregister_handlers()
 
         self.report({'INFO'}, message)
 

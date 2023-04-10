@@ -1,6 +1,14 @@
 import bpy
-from ..utils.live import LIVE_MODE_CONTROLLER
 
+def handle_live_mode(_scene, _depsgraph):
+    servo_animation = bpy.context.window_manager.servo_animation
+
+    if servo_animation.live_mode_handling:
+        return
+
+    servo_animation.live_mode_handling = True
+    bpy.ops.export_anim.live_mode()
+    servo_animation.live_mode_handling = False
 
 class BaseLiveMode:
     METHOD_SERIAL = "SERIAL"
@@ -18,10 +26,14 @@ class BaseLiveMode:
         ]
 
     @classmethod
-    def register_handlers(cls, context):
-        context.window_manager.servo_animation.live_mode = True
-        bpy.app.handlers.frame_change_post.append(
-            LIVE_MODE_CONTROLLER.update_positions)
-        bpy.app.handlers.depsgraph_update_post.append(
-            LIVE_MODE_CONTROLLER.update_positions)
-        LIVE_MODE_CONTROLLER.update_positions(context.scene, None)
+    def register_handlers(cls):
+        bpy.context.window_manager.servo_animation.live_mode = True
+        bpy.app.handlers.frame_change_post.append(handle_live_mode)
+        bpy.app.handlers.depsgraph_update_post.append(handle_live_mode)
+        handle_live_mode(bpy.context.scene, None)
+
+    @classmethod
+    def unregister_handlers(cls):
+        bpy.context.window_manager.servo_animation.live_mode = False
+        bpy.app.handlers.frame_change_post.remove(handle_live_mode)
+        bpy.app.handlers.depsgraph_update_post.remove(handle_live_mode)

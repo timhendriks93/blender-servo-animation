@@ -16,14 +16,6 @@ class LiveModeController:
     connection_method = None
     serial_connection = None
     tcp_connection = None
-    handling = False
-
-    def update_positions(self, _scene, _depsgraph):
-        if self.handling:
-            return
-        self.handling = True
-        bpy.ops.export_anim.live_mode()
-        self.handling = False
 
     def send_position(self, servo_id, position):
         if position == self.positions.get(servo_id):

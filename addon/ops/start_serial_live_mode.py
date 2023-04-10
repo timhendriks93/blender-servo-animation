@@ -36,7 +36,7 @@ class StartSerialLiveMode(Operator, BaseLiveMode):
 
             return {'CANCELLED'}
 
-        self.register_handlers(context)
+        self.register_handlers()
 
         self.report(
             {'INFO'},

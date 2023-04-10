@@ -29,6 +29,7 @@ class WindowManagerPropertyGroup(PropertyGroup):
     live_mode: bpy.props.BoolProperty(
         name="Live Mode"
     )
+    live_mode_handling: bpy.props.BoolProperty()
     live_mode_method: bpy.props.EnumProperty(
         name="Method",
         items=BaseLiveMode.get_method_items(),
