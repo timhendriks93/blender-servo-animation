@@ -6,13 +6,6 @@ from ..utils.uart import get_serial_ports
 from ..ops.live_mode import LiveMode
 
 
-def get_method_items():
-    return [
-        (LiveMode.METHOD_SERIAL, "Serial", "Connect via USB"),
-        (LiveMode.METHOD_WEB_SOCKET, "Web Socket", "Connect via a web socket"),
-    ]
-
-
 def get_serial_port_items(_self, _context):
     items = []
 
@@ -38,7 +31,7 @@ class WindowManagerPropertyGroup(PropertyGroup):
     )
     live_mode_method: bpy.props.EnumProperty(
         name="Method",
-        items=get_method_items()
+        items=LiveMode.METHOD_ITEMS
     )
     serial_port: bpy.props.EnumProperty(
         name="Serial Port",

@@ -25,13 +25,13 @@ def test_start_stop(blender, socket_stub, frame, position, servo_id):
         f"bpy.context.scene.frame_set({frame})",
         f"bpy.data.armatures['Armature'].bones['Bone'].servo_settings.servo_id = {servo_id}",
         "".join((
-            "bpy.ops.export_anim.start_web_socket_live_mode(",
-            f"'EXEC_DEFAULT', socket_host='{host}', socket_port={port}",
+            "bpy.ops.export_anim.live_mode(",
+            f"'EXEC_DEFAULT', method='WEB_SOCKET', socket_host='{host}', socket_port={port}",
             ")"
         ))
     ])
     blender.expect(f"Opened web socket connection with host {host} on port {port}")
-    blender.send_line("bpy.ops.export_anim.stop_web_socket_live_mode()")
+    blender.send_line("bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT', method='WEB_SOCKET')")
     blender.expect(f"Closed web socket connection with host {host} and port {port}")
     blender.send_line("bpy.context.scene.frame_set(33)")
     blender.close()
@@ -68,8 +68,8 @@ def test_position_jump_handling(blender, socket_stub, handling, threshold, frame
     blender.send_lines([
         "import bpy",
         "".join((
-            "bpy.ops.export_anim.start_web_socket_live_mode(",
-            f"'EXEC_DEFAULT', socket_host='{host}', socket_port={port}",
+            "bpy.ops.export_anim.live_mode(",
+            f"'EXEC_DEFAULT', method='WEB_SOCKET', socket_host='{host}', socket_port={port}",
             ")"
         ))
     ])
@@ -111,8 +111,8 @@ def test_invalid_connection(blender, socket_host, socket_port):
     blender.send_lines([
         "import bpy",
         "".join((
-            "bpy.ops.export_anim.start_web_socket_live_mode(",
-            f"'EXEC_DEFAULT', socket_host='{socket_host}', socket_port={socket_port}",
+            "bpy.ops.export_anim.live_mode(",
+            f"'EXEC_DEFAULT', method='WEB_SOCKET', socket_host='{socket_host}', socket_port={socket_port}",
             ")"
         ))
     ])

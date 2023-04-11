@@ -11,10 +11,7 @@ from .ui.bone_panel import BonePanel
 from .ui.menu_panel import MenuPanel
 from .ops.json_export import JsonExport
 from .ops.arduino_export import ArduinoExport
-from .ops.start_serial_live_mode import StartSerialLiveMode
-from .ops.start_web_socket_live_mode import StartWebSocketLiveMode
-from .ops.stop_serial_live_mode import StopSerialLiveMode
-from .ops.stop_web_socket_live_mode import StopWebSocketLiveMode
+from .ops.stop_live_mode import StopLiveMode
 from .ops.live_mode import LiveMode
 
 bl_info = {
@@ -38,10 +35,7 @@ classes = (
     MenuPanel,
     ArduinoExport,
     JsonExport,
-    StartSerialLiveMode,
-    StartWebSocketLiveMode,
-    StopSerialLiveMode,
-    StopWebSocketLiveMode,
+    StopLiveMode,
     LiveMode
 )
 

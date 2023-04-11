@@ -25,13 +25,13 @@ def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
         f"bpy.context.scene.frame_set({frame})",
         f"bpy.data.armatures['Armature'].bones['Bone'].servo_settings.servo_id = {servo_id}",
         "".join((
-            "bpy.ops.export_anim.start_serial_live_mode(",
-            f"'EXEC_DEFAULT', serial_port='{tty_name}', baud_rate={baud_rate}",
+            "bpy.ops.export_anim.live_mode(",
+            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', baud_rate={baud_rate}",
             ")"
         ))
     ])
     blender.expect(f"Opened serial connection on port {tty_name} with baud rate {baud_rate}")
-    blender.send_line("bpy.ops.export_anim.stop_serial_live_mode()")
+    blender.send_line("bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT', method='SERIAL')")
     blender.expect(f"Closed serial connection on port {tty_name}")
     blender.send_line("bpy.context.scene.frame_set(33)")
     blender.close()
@@ -69,8 +69,8 @@ def test_position_jump_handling(blender, serial_stub, handling, threshold, frame
     blender.send_lines([
         "import bpy",
         "".join((
-            "bpy.ops.export_anim.start_serial_live_mode(",
-            f"'EXEC_DEFAULT', serial_port='{tty_name}', baud_rate={baud_rate}",
+            "bpy.ops.export_anim.live_mode(",
+            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', baud_rate={baud_rate}",
             ")"
         ))
     ])
@@ -117,8 +117,8 @@ def test_invalid_serial_port(blender, serial_stub, serial_port, baud_rate):
     blender.send_lines([
         "import bpy",
         "".join((
-            "bpy.ops.export_anim.start_serial_live_mode(",
-            f"'EXEC_DEFAULT', serial_port='{serial_port}', baud_rate={baud_rate}",
+            "bpy.ops.export_anim.live_mode(",
+            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{serial_port}', baud_rate={baud_rate}",
             ")"
         ))
     ])

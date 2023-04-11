@@ -42,7 +42,7 @@ class BaseExport:
             context.scene.frame_set(original_frame)
 
             if original_live_mode is True:
-                bpy.ops.export_anim.start_live_mode('INVOKE_DEFAULT')
+                bpy.ops.export_anim.live_mode('INVOKE_DEFAULT')
 
         with open(self.filepath, 'w', encoding='utf-8') as file:
             file.write(content)
