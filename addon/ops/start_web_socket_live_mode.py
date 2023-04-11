@@ -1,8 +1,8 @@
+import socket
 import bpy
 
 from bpy.types import Operator
 from ..utils.web import is_ip
-from ..utils.live import LIVE_MODE_CONTROLLER
 from ..ops.live_mode import LiveMode
 
 
@@ -20,24 +20,19 @@ class StartWebSocketLiveMode(Operator):
         return (
             not context.window_manager.servo_animation.live_mode
             and is_ip(context.window_manager.servo_animation.socket_ip)
+            and not LiveMode.has_open_web_socket_connection()
         )
-
-    @classmethod
-    def handle_live_mode(cls, _scene, _depsgraph):
-        if LIVE_MODE_CONTROLLER.handling:
-            return
-
-        LIVE_MODE_CONTROLLER.handling = True
-        bpy.ops.export_anim.live_mode()
-        LIVE_MODE_CONTROLLER.handling = False
 
     def execute(self, context):
         servo_animation = context.window_manager.servo_animation
-        LIVE_MODE_CONTROLLER.close_open_connection()
+        servo_animation.live_mode_method = LiveMode.METHOD_WEB_SOCKET
 
-        if (
-            not LIVE_MODE_CONTROLLER.open_web_socket_connection(self.socket_host, self.socket_port)
-        ):
+        tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tcp_connection.settimeout(1)
+
+        try:
+            tcp_connection.connect((self.socket_host, self.socket_port))
+        except (socket.timeout, socket.error):
             servo_animation.live_mode = False
             self.report(
                 {'ERROR'},
@@ -49,6 +44,7 @@ class StartWebSocketLiveMode(Operator):
 
             return {'CANCELLED'}
 
+        LiveMode.tcp_connection = tcp_connection
         LiveMode.register_handler()
 
         self.report(

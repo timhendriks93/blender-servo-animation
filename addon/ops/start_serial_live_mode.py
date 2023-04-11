@@ -1,7 +1,7 @@
 import bpy
+import serial
 
 from bpy.types import Operator
-from ..utils.live import LIVE_MODE_CONTROLLER
 from ..ops.live_mode import LiveMode
 
 
@@ -19,15 +19,17 @@ class StartSerialLiveMode(Operator):
         return (
             not context.window_manager.servo_animation.live_mode
             and context.window_manager.servo_animation.serial_port != ""
+            and not LiveMode.has_open_serial_connection()
         )
 
     def execute(self, context):
         servo_animation = context.window_manager.servo_animation
-        LIVE_MODE_CONTROLLER.close_open_connection()
+        servo_animation.live_mode_method = LiveMode.METHOD_SERIAL
 
-        if (
-            not LIVE_MODE_CONTROLLER.open_serial_connection(self.serial_port, self.baud_rate)
-        ):
+        try:
+            LiveMode.serial_connection = serial.Serial(
+                port=self.serial_port, baudrate=self.baud_rate)
+        except (serial.SerialException, ValueError):
             servo_animation.live_mode = False
             self.report(
                 {'ERROR'},

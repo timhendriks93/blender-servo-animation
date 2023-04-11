@@ -6,7 +6,6 @@ from ..ops.start_web_socket_live_mode import StartWebSocketLiveMode
 from ..ops.stop_serial_live_mode import StopSerialLiveMode
 from ..ops.stop_web_socket_live_mode import StopWebSocketLiveMode
 from ..ops.live_mode import LiveMode
-from ..utils.live import LIVE_MODE_CONTROLLER
 
 
 class MenuPanel(Panel):
@@ -19,8 +18,8 @@ class MenuPanel(Panel):
         servo_animation = context.window_manager.servo_animation
 
         if (
-            not LIVE_MODE_CONTROLLER.has_open_serial_connection()
-            and not LIVE_MODE_CONTROLLER.has_open_web_socket_connection()
+            not LiveMode.has_open_serial_connection()
+            and not LiveMode.has_open_web_socket_connection()
         ):
             servo_animation.live_mode = False
 

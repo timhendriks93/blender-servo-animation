@@ -1,12 +1,13 @@
 import time
+import socket
 import bpy
 import serial
 
 from bpy.types import Operator
 
-from ..utils.live import LIVE_MODE_CONTROLLER
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
+from ..utils.uart import get_serial_ports
 
 
 class LiveMode(Operator):
@@ -22,6 +23,9 @@ class LiveMode(Operator):
 
     _positions = {}
     _handling = False
+
+    serial_connection = None
+    tcp_connection = None
 
     @classmethod
     def poll(cls, context):
@@ -48,6 +52,21 @@ class LiveMode(Operator):
         bpy.context.window_manager.servo_animation.live_mode = False
         bpy.app.handlers.frame_change_post.remove(LiveMode.handler)
         bpy.app.handlers.depsgraph_update_post.remove(LiveMode.handler)
+
+    @classmethod
+    def has_open_serial_connection(cls):
+        return (
+            isinstance(cls.serial_connection, serial.Serial)
+            and cls.serial_connection.is_open
+            and (
+                cls.serial_connection.port in get_serial_ports()
+                or bpy.app.background
+            )
+        )
+
+    @classmethod
+    def has_open_web_socket_connection(cls):
+        return isinstance(cls.tcp_connection, socket.socket)
 
     def execute(self, context):
         diffs = []
@@ -82,7 +101,7 @@ class LiveMode(Operator):
 
         return {'FINISHED'}
 
-    def send_position(self, servo_id, position, _context):
+    def send_position(self, servo_id, position, context):
         if position == self._positions.get(servo_id):
             return
 
@@ -90,11 +109,13 @@ class LiveMode(Operator):
         command += position.to_bytes(2, 'big')
         command += [self.COMMAND_END]
 
+        servo_animation = context.window_manager.servo_animation
+
         try:
-            if LIVE_MODE_CONTROLLER.connection_method == self.METHOD_SERIAL:
-                LIVE_MODE_CONTROLLER.serial_connection.write(command)
-            elif LIVE_MODE_CONTROLLER.connection_method == self.METHOD_WEB_SOCKET:
-                LIVE_MODE_CONTROLLER.tcp_connection.send(bytes(command))
+            if servo_animation.live_mode_method == self.METHOD_SERIAL:
+                self.serial_connection.write(command)
+            elif servo_animation.live_mode_method == self.METHOD_WEB_SOCKET:
+                self.tcp_connection.send(bytes(command))
 
             self._positions[servo_id] = position
         except (

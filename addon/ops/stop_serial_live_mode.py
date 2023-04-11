@@ -1,5 +1,4 @@
 from bpy.types import Operator
-from ..utils.live import LIVE_MODE_CONTROLLER
 from ..ops.live_mode import LiveMode
 
 
@@ -11,15 +10,18 @@ class StopSerialLiveMode(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.window_manager.servo_animation.live_mode
+        return (
+            context.window_manager.servo_animation.live_mode
+            and LiveMode.has_open_serial_connection()
+        )
 
-    def execute(self, context):
-        if LIVE_MODE_CONTROLLER.has_open_serial_connection():
-            serial_port = LIVE_MODE_CONTROLLER.serial_connection.port
+    def execute(self, _context):
+        if LiveMode.has_open_serial_connection():
+            serial_port = LiveMode.serial_connection.port
             message = f"Closed serial connection on port {serial_port}"
 
-        LIVE_MODE_CONTROLLER.close_open_connection()
-
+        LiveMode.serial_connection.close()
+        LiveMode.serial_connection = None
         LiveMode.unregister_handler()
 
         if message:
