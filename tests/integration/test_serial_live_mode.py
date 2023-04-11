@@ -31,7 +31,7 @@ def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
         ))
     ])
     blender.expect(f"Opened serial connection on port {tty_name} with baud rate {baud_rate}")
-    blender.send_line("bpy.ops.export_anim.stop_live_mode()")
+    blender.send_line("bpy.ops.export_anim.stop_serial_live_mode()")
     blender.expect(f"Closed serial connection on port {tty_name}")
     blender.send_line("bpy.context.scene.frame_set(33)")
     blender.close()

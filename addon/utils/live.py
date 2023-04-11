@@ -4,8 +4,6 @@ import serial
 
 from ..utils.uart import get_serial_ports
 
-METHOD_SERIAL = "SERIAL"
-METHOD_WEB_SOCKET = "WEB_SOCKET"
 
 COMMAND_START = 0x3C
 COMMAND_END = 0x3E
@@ -15,12 +13,13 @@ class LiveModeController:
     connection_method = None
     serial_connection = None
     tcp_connection = None
+    handling = False
 
     def open_serial_connection(self, port, baud_rate):
         try:
             self.serial_connection = serial.Serial(
                 port=port, baudrate=baud_rate)
-            self.connection_method = METHOD_SERIAL
+            self.connection_method = "SERIAL"
             return True
         except (serial.SerialException, ValueError):
             return False
@@ -55,7 +54,7 @@ class LiveModeController:
 
         try:
             self.tcp_connection.connect((host, port))
-            self.connection_method = METHOD_WEB_SOCKET
+            self.connection_method = "WEB_SOCKET"
             return True
         except (socket.timeout, socket.error):
             return False

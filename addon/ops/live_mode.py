@@ -4,9 +4,11 @@ import serial
 
 from bpy.types import Operator
 
-from ..utils.live import LIVE_MODE_CONTROLLER, METHOD_SERIAL, METHOD_WEB_SOCKET
+from ..utils.live import LIVE_MODE_CONTROLLER
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
+from ..ops.start_serial_live_mode import StartSerialLiveMode
+from ..ops.start_web_socket_live_mode import StartWebSocketLiveMode
 
 
 class LiveMode(Operator):
@@ -56,7 +58,7 @@ class LiveMode(Operator):
 
         return {'FINISHED'}
 
-    def send_position(self, servo_id, position, context):
+    def send_position(self, servo_id, position, _context):
         if position == self.positions.get(servo_id):
             return
 
@@ -65,9 +67,9 @@ class LiveMode(Operator):
         command += [self.COMMAND_END]
 
         try:
-            if LIVE_MODE_CONTROLLER.connection_method == METHOD_SERIAL:
+            if LIVE_MODE_CONTROLLER.connection_method == StartSerialLiveMode.METHOD:
                 LIVE_MODE_CONTROLLER.serial_connection.write(command)
-            elif LIVE_MODE_CONTROLLER.connection_method == METHOD_WEB_SOCKET:
+            elif LIVE_MODE_CONTROLLER.connection_method == StartWebSocketLiveMode.METHOD:
                 LIVE_MODE_CONTROLLER.tcp_connection.send(bytes(command))
 
             self.positions[servo_id] = position

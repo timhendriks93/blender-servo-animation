@@ -31,7 +31,7 @@ def test_start_stop(blender, socket_stub, frame, position, servo_id):
         ))
     ])
     blender.expect(f"Opened web socket connection with host {host} on port {port}")
-    blender.send_line("bpy.ops.export_anim.stop_live_mode()")
+    blender.send_line("bpy.ops.export_anim.stop_web_socket_live_mode()")
     blender.expect(f"Closed web socket connection with host {host} and port {port}")
     blender.send_line("bpy.context.scene.frame_set(33)")
     blender.close()

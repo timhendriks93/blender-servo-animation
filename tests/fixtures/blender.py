@@ -7,7 +7,7 @@ class Blender:
     file = None
     cwd = None
     spawn = None
-    timeout = 3
+    timeout = 1
 
     def __init__(self):
         self.cwd = os.getcwd()

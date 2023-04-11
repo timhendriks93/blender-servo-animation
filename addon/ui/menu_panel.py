@@ -3,8 +3,9 @@ from ..ops.json_export import JsonExport
 from ..ops.arduino_export import ArduinoExport
 from ..ops.start_serial_live_mode import StartSerialLiveMode
 from ..ops.start_web_socket_live_mode import StartWebSocketLiveMode
-from ..ops.stop_live_mode import StopLiveMode
-from ..utils.live import LIVE_MODE_CONTROLLER, METHOD_SERIAL, METHOD_WEB_SOCKET
+from ..ops.stop_serial_live_mode import StopSerialLiveMode
+from ..ops.stop_web_socket_live_mode import StopWebSocketLiveMode
+from ..utils.live import LIVE_MODE_CONTROLLER
 
 
 class MenuPanel(Panel):
@@ -30,21 +31,25 @@ class MenuPanel(Panel):
         col.label(text="Live Mode")
 
         if servo_animation.live_mode:
-            col.operator(StopLiveMode.bl_idname,
+            if servo_animation.live_mode_method == StartSerialLiveMode.METHOD:
+                col.operator(StopSerialLiveMode.bl_idname,
                          text="Disconnect", depress=True)
-        elif servo_animation.live_mode_method == StartSerialLiveMode.METHOD_SERIAL:
+            elif servo_animation.live_mode_method == StartWebSocketLiveMode.METHOD:
+                col.operator(StopWebSocketLiveMode.bl_idname,
+                         text="Disconnect", depress=True)
+        elif servo_animation.live_mode_method == StartSerialLiveMode.METHOD:
             col.operator(StartSerialLiveMode.bl_idname, text="Connect")
-        elif servo_animation.live_mode_method == StartWebSocketLiveMode.METHOD_WEB_SOCKET:
+        elif servo_animation.live_mode_method == StartWebSocketLiveMode.METHOD:
             col.operator(StartWebSocketLiveMode.bl_idname, text="Connect")
 
         col = layout.column(align=True)
         col.enabled = not servo_animation.live_mode
         col.prop(servo_animation, "live_mode_method")
 
-        if servo_animation.live_mode_method == METHOD_SERIAL:
+        if servo_animation.live_mode_method == StartSerialLiveMode.METHOD:
             col.prop(servo_animation, "serial_port")
             col.prop(servo_animation, "baud_rate")
-        elif servo_animation.live_mode_method == METHOD_WEB_SOCKET:
+        elif servo_animation.live_mode_method == StartWebSocketLiveMode.METHOD:
             col.prop(servo_animation, "socket_ip")
             col.prop(servo_animation, "socket_port")
 

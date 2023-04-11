@@ -1,16 +1,17 @@
 import bpy
 
 from bpy.types import Operator
-from .base_live_mode import BaseLiveMode
 from ..utils.web import is_ip
 from ..utils.live import LIVE_MODE_CONTROLLER
 
 
-class StartWebSocketLiveMode(Operator, BaseLiveMode):
+class StartWebSocketLiveMode(Operator):
     bl_idname = "export_anim.start_web_socket_live_mode"
     bl_label = "Start Web Socket Live Mode"
     bl_description = "Start sending live position values via the given web socket connection"
     bl_options = {'INTERNAL'}
+
+    METHOD = "WEB_SOCKET"
 
     socket_host: bpy.props.StringProperty()
     socket_port: bpy.props.IntProperty()
@@ -18,9 +19,18 @@ class StartWebSocketLiveMode(Operator, BaseLiveMode):
     @classmethod
     def poll(cls, context):
         return (
-            super().poll(context)
+            not context.window_manager.servo_animation.live_mode
             and is_ip(context.window_manager.servo_animation.socket_ip)
         )
+
+    @classmethod
+    def handle_live_mode(cls, _scene, _depsgraph):
+        if LIVE_MODE_CONTROLLER.handling:
+            return
+
+        LIVE_MODE_CONTROLLER.handling = True
+        bpy.ops.export_anim.live_mode()
+        LIVE_MODE_CONTROLLER.handling = False
 
     def execute(self, context):
         servo_animation = context.window_manager.servo_animation
@@ -40,7 +50,10 @@ class StartWebSocketLiveMode(Operator, BaseLiveMode):
 
             return {'CANCELLED'}
 
-        self.register_handlers()
+        context.window_manager.servo_animation.live_mode = True
+        bpy.app.handlers.frame_change_post.append(StartWebSocketLiveMode.handle_live_mode)
+        bpy.app.handlers.depsgraph_update_post.append(StartWebSocketLiveMode.handle_live_mode)
+        self.handle_live_mode(bpy.context.scene, None)
 
         self.report(
             {'INFO'},
