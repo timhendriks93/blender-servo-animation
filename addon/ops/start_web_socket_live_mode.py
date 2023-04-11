@@ -3,6 +3,7 @@ import bpy
 from bpy.types import Operator
 from ..utils.web import is_ip
 from ..utils.live import LIVE_MODE_CONTROLLER
+from ..ops.live_mode import LiveMode
 
 
 class StartWebSocketLiveMode(Operator):
@@ -10,8 +11,6 @@ class StartWebSocketLiveMode(Operator):
     bl_label = "Start Web Socket Live Mode"
     bl_description = "Start sending live position values via the given web socket connection"
     bl_options = {'INTERNAL'}
-
-    METHOD = "WEB_SOCKET"
 
     socket_host: bpy.props.StringProperty()
     socket_port: bpy.props.IntProperty()
@@ -50,10 +49,7 @@ class StartWebSocketLiveMode(Operator):
 
             return {'CANCELLED'}
 
-        context.window_manager.servo_animation.live_mode = True
-        bpy.app.handlers.frame_change_post.append(StartWebSocketLiveMode.handle_live_mode)
-        bpy.app.handlers.depsgraph_update_post.append(StartWebSocketLiveMode.handle_live_mode)
-        self.handle_live_mode(bpy.context.scene, None)
+        LiveMode.register_handler()
 
         self.report(
             {'INFO'},

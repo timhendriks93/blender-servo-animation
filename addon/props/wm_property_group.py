@@ -3,14 +3,13 @@ import bpy
 from bpy.types import PropertyGroup
 from ..utils.web import is_ip
 from ..utils.uart import get_serial_ports
-from ..ops.start_serial_live_mode import StartSerialLiveMode
-from ..ops.start_web_socket_live_mode import StartWebSocketLiveMode
+from ..ops.live_mode import LiveMode
 
 
 def get_method_items():
     return [
-        (StartSerialLiveMode.METHOD, "Serial", "Connect via USB"),
-        (StartWebSocketLiveMode.METHOD, "Web Socket", "Connect via a web socket"),
+        (LiveMode.METHOD_SERIAL, "Serial", "Connect via USB"),
+        (LiveMode.METHOD_WEB_SOCKET, "Web Socket", "Connect via a web socket"),
     ]
 
 

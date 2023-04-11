@@ -1,8 +1,6 @@
-import bpy
-
 from bpy.types import Operator
 from ..utils.live import LIVE_MODE_CONTROLLER
-from ..ops.start_serial_live_mode import StartSerialLiveMode
+from ..ops.live_mode import LiveMode
 
 
 class StopSerialLiveMode(Operator):
@@ -22,9 +20,7 @@ class StopSerialLiveMode(Operator):
 
         LIVE_MODE_CONTROLLER.close_open_connection()
 
-        context.window_manager.servo_animation.live_mode = False
-        bpy.app.handlers.frame_change_post.remove(StartSerialLiveMode.handle_live_mode)
-        bpy.app.handlers.depsgraph_update_post.remove(StartSerialLiveMode.handle_live_mode)
+        LiveMode.unregister_handler()
 
         if message:
             self.report({'INFO'}, message)

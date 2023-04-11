@@ -1,8 +1,6 @@
-import bpy
-
 from bpy.types import Operator
 from ..utils.live import LIVE_MODE_CONTROLLER
-from ..ops.start_web_socket_live_mode import StartWebSocketLiveMode
+from ..ops.live_mode import LiveMode
 
 
 class StopWebSocketLiveMode(Operator):
@@ -15,16 +13,14 @@ class StopWebSocketLiveMode(Operator):
     def poll(cls, context):
         return context.window_manager.servo_animation.live_mode
 
-    def execute(self, context):
+    def execute(self, _context):
         if LIVE_MODE_CONTROLLER.has_open_web_socket_connection():
             socket_host, socket_port = LIVE_MODE_CONTROLLER.tcp_connection.getpeername()
             message = f"Closed web socket connection with host {socket_host} and port {socket_port}"
 
         LIVE_MODE_CONTROLLER.close_open_connection()
 
-        context.window_manager.servo_animation.live_mode = False
-        bpy.app.handlers.frame_change_post.remove(StartWebSocketLiveMode.handle_live_mode)
-        bpy.app.handlers.depsgraph_update_post.remove(StartWebSocketLiveMode.handle_live_mode)
+        LiveMode.unregister_handler()
 
         if message:
             self.report({'INFO'}, message)

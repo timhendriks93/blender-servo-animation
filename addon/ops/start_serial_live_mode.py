@@ -2,6 +2,7 @@ import bpy
 
 from bpy.types import Operator
 from ..utils.live import LIVE_MODE_CONTROLLER
+from ..ops.live_mode import LiveMode
 
 
 class StartSerialLiveMode(Operator):
@@ -9,8 +10,6 @@ class StartSerialLiveMode(Operator):
     bl_label = "Start Serial Live Mode"
     bl_description = "Start sending live position values via the given serial connection"
     bl_options = {'INTERNAL'}
-
-    METHOD = "SERIAL"
 
     serial_port: bpy.props.StringProperty()
     baud_rate: bpy.props.IntProperty()
@@ -21,15 +20,6 @@ class StartSerialLiveMode(Operator):
             not context.window_manager.servo_animation.live_mode
             and context.window_manager.servo_animation.serial_port != ""
         )
-
-    @classmethod
-    def handle_live_mode(cls, _scene, _depsgraph):
-        if LIVE_MODE_CONTROLLER.handling:
-            return
-
-        LIVE_MODE_CONTROLLER.handling = True
-        bpy.ops.export_anim.live_mode()
-        LIVE_MODE_CONTROLLER.handling = False
 
     def execute(self, context):
         servo_animation = context.window_manager.servo_animation
@@ -46,10 +36,7 @@ class StartSerialLiveMode(Operator):
 
             return {'CANCELLED'}
 
-        context.window_manager.servo_animation.live_mode = True
-        bpy.app.handlers.frame_change_post.append(StartSerialLiveMode.handle_live_mode)
-        bpy.app.handlers.depsgraph_update_post.append(StartSerialLiveMode.handle_live_mode)
-        self.handle_live_mode(bpy.context.scene, None)
+        LiveMode.register_handler()
 
         self.report(
             {'INFO'},

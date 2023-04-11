@@ -7,8 +7,6 @@ from bpy.types import Operator
 from ..utils.live import LIVE_MODE_CONTROLLER
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
-from ..ops.start_serial_live_mode import StartSerialLiveMode
-from ..ops.start_web_socket_live_mode import StartWebSocketLiveMode
 
 
 class LiveMode(Operator):
@@ -19,11 +17,37 @@ class LiveMode(Operator):
     COMMAND_START = 0x3C
     COMMAND_END = 0x3E
 
-    positions = {}
+    METHOD_SERIAL = "SERIAL"
+    METHOD_WEB_SOCKET = "WEB_SOCKET"
+
+    _positions = {}
+    _handling = False
 
     @classmethod
     def poll(cls, context):
         return context.window_manager.servo_animation.live_mode
+
+    @classmethod
+    def handler(cls, _scene, _depsgraph):
+        if cls._handling:
+            return
+
+        cls._handling = True
+        bpy.ops.export_anim.live_mode()
+        cls._handling = False
+
+    @classmethod
+    def register_handler(cls):
+        bpy.context.window_manager.servo_animation.live_mode = True
+        bpy.app.handlers.frame_change_post.append(LiveMode.handler)
+        bpy.app.handlers.depsgraph_update_post.append(LiveMode.handler)
+        cls.handler(bpy.context.scene, None)
+
+    @classmethod
+    def unregister_handler(cls):
+        bpy.context.window_manager.servo_animation.live_mode = False
+        bpy.app.handlers.frame_change_post.remove(LiveMode.handler)
+        bpy.app.handlers.depsgraph_update_post.remove(LiveMode.handler)
 
     def execute(self, context):
         diffs = []
@@ -39,9 +63,9 @@ class LiveMode(Operator):
             servo_id = pose_bone.bone.servo_settings.servo_id
             target_positions[servo_id] = target_position
 
-            if servo_id in self.positions:
+            if servo_id in self._positions:
                 diffs.append(
-                    abs(target_position - self.positions[servo_id]))
+                    abs(target_position - self._positions[servo_id]))
 
         if len(diffs) > 0:
             steps = max(diffs)
@@ -59,7 +83,7 @@ class LiveMode(Operator):
         return {'FINISHED'}
 
     def send_position(self, servo_id, position, _context):
-        if position == self.positions.get(servo_id):
+        if position == self._positions.get(servo_id):
             return
 
         command = [self.COMMAND_START, servo_id]
@@ -67,12 +91,12 @@ class LiveMode(Operator):
         command += [self.COMMAND_END]
 
         try:
-            if LIVE_MODE_CONTROLLER.connection_method == StartSerialLiveMode.METHOD:
+            if LIVE_MODE_CONTROLLER.connection_method == self.METHOD_SERIAL:
                 LIVE_MODE_CONTROLLER.serial_connection.write(command)
-            elif LIVE_MODE_CONTROLLER.connection_method == StartWebSocketLiveMode.METHOD:
+            elif LIVE_MODE_CONTROLLER.connection_method == self.METHOD_WEB_SOCKET:
                 LIVE_MODE_CONTROLLER.tcp_connection.send(bytes(command))
 
-            self.positions[servo_id] = position
+            self._positions[servo_id] = position
         except (
             serial.SerialException, BlockingIOError, BrokenPipeError, ConnectionAbortedError,
             ConnectionResetError, InterruptedError, TypeError
@@ -93,7 +117,7 @@ class LiveMode(Operator):
         for step in range(steps):
             window_manager.progress_update(step)
             for servo_id, target_position in target_positions.items():
-                previous_position = self.positions[servo_id]
+                previous_position = self._positions[servo_id]
                 if target_position == previous_position:
                     continue
                 if target_position > previous_position:

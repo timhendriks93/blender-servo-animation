@@ -13,7 +13,6 @@ class LiveModeController:
     connection_method = None
     serial_connection = None
     tcp_connection = None
-    handling = False
 
     def open_serial_connection(self, port, baud_rate):
         try:
