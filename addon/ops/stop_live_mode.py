@@ -13,7 +13,7 @@ class StopLiveMode(Operator):
     method: bpy.props.EnumProperty(items=LiveMode.METHOD_ITEMS)
 
     @classmethod
-    def poll(cls, context):
+    def poll(cls, _context):
         return (
             LiveMode.is_active()
             and (
