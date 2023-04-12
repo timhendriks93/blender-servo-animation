@@ -24,11 +24,11 @@ def test_start_stop(blender, serial_stub, baud_rate, frame, position, servo_id):
         "import bpy",
         f"bpy.context.scene.frame_set({frame})",
         f"bpy.data.armatures['Armature'].bones['Bone'].servo_settings.servo_id = {servo_id}",
-        "".join((
-            "bpy.ops.export_anim.live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', baud_rate={baud_rate}",
+        (
+            "bpy.ops.export_anim.live_mode("
+            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', serial_baud={baud_rate}"
             ")"
-        ))
+        )
     ])
     blender.expect(f"Opened serial connection on port {tty_name} with baud rate {baud_rate}")
     blender.send_line("bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT', method='SERIAL')")
@@ -68,11 +68,11 @@ def test_position_jump_handling(blender, serial_stub, handling, threshold, frame
     blender.start()
     blender.send_lines([
         "import bpy",
-        "".join((
-            "bpy.ops.export_anim.live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', baud_rate={baud_rate}",
+        (
+            "bpy.ops.export_anim.live_mode("
+            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{tty_name}', serial_baud={baud_rate}"
             ")"
-        ))
+        )
     ])
     blender.expect(f"Opened serial connection on port {tty_name} with baud rate {baud_rate}")
     blender.send_lines([
@@ -116,11 +116,11 @@ def test_invalid_serial_port(blender, serial_stub, serial_port, baud_rate):
     blender.start()
     blender.send_lines([
         "import bpy",
-        "".join((
-            "bpy.ops.export_anim.live_mode(",
-            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{serial_port}', baud_rate={baud_rate}",
+        (
+            "bpy.ops.export_anim.live_mode("
+            f"'EXEC_DEFAULT', method='SERIAL', serial_port='{serial_port}', serial_baud={baud_rate}"
             ")"
-        ))
+        )
     ])
     blender.expect(f"Failed to open serial connection on port {serial_port} with baud rate {baud_rate}")
     blender.close()

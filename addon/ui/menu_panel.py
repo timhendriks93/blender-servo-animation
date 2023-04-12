@@ -14,12 +14,6 @@ class MenuPanel(Panel):
     def draw(self, context):
         servo_animation = context.window_manager.servo_animation
 
-        if (
-            not LiveMode.has_open_serial_connection()
-            and not LiveMode.has_open_web_socket_connection()
-        ):
-            servo_animation.live_mode = False
-
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
@@ -27,21 +21,23 @@ class MenuPanel(Panel):
         col = layout.column()
         col.label(text="Live Mode")
 
-        if servo_animation.live_mode:
+        live_mode_is_active = LiveMode.is_active()
+
+        if live_mode_is_active:
             col.operator(StopLiveMode.bl_idname,
                          text="Disconnect", depress=True)
         else:
             col.operator(LiveMode.bl_idname, text="Connect")
 
         col = layout.column(align=True)
-        col.enabled = not servo_animation.live_mode
+        col.enabled = not live_mode_is_active
         col.prop(servo_animation, "live_mode_method")
 
         if servo_animation.live_mode_method == LiveMode.METHOD_SERIAL:
             col.prop(servo_animation, "serial_port")
-            col.prop(servo_animation, "baud_rate")
-        elif servo_animation.live_mode_method == LiveMode.METHOD_WEB_SOCKET:
-            col.prop(servo_animation, "socket_ip")
+            col.prop(servo_animation, "serial_baud")
+        elif servo_animation.live_mode_method == LiveMode.METHOD_SOCKET:
+            col.prop(servo_animation, "socket_host")
             col.prop(servo_animation, "socket_port")
 
         col = layout.column()

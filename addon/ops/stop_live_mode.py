@@ -14,44 +14,33 @@ class StopLiveMode(Operator):
 
     @classmethod
     def poll(cls, context):
-        servo_animation = context.window_manager.servo_animation
-
         return (
-            servo_animation.live_mode
+            LiveMode.is_active()
             and (
-                (
-                    servo_animation.live_mode_method == LiveMode.METHOD_SERIAL
-                    and LiveMode.has_open_serial_connection()
-                )
-                or (
-                    servo_animation.live_mode_method == LiveMode.METHOD_WEB_SOCKET
-                    and LiveMode.has_open_web_socket_connection()
-                )
+                LiveMode.has_serial_connection()
+                or LiveMode.has_socket_connection()
             )
         )
 
     def execute(self, _context):
-        if self.method == LiveMode.METHOD_SERIAL:
+        if LiveMode.has_serial_connection():
             serial_port = LiveMode.serial_connection.port
 
             LiveMode.serial_connection.close()
             LiveMode.serial_connection = None
 
             self.report({'INFO'}, f"Closed serial connection on port {serial_port}")
-        elif self.method == LiveMode.METHOD_WEB_SOCKET:
-            socket_host, socket_port = LiveMode.tcp_connection.getpeername()
 
-            LiveMode.tcp_connection.close()
-            LiveMode.tcp_connection = None
+        if LiveMode.has_socket_connection():
+            socket_host, socket_port = LiveMode.socket_connection.getpeername()
+
+            LiveMode.socket_connection.close()
+            LiveMode.socket_connection = None
 
             self.report(
                 {'INFO'},
                 f"Closed web socket connection with host {socket_host} and port {socket_port}"
             )
-        else:
-            self.report({'ERROR'}, "Unknown live mode method")
-
-            return {'CANCELLED'}
 
         LiveMode.unregister_handler()
 

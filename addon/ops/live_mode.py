@@ -2,39 +2,42 @@ import time
 import socket
 import bpy
 import serial
+import serial.tools.list_ports
 
 from bpy.types import Operator
 
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import get_active_pose_bones
-from ..utils.uart import get_serial_ports
-from ..utils.web import is_ip
 
 
 class LiveMode(Operator):
     bl_idname = "export_anim.live_mode"
-    bl_label = "Live Mode Handling"
+    bl_label = "Live Mode"
+    bl_description = "Start sending live position values via a live mode connection"
     bl_options = {'INTERNAL', 'BLOCKING'}
 
     COMMAND_START = 0x3C
     COMMAND_END = 0x3E
 
     METHOD_SERIAL = "SERIAL"
-    METHOD_WEB_SOCKET = "WEB_SOCKET"
+    METHOD_SOCKET = "SOCKET"
+
     METHOD_ITEMS = [
         (METHOD_SERIAL, "Serial", "Connect via USB"),
-        (METHOD_WEB_SOCKET, "Web Socket", "Connect via a web socket"),
+        (METHOD_SOCKET, "Web Socket", "Connect via a web socket"),
     ]
 
     _positions = {}
     _handling = False
 
     serial_connection = None
-    tcp_connection = None
+    socket_connection = None
 
     method: bpy.props.EnumProperty(items=METHOD_ITEMS)
+
     serial_port: bpy.props.StringProperty()
-    baud_rate: bpy.props.IntProperty()
+    serial_baud: bpy.props.IntProperty()
+
     socket_host: bpy.props.StringProperty()
     socket_port: bpy.props.IntProperty()
 
@@ -43,17 +46,15 @@ class LiveMode(Operator):
         servo_animation = context.window_manager.servo_animation
 
         return (
-            not servo_animation.live_mode
+            not cls.is_active()
             and (
                 (
                     servo_animation.live_mode_method == cls.METHOD_SERIAL
                     and servo_animation.serial_port != ""
-                    and not LiveMode.has_open_serial_connection()
                 )
                 or (
-                    servo_animation.live_mode_method == cls.METHOD_WEB_SOCKET
-                    and is_ip(servo_animation.socket_ip)
-                    and not LiveMode.has_open_web_socket_connection()
+                    servo_animation.live_mode_method == cls.METHOD_SOCKET
+                    and servo_animation.socket_host != ""
                 )
             )
         )
@@ -98,31 +99,42 @@ class LiveMode(Operator):
 
     @classmethod
     def register_handler(cls):
-        bpy.context.window_manager.servo_animation.live_mode = True
         bpy.app.handlers.frame_change_post.append(LiveMode.handler)
         bpy.app.handlers.depsgraph_update_post.append(LiveMode.handler)
         cls.handler(bpy.context.scene, None)
 
     @classmethod
     def unregister_handler(cls):
-        bpy.context.window_manager.servo_animation.live_mode = False
         bpy.app.handlers.frame_change_post.remove(LiveMode.handler)
         bpy.app.handlers.depsgraph_update_post.remove(LiveMode.handler)
 
     @classmethod
-    def has_open_serial_connection(cls):
+    def get_serial_ports(cls):
+        ports = []
+
+        for port in serial.tools.list_ports.comports():
+            ports.append(port.device)
+
+        return ports
+
+    @classmethod
+    def has_serial_connection(cls):
         return (
             isinstance(cls.serial_connection, serial.Serial)
             and cls.serial_connection.is_open
             and (
-                cls.serial_connection.port in get_serial_ports()
+                cls.serial_connection.port in cls.get_serial_ports()
                 or bpy.app.background
             )
         )
 
     @classmethod
-    def has_open_web_socket_connection(cls):
-        return isinstance(cls.tcp_connection, socket.socket)
+    def has_socket_connection(cls):
+        return isinstance(cls.socket_connection, socket.socket)
+
+    @classmethod
+    def is_active(cls):
+        return cls.has_serial_connection() or cls.has_socket_connection()
 
     @classmethod
     def handle_default(cls, target_positions):
@@ -166,8 +178,8 @@ class LiveMode(Operator):
         try:
             if servo_animation.live_mode_method == cls.METHOD_SERIAL:
                 cls.serial_connection.write(command)
-            elif servo_animation.live_mode_method == cls.METHOD_WEB_SOCKET:
-                cls.tcp_connection.send(bytes(command))
+            elif servo_animation.live_mode_method == cls.METHOD_SOCKET:
+                cls.socket_connection.send(bytes(command))
 
             cls._positions[servo_id] = position
         except (
@@ -183,22 +195,24 @@ class LiveMode(Operator):
         if self.method == self.METHOD_SERIAL:
             return self.start_serial(context)
 
-        if self.method == self.METHOD_WEB_SOCKET:
+        if self.method == self.METHOD_SOCKET:
             return self.start_web_socket(context)
 
         self.report({'ERROR'}, "Unknown live mode method")
 
         return {'CANCELLED'}
 
-    def start_serial(self, context):
+    def start_serial(self, _context):
         try:
             LiveMode.serial_connection = serial.Serial(
-                port=self.serial_port, baudrate=self.baud_rate)
+                port=self.serial_port, baudrate=self.serial_baud)
         except (serial.SerialException, ValueError):
-            context.window_manager.servo_animation.live_mode = False
             self.report(
                 {'ERROR'},
-                f"Failed to open serial connection on port {self.serial_port} with baud rate {self.baud_rate}"
+                (
+                    f"Failed to open serial connection on port {self.serial_port} "
+                    f"with baud rate {self.serial_baud}"
+                )
             )
 
             return {'CANCELLED'}
@@ -206,32 +220,29 @@ class LiveMode(Operator):
         self.register_handler()
         self.report(
             {'INFO'},
-            f"Opened serial connection on port {self.serial_port} with baud rate {self.baud_rate}"
+            f"Opened serial connection on port {self.serial_port} with baud rate {self.serial_baud}"
         )
 
         return {'FINISHED'}
 
-    def start_web_socket(self, context):
-        servo_animation = context.window_manager.servo_animation
-
+    def start_web_socket(self, _context):
         tcp_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tcp_connection.settimeout(1)
 
         try:
             tcp_connection.connect((self.socket_host, self.socket_port))
         except (socket.timeout, socket.error):
-            servo_animation.live_mode = False
             self.report(
                 {'ERROR'},
-                "".join((
-                    f"Failed to open web socket connection with host {self.socket_host} ",
+                (
+                    f"Failed to open web socket connection with host {self.socket_host} "
                     f"on port {self.socket_port}"
-                ))
+                )
             )
 
             return {'CANCELLED'}
 
-        LiveMode.tcp_connection = tcp_connection
+        LiveMode.socket_connection = tcp_connection
 
         self.register_handler()
         self.report(
@@ -243,10 +254,13 @@ class LiveMode(Operator):
 
     def invoke(self, context, _event):
         servo_animation = context.window_manager.servo_animation
+
         self.method = servo_animation.live_mode_method
+
         self.serial_port = servo_animation.serial_port
-        self.baud_rate = int(servo_animation.baud_rate)
-        self.socket_host = servo_animation.socket_ip
+        self.serial_baud = int(servo_animation.serial_baud)
+
+        self.socket_host = servo_animation.socket_host
         self.socket_port = servo_animation.socket_port
 
         return self.execute(context)
