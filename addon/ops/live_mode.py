@@ -1,8 +1,15 @@
+import importlib
 import time
-import websocket
 import bpy
-import serial
-import serial.tools.list_ports
+
+try:
+    import serial
+    import serial.tools.list_ports
+    import websocket
+
+    DEPS_INSTALLED = True
+except ModuleNotFoundError as e:
+    DEPS_INSTALLED = False
 
 from bpy.types import Operator
 
@@ -29,6 +36,7 @@ class LiveMode(Operator):
 
     _last_positions = {}
     _is_handling = False
+    _is_available = DEPS_INSTALLED
 
     _serial_connection = None
     _socket_connection = None
@@ -138,6 +146,22 @@ class LiveMode(Operator):
             isinstance(cls._socket_connection, websocket.WebSocket)
             and cls._socket_connection.connected
         )
+
+    @classmethod
+    def is_available(cls):
+        return cls._is_available
+
+    @classmethod
+    def update_dependencies(cls):
+        modules = ["serial", "serial.tools.list_ports", "websocket"]
+
+        try:
+            for module in modules:
+                globals()[module] = importlib.import_module(module)
+
+            cls._is_available = True
+        except ModuleNotFoundError:
+            cls._is_available = False
 
     @classmethod
     def is_active(cls):

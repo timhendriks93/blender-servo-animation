@@ -1,8 +1,3 @@
-# pylint: disable=wrong-import-position,wrong-import-order
-from .utils.system import register_vendor_path
-
-register_vendor_path()
-
 import bpy
 
 from .props.bone_property_group import BonePropertyGroup
@@ -12,6 +7,7 @@ from .ui.menu_panel import MenuPanel
 from .ops.json_export import JsonExport
 from .ops.arduino_export import ArduinoExport
 from .ops.stop_live_mode import StopLiveMode
+from .ops.install_dependencies import InstallDependencies
 from .ops.live_mode import LiveMode
 
 bl_info = {
@@ -36,7 +32,8 @@ classes = (
     ArduinoExport,
     JsonExport,
     StopLiveMode,
-    LiveMode
+    LiveMode,
+    InstallDependencies
 )
 
 

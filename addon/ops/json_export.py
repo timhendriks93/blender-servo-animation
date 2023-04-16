@@ -4,7 +4,6 @@ import bpy
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
-from ..utils.system import get_blend_filename
 from ..utils.servo_settings import get_pose_bone_by_servo_id
 
 
@@ -23,7 +22,7 @@ class JsonExport(Operator, BaseExport, ExportHelper):
 
     def export(self, positions, context):
         fps, frames, seconds = self.get_time_meta(context.scene)
-        filename = get_blend_filename()
+        filename = self.get_blend_filename()
 
         servos = {}
 

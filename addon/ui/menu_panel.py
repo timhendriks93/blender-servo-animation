@@ -2,6 +2,7 @@ from bpy.types import Panel
 from ..ops.json_export import JsonExport
 from ..ops.arduino_export import ArduinoExport
 from ..ops.stop_live_mode import StopLiveMode
+from ..ops.install_dependencies import InstallDependencies
 from ..ops.live_mode import LiveMode
 
 
@@ -12,8 +13,6 @@ class MenuPanel(Panel):
     bl_region_type = 'HEADER'
 
     def draw(self, context):
-        servo_animation = context.window_manager.servo_animation
-
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
@@ -21,6 +20,22 @@ class MenuPanel(Panel):
         col = layout.column()
         col.label(text="Live Mode")
 
+        if LiveMode.is_available():
+            self.draw_live_mode(context, layout, col)
+        else:
+            self.draw_live_mode_deps(col)
+
+        layout.separator()
+
+        col = layout.column()
+        col.label(text="Export")
+        row = col.row(align=True)
+        row.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
+        row.operator(JsonExport.bl_idname, text="JSON (.json)")
+
+    @classmethod
+    def draw_live_mode(cls, context, layout, col):
+        servo_animation = context.window_manager.servo_animation
         live_mode_is_active = LiveMode.is_active()
 
         if live_mode_is_active:
@@ -46,10 +61,7 @@ class MenuPanel(Panel):
         col.active = servo_animation.position_jump_handling
         col.prop(servo_animation, "position_jump_threshold")
 
-        layout.separator()
-
-        col = layout.column()
-        col.label(text="Export")
-        row = col.row(align=True)
-        row.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
-        row.operator(JsonExport.bl_idname, text="JSON (.json)")
+    @classmethod
+    def draw_live_mode_deps(cls, col):
+        col.label(text="You are missing dependencies", icon="ERROR")
+        col.operator(InstallDependencies.bl_idname, text="Install dependencies")

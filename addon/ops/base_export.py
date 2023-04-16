@@ -61,3 +61,7 @@ class BaseExport:
         seconds = round(frames / scene.render.fps)
 
         return fps, frames, seconds
+
+    @staticmethod
+    def get_blend_filename():
+        return bpy.path.basename(bpy.context.blend_data.filepath)
