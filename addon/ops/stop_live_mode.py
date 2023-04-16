@@ -8,46 +8,36 @@ class StopLiveMode(Operator):
     bl_idname = "export_anim.stop_live_mode"
     bl_label = "Stop Live Mode"
     bl_description = "Stop sending live position values via the current live mode connection"
-    bl_options = {'INTERNAL'}
+    bl_options = {'INTERNAL', 'BLOCKING'}
 
-    method: bpy.props.EnumProperty(items=LiveMode.METHOD_ITEMS)
+    unexpected: bpy.props.BoolProperty()
 
-    @classmethod
-    def poll(cls, _context):
-        return (
-            LiveMode.is_active()
-            and (
-                LiveMode.has_serial_connection()
-                or LiveMode.has_socket_connection()
-            )
-        )
+    @staticmethod
+    def display_warning(popup_self, _context):
+        popup_self.layout.label(text="Please check your setup and start the live mode again.")
 
-    def execute(self, _context):
-        if LiveMode.has_serial_connection():
-            serial_port = LiveMode.serial_connection.port
+    def execute(self, context):
+        method = context.window_manager.servo_animation.live_mode_method
 
-            LiveMode.serial_connection.close()
-            LiveMode.serial_connection = None
+        LiveMode.close_connections()
 
-            self.report({'INFO'}, f"Closed serial connection on port {serial_port}")
+        if method == LiveMode.METHOD_SERIAL:
+            connection_type = "serial"
+        elif method == LiveMode.METHOD_SOCKET:
+            connection_type = "web socket"
+        else:
+            self.report({'ERROR'}, "Unknown live mode method")
 
-        if LiveMode.has_socket_connection():
-            socket_host, socket_port = LiveMode.socket_connection.getpeername()
+            return {'CANCELLED'}
 
-            LiveMode.socket_connection.close()
-            LiveMode.socket_connection = None
+        if self.unexpected:
+            report_type = {'WARNING'}
+            message = f"{connection_type.capitalize()} connection closed unexpectedly"
+            context.window_manager.popup_menu(self.display_warning, title=message, icon='ERROR')
+        else:
+            report_type = {'INFO'}
+            message = f"Closed {connection_type} connection"
 
-            self.report(
-                {'INFO'},
-                f"Closed web socket connection with host {socket_host} and port {socket_port}"
-            )
-
-        LiveMode.unregister_handler()
+        self.report(report_type, message)
 
         return {'FINISHED'}
-
-    def invoke(self, context, _event):
-        servo_animation = context.window_manager.servo_animation
-        self.method = servo_animation.live_mode_method
-
-        return self.execute(context)

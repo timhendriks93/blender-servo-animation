@@ -16,8 +16,10 @@ COMMAND_END = b">"
     ids=['Frame 1', 'Frame 33', 'Frame 66']
 )
 def test_start_stop(blender, socket_stub, frame, position, servo_id):
+    socket_stub.start()
     host = socket_stub.host
     port = socket_stub.port
+
     blender.set_file("examples/Simple/simple.blend")
     blender.start()
     blender.send_lines([
@@ -31,10 +33,12 @@ def test_start_stop(blender, socket_stub, frame, position, servo_id):
         )
     ])
     blender.expect(f"Opened web socket connection with host {host} on port {port}")
-    blender.send_line("bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT', method='SOCKET')")
-    blender.expect(f"Closed web socket connection with host {host} and port {port}")
+    blender.send_line("bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT')")
+    blender.expect("Closed web socket connection")
     blender.send_line("bpy.context.scene.frame_set(33)")
     blender.close()
+
+    socket_stub.close()
 
     read_bytes = socket_stub.received_data
 
@@ -61,8 +65,10 @@ def test_start_stop(blender, socket_stub, frame, position, servo_id):
     ]
 )
 def test_position_jump_handling(blender, socket_stub, handling, threshold, frame, positions):
+    socket_stub.start()
     host = socket_stub.host
     port = socket_stub.port
+
     blender.set_file("examples/Simple/simple.blend")
     blender.start()
     blender.send_lines([
@@ -81,6 +87,8 @@ def test_position_jump_handling(blender, socket_stub, handling, threshold, frame
     ])
     time.sleep(.5)
     blender.close()
+
+    socket_stub.close()
 
     read_bytes = socket_stub.received_data
 

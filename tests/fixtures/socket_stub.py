@@ -1,36 +1,36 @@
-import socket
 import threading
 import pytest
+
+from websockets.sync.server import serve
 
 class SocketStub:
     host = None
     port = None
-    sock = None
+    server = None
     server_thread = None
     received_data = []
 
     def __init__(self):
         self.received_data = []
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("localhost", 0))
-        self.host, self.port = self.sock.getsockname()
+        self.server = serve(self.handler, "localhost", 0)
+        self.host, self.port = self.server.socket.getsockname()
+        self.server_thread = threading.Thread(target=self.run)
 
-        self.server_thread = threading.Thread(target=self.handle_tcp)
+    def start(self):
         self.server_thread.start()
 
-    def __del__(self):
-        self.sock.close()
-        self.server_thread.join()
+    def run(self):
+        self.server.serve_forever()
 
-    def handle_tcp(self):
-        self.sock.listen(1)
-        conn, _addr = self.sock.accept()
-        with conn:
-            while True:
-                byte = conn.recv(1)
-                if not byte:
-                    break
+    def handler(self, websocket):
+        for message in websocket:
+            for integer in message:
+                byte = integer.to_bytes(length=1, byteorder='big')
                 self.received_data.append(byte)
+
+    def close(self):
+        self.server.shutdown()
+        self.server_thread.join()
 
 @pytest.fixture()
 def socket_stub():
