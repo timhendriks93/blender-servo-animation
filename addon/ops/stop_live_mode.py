@@ -20,6 +20,7 @@ class StopLiveMode(Operator):
         method = context.window_manager.servo_animation.live_mode_method
 
         LiveMode.close_connections()
+        LiveMode.unregister_handlers()
 
         if method == LiveMode.METHOD_SERIAL:
             connection_type = "serial"
@@ -33,7 +34,7 @@ class StopLiveMode(Operator):
         if self.unexpected:
             report_type = {'WARNING'}
             message = f"{connection_type.capitalize()} connection closed unexpectedly"
-            context.window_manager.popup_menu(self.display_warning, title=message, icon='ERROR')
+            # context.window_manager.popup_menu(self.display_warning, title=message, icon='ERROR')
         else:
             report_type = {'INFO'}
             message = f"Closed {connection_type} connection"
