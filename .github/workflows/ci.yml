@@ -83,4 +83,4 @@ jobs:
         sudo ln -s "$(pwd)/servo_animation" "$(pwd)/blender/${{ matrix.blender_version.dir }}/scripts/addons/servo_animation"
     - name: Run tests with pytest
       run: |
-        pytest -v ./tests
+        ./test.sh

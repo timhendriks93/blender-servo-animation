@@ -308,6 +308,8 @@ class LiveMode(Operator):
         ):
             cls._socket_connection.close()
 
+        cls._last_positions = {}
+
     def invoke(self, context, _event):
         servo_animation = context.window_manager.servo_animation
 

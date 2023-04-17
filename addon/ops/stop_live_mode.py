@@ -34,7 +34,7 @@ class StopLiveMode(Operator):
         if self.unexpected:
             report_type = {'WARNING'}
             message = f"{connection_type.capitalize()} connection closed unexpectedly"
-            # context.window_manager.popup_menu(self.display_warning, title=message, icon='ERROR')
+            context.window_manager.popup_menu(self.display_warning, title=message, icon='ERROR')
         else:
             report_type = {'INFO'}
             message = f"Closed {connection_type} connection"
