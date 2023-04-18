@@ -1,14 +1,13 @@
-# pylint: disable=import-outside-toplevel
-
-import unittest
 import os
 import pathlib
 import sys
 import ensurepip
 import subprocess
-import bpy
 
 from textwrap import dedent
+
+import bpy
+
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).resolve()
 sys.path.append(str(main_dir))
@@ -44,32 +43,6 @@ def install_dependencies():
 
     subprocess.run([python, "-m", "pip", "install", "-r", req_file], check=True)
 
-def run_test_suite():
-    from test_export import TestExport
-    from test_serial_live_mode import TestSerialLiveMode
-    from test_socket_live_mode import TestSocketLiveMode
-
-    print(dedent('''
-        ################################
-        ||                            ||
-        ||      Running tests...      ||
-        ||                            ||
-        ################################
-    '''))
-
-    return unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite([
-        unittest.TestLoader().loadTestsFromTestCase(TestExport),
-        unittest.TestLoader().loadTestsFromTestCase(TestSerialLiveMode),
-        unittest.TestLoader().loadTestsFromTestCase(TestSocketLiveMode)
-    ])).wasSuccessful()
-
 if __name__ == "__main__":
     ensure_pip()
     install_dependencies()
-
-    successful = run_test_suite()
-
-    if not successful:
-        sys.exit(1)
-    else:
-        sys.exit(0)

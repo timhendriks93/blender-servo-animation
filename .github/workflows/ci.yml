@@ -91,4 +91,5 @@ jobs:
         sudo ln -s "$(pwd)/servo_animation" "$(pwd)/blender-${{ matrix.blender.version }}/${{ matrix.blender.dir }}/scripts/addons/servo_animation"
     - name: Run tests inside Blender
       run: |
-        ./test.sh
+        ./tests/prepare.sh
+        ./tests/test.sh

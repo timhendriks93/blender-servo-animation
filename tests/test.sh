@@ -1,11 +1,13 @@
 #!/bin/bash
 
+TESTSDIR=$(dirname "$0")
+
 blender \
     -noaudio \
-    --background examples/Simple/simple.blend \
+    --background $TESTSDIR/../examples/Simple/simple.blend \
     --addons servo_animation \
     --python-use-system-env \
     --python-exit-code 1 \
-    --python tests/main.py
+    --python $TESTSDIR/test.py
 
 exit $?
