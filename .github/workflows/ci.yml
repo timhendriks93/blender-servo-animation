@@ -58,6 +58,7 @@ jobs:
       id: restore-blender-cache
       uses: actions/cache/restore@v3
       with:
+        path: blender-${{ matrix.blender_version }}
         key: blender-${{ matrix.blender_version }}
     - name: Download Blender
       if: steps.restore-blender-cache.outputs.cache-hit != 'true'
