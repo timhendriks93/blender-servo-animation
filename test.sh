@@ -1,5 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
-blender -noaudio --background examples/Simple/simple.blend --addons servo_animation --python tests/main.py --python-exit-code 1
+blender \
+    -noaudio \
+    --background examples/Simple/simple.blend \
+    --addons servo_animation \
+    --python tests/main.py
 
 exit $?
