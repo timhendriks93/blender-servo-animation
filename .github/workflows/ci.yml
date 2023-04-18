@@ -42,7 +42,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        blender_version: ["2.90.0", "3.1.0", "3.5.0"]
+        blender: 
+        - {version: "2.90.0", dir: "2.90"}
+        - {version: "3.1.0", dir: "3.1"}
+        - {version: "3.5.0", dir: "3.5"}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
@@ -58,25 +61,25 @@ jobs:
       id: restore-blender-cache
       uses: actions/cache/restore@v3
       with:
-        path: blender-${{ matrix.blender_version }}
-        key: blender-${{ matrix.blender_version }}
+        path: blender-${{ matrix.blender.version }}
+        key: blender-${{ matrix.blender.version }}
     - name: Download Blender
       if: steps.restore-blender-cache.outputs.cache-hit != 'true'
       run: |
         python -m pip install --upgrade pip
         pip install blender-downloader
-        blender-downloader ${{ matrix.blender_version }}
-        mkdir -p blender-${{ matrix.blender_version }}
-        tar xf *.tar.xz -C blender-${{ matrix.blender_version }} --strip-components 1
+        blender-downloader ${{ matrix.blender.version }}
+        mkdir -p blender-${{ matrix.blender.version }}
+        tar xf *.tar.xz -C blender-${{ matrix.blender.version }} --strip-components 1
     - name: Cache Blender
       uses: actions/cache/save@v3
       if: steps.restore-blender-cache.outputs.cache-hit != 'true'
       with:
-        path: blender-${{ matrix.blender_version }}
-        key: blender-${{ matrix.blender_version }}
+        path: blender-${{ matrix.blender.version }}
+        key: blender-${{ matrix.blender.version }}
     - name: Create Blender symlink
       run: |
-        sudo ln -s "$(pwd)/blender-${{ matrix.blender_version }}/blender" /usr/bin/blender
+        sudo ln -s "$(pwd)/blender-${{ matrix.blender.version }}/blender" /usr/bin/blender
     - name: Download add-on
       uses: actions/download-artifact@v3
       with:
@@ -84,7 +87,7 @@ jobs:
     - name: Install add-on
       run: |
         unzip blender_servo_animation_addon.zip
-        sudo ln -s "$(pwd)/servo_animation" "$(pwd)/blender/${{ matrix.blender_version.dir }}/scripts/addons/servo_animation"
+        sudo ln -s "$(pwd)/servo_animation" "$(pwd)/blender-${{ matrix.blender.version }}/${{ matrix.blender.dir }}/scripts/addons/servo_animation"
     - name: Run tests inside Blender
       run: |
         ./test.sh
