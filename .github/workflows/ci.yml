@@ -45,13 +45,7 @@ jobs:
         blender_version: ["2.90.0", "3.1.0", "3.5.0"]
     steps:
     - uses: actions/checkout@v3
-    - name: Cache Blender
-      id: cache-blender
-      uses: actions/cache@v3
-      with:
-        path: blender
-        key: blender-${{ matrix.blender_version }}
-    - name: Set up Python 3.10
+    - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
@@ -60,17 +54,28 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install --no-install-recommends -y unzip wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
+    - name: Restore Blender cache
+      id: restore-blender-cache
+      uses: actions/cache/restore@v3
+      with:
+        key: blender-${{ matrix.blender_version }}
+    - name: Download Blender
+      if: steps.restore-blender-cache.outputs.cache-hit != 'true'
+      run: |
         python -m pip install --upgrade pip
         pip install blender-downloader
-    - name: Download Blender
-      if: steps.cache-blender.outputs.cache-hit != 'true'
-      run: |
         blender-downloader ${{ matrix.blender_version }}
-        mkdir blender
-        tar xf *.tar.xz -C blender --strip-components 1
+        mkdir -p blender-${{ matrix.blender_version }}
+        tar xf *.tar.xz -C blender-${{ matrix.blender_version }} --strip-components 1
+    - name: Cache Blender
+      uses: actions/cache/save@v3
+      if: steps.restore-blender-cache.outputs.cache-hit != 'true'
+      with:
+        path: blender-${{ matrix.blender_version }}
+        key: blender-${{ matrix.blender_version }}
     - name: Create Blender symlink
       run: |
-        sudo ln -s "$(pwd)/blender/blender" /usr/bin/blender
+        sudo ln -s "$(pwd)/blender-${{ matrix.blender_version }}/blender" /usr/bin/blender
     - name: Download add-on
       uses: actions/download-artifact@v3
       with:
