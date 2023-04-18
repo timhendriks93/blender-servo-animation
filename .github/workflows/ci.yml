@@ -31,7 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint pytest pexpect
+        pip install pylint
     - name: Analysing the code with pylint
       run: |
         pylint ./addon
@@ -81,6 +81,6 @@ jobs:
       run: |
         unzip blender_servo_animation_addon.zip
         sudo ln -s "$(pwd)/servo_animation" "$(pwd)/blender/${{ matrix.blender_version.dir }}/scripts/addons/servo_animation"
-    - name: Run tests with pytest
+    - name: Run tests inside Blender
       run: |
         ./test.sh
