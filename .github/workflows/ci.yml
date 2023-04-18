@@ -28,6 +28,7 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
+        cache: "pip"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -41,10 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        blender_version: 
-        - {dir: "2.90", file: blender-2.90.0-linux64, ext: tar.xz}
-        - {dir: "3.1", file: blender-3.1.0-linux-x64, ext: tar.xz}
-        - {dir: "3.2", file: blender-3.2.0-linux-x64, ext: tar.xz}
+        blender_version: ["2.90.0", "3.1.0", "3.5.0"]
     steps:
     - uses: actions/checkout@v3
     - name: Cache Blender
@@ -52,29 +50,29 @@ jobs:
       uses: actions/cache@v3
       with:
         path: blender
-        key: ${{ matrix.blender_version.file }}
+        key: blender-${{ matrix.blender_version }}
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
         cache: "pip"
-        cache-dependency-path: requirements-dev.txt
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install --no-install-recommends -y unzip wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
         python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
+        pip install blender-downloader
     - name: Download Blender
       if: steps.cache-blender.outputs.cache-hit != 'true'
       run: |
-        wget https://download.blender.org/release/Blender${{ matrix.blender_version.dir }}/${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
-        tar xf ${{ matrix.blender_version.file }}.${{ matrix.blender_version.ext }}
-        mv ${{ matrix.blender_version.file }} blender
+        blender-downloader ${{ matrix.blender_version }}
+        mkdir blender
+        tar xf *.tar.xz -C blender --strip-components 1
     - name: Create Blender symlink
       run: |
         sudo ln -s "$(pwd)/blender/blender" /usr/bin/blender
-    - uses: actions/download-artifact@v3
+    - name: Download add-on
+      uses: actions/download-artifact@v3
       with:
         name: blender_servo_animation_addon.zip
     - name: Install add-on
