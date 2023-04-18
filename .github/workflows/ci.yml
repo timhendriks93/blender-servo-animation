@@ -41,6 +41,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         blender: 
         - {version: "2.90.0", dir: "2.90"}

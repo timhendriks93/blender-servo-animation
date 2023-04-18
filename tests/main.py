@@ -6,6 +6,7 @@ import pathlib
 import sys
 import ensurepip
 import subprocess
+import bpy
 
 from textwrap import dedent
 
@@ -33,7 +34,11 @@ def install_dependencies():
         ################################
     '''))
 
-    python = sys.executable
+    try:
+        python = bpy.app.binary_path_python
+    except AttributeError:
+        python = sys.executable
+
     dir_path = os.path.dirname(__file__)
     req_file = dir_path + "/../requirements-dev.txt"
 
