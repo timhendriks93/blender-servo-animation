@@ -103,15 +103,21 @@ To make the animation process even more intuitive, you can enable the `Live mode
 
 This will allow you to control your servos in real-time from within Blender.
 
-After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Here you can prepare and control the connection to be used for the `Live mode`. For additional convenience, you can also find buttons to export the servo positions here.
+### Installing dependencies
 
-![Timeline menu](screenshots/timeline_menu.gif)
+After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Before using the live mode feature of this add-on, you might have to install some Python dependencies first by pressing the `Install dependencies` button. This will automatically install the required pip packages and requires an active internet connection.
+
+![Install dependencies button](screenshots/live_mode_dependencies.png)
+
+Afterwards you can prepare and control the connection to be used for the `Live mode` via this menu. For additional convenience, you will also find buttons to export the servo positions here.
 
 ### Setup a connection
 
 To use the `Live Mode`, you will need to prepare a receiver which will interpret the received commands and use them to control the servo motors accordingly.
 
 In most cases, the receiver can be considered an Arduino compatible micro controller. As a first step, a connection method should be selected via the `Method` dropdown menu.
+
+![Timeline menu](screenshots/timeline_menu.gif)
 
 > Note: starting the `Live Mode` will immediately send the position values for all servos based on the current frame. Make sure that this will not break anything, as the servos will try to move to their new position as fast as possible.
 

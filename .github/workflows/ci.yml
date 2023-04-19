@@ -35,7 +35,8 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint ./addon
+        pylint addon
+        pylint -d duplicate-code tests
   test:
     name: "Test"
     needs: build
