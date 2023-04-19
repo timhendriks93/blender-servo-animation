@@ -22,8 +22,7 @@ class TestSocketLiveMode(unittest.TestCase):
         self.server_thread.start()
 
     def tearDown(self):
-        self.server.shutdown()
-        self.server_thread.join()
+        self.stop_server()
 
         bpy.context.window_manager.servo_animation.position_jump_handling = False
         bpy.context.object.data.bones['Bone'].servo_settings.servo_id = 0
@@ -32,11 +31,20 @@ class TestSocketLiveMode(unittest.TestCase):
     def run_server(self):
         self.server.serve_forever()
 
+    def stop_server(self):
+        self.server.shutdown()
+        self.server_thread.join()
+
     def handler(self, websocket):
         for message in websocket:
             for integer in message:
                 byte = integer.to_bytes(length=1, byteorder='big')
-                self.received_data.append(byte)
+                self.read_bytes().append(byte)
+
+    def read_bytes(self):
+        self.stop_server()
+
+        return self.received_data
 
     @parameterized.expand([
         ("frame 1", 1, 90, 0),
@@ -58,7 +66,7 @@ class TestSocketLiveMode(unittest.TestCase):
             bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT')
             bpy.context.scene.frame_set(33)
 
-        read_bytes = self.received_data
+        read_bytes = self.read_bytes()
 
         assert len(read_bytes) == COMMAND_LENGTH, f"got {len(read_bytes)}"
         assert read_bytes[0] == COMMAND_START
@@ -86,7 +94,7 @@ class TestSocketLiveMode(unittest.TestCase):
             bpy.context.scene.frame_set(frame)
             bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT')
 
-        read_bytes = self.received_data
+        read_bytes = self.read_bytes()
 
         exp = len(positions) * COMMAND_LENGTH
         got = len(read_bytes)
@@ -122,4 +130,4 @@ class TestSocketLiveMode(unittest.TestCase):
                 raised_exception = True
 
         assert raised_exception is True
-        assert len(self.received_data) == 0
+        assert len(self.read_bytes()) == 0
