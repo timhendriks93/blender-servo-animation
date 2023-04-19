@@ -58,12 +58,12 @@ class LiveMode(Operator):
             and (
                 (
                     servo_animation.live_mode_method == cls.METHOD_SERIAL
-                    and servo_animation.serial_port != ""
+                    and servo_animation.serial_port != "NONE"
                 )
                 or (
                     servo_animation.live_mode_method == cls.METHOD_SOCKET
                     and servo_animation.socket_host != ""
-                )
+                ) or bpy.app.background
             )
         )
 

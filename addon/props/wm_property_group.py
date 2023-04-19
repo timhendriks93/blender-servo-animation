@@ -6,9 +6,13 @@ from ..ops.live_mode import LiveMode
 
 def get_serial_port_items(_self, _context):
     items = []
+    ports = LiveMode.get_serial_ports()
 
-    for port in LiveMode.get_serial_ports():
-        items.append((port, port, ""))
+    if len(ports) < 1:
+        items.append(("NONE", "No port available", ""))
+    else:
+        for port in ports:
+            items.append((port, port, ""))
 
     return items
 
