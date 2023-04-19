@@ -55,7 +55,7 @@ class MenuPanel(Panel):
 
             if servo_animation.serial_port == 'NONE':
                 sub.enabled = False
-    
+
         elif servo_animation.live_mode_method == LiveMode.METHOD_SOCKET:
             col.prop(servo_animation, "socket_host")
             col.prop(servo_animation, "socket_port")

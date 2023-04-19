@@ -3,6 +3,7 @@ import io
 import threading
 
 from contextlib import redirect_stdout
+from websocket import WebSocket
 from parameterized import parameterized
 from websockets.sync.server import serve
 
@@ -35,14 +36,24 @@ class TestSocketLiveMode(unittest.TestCase):
         self.server.shutdown()
         self.server_thread.join()
 
-    def handler(self, websocket):
-        for message in websocket:
+    def handler(self, socket):
+        for message in socket:
+            if message == "stop":
+                self.stop_server()
+                break
+
             for integer in message:
                 byte = integer.to_bytes(length=1, byteorder='big')
-                self.read_bytes().append(byte)
+                self.received_data.append(byte)
 
     def read_bytes(self):
-        self.stop_server()
+        con = WebSocket()
+        con.connect(f"ws://{self.host}:{self.port}/ws")
+        con.send("stop")
+        con.close()
+
+        while self.server_thread.is_alive():
+            pass
 
         return self.received_data
 
