@@ -1,35 +1,44 @@
 import bpy
 
 from bpy.types import Operator
-from ..utils.uart import UART_CONTROLLER
+from .live_mode import LiveMode
 
 
 class StopLiveMode(Operator):
     bl_idname = "export_anim.stop_live_mode"
     bl_label = "Stop Live Mode"
-    bl_description = "Stop sending live position values via the current serial connection"
-    bl_options = {'INTERNAL'}
+    bl_description = "Stop sending live position values via the current live mode connection"
+    bl_options = {'INTERNAL', 'BLOCKING'}
 
-    @classmethod
-    def poll(cls, context):
-        return context.window_manager.servo_animation.live_mode
+    unexpected: bpy.props.BoolProperty()
+
+    @staticmethod
+    def display_warning(popup_self, _context):
+        popup_self.layout.label(text="Please check your setup and start the live mode again.")
 
     def execute(self, context):
-        message = "Closed serial connection"
+        method = context.window_manager.servo_animation.live_mode_method
 
-        if UART_CONTROLLER.is_connected():
-            serial_port = UART_CONTROLLER.serial_connection.port
-            message += f" on port {serial_port}"
+        LiveMode.close_connections()
+        LiveMode.unregister_handlers()
 
-        UART_CONTROLLER.close_serial_connection()
+        if method == LiveMode.METHOD_SERIAL:
+            connection_type = "serial"
+        elif method == LiveMode.METHOD_SOCKET:
+            connection_type = "web socket"
+        else:
+            self.report({'ERROR'}, "Unknown live mode method")
 
-        bpy.app.handlers.frame_change_post.remove(
-            UART_CONTROLLER.update_positions)
-        bpy.app.handlers.depsgraph_update_post.remove(
-            UART_CONTROLLER.update_positions)
+            return {'CANCELLED'}
 
-        context.window_manager.servo_animation.live_mode = False
+        if self.unexpected:
+            report_type = {'WARNING'}
+            message = f"{connection_type.capitalize()} connection closed unexpectedly"
+            context.window_manager.popup_menu(self.display_warning, title=message, icon='ERROR')
+        else:
+            report_type = {'INFO'}
+            message = f"Closed {connection_type} connection"
 
-        self.report({'INFO'}, message)
+        self.report(report_type, message)
 
         return {'FINISHED'}

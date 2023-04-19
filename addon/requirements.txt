@@ -1,4 +1,2 @@
-parameterized
 pyserial
 websocket-client
-websockets

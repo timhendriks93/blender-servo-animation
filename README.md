@@ -6,12 +6,14 @@ Animate your robot or animatronic project and take advantage of Blender's animat
 
 Also check out the [Blender Servo Animation Arduino Library](https://github.com/timhendriks93/blender-servo-animation-arduino) which is specifically designed to work with this add-on.
 
+[![Continuous Integration](https://github.com/timhendriks93/blender-servo-animation/actions/workflows/ci.yml/badge.svg)](https://github.com/timhendriks93/blender-servo-animation/actions/workflows/ci.yml)
+
 ## Features
 
 - Represent servos through armature bones
 - Provide individual `Servo Settings` per bone
 - Export an animation as servo position values
-- Send position values via a serial connection in real-time
+- Send position values via a live mode connection in real-time
 - Supporting Inverse Kinematics (IK)
 
 ## Installation
@@ -37,7 +39,7 @@ The underlying principle is that each bone represents a servo motor in the real 
 
 | Property | Description |
 | -------- | ----------- |
-| Servo ID | Unique number between `0` and `255` to identify this servo (used to send serial commands) |
+| Servo ID | Unique number between `0` and `255` to identify this servo (used to send live commands) |
 | Position Min | The minimum position value to identify this servo physically stops moving |
 | Position Max | Same as `Position Min`, but for the maximum value |
 | Set Position Limits | Define a position range to limit the calculated position values according to a specific build |
@@ -92,25 +94,48 @@ For projects which involve an Arduino compatible microcontroller, the easiest wa
 
 Apart from using the library, it is also possible to write use the exported data in any other kind of program. Especially the JSON format simply represents a list of position values which can be easily parsed via code.
 
-## Live Mode via Serial Connection
+## Live Mode
 
-To make the animation process even more intuitive, you can enable the `Live mode` to send position commands via a serial connection (UART/USB). This will allow you to control your servos in real-time from within Blender.
+To make the animation process even more intuitive, you can enable the `Live mode` to send position commands via one of the following connection types:
 
-After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Here you can prepare and control the serial connection for the `Live mode`. For additional convenience, you can also find buttons to export the servo positions here.
+- Serial (UART/USB)
+- Web socket (TCP)
 
-![Timeline menu](screenshots/timeline_menu.png)
+This will allow you to control your servos in real-time from within Blender.
 
-### Setup a Serial Connection
+### Installing dependencies
 
-To use the `Live Mode`, you will need to prepare a receiver which will interpret the received commands and use them to control the servo motors accordingly. In most cases, the receiver can be considered an Arduino compatible micro controller which is connected via USB to your PC.
+After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Before using the live mode feature of this add-on, you might have to install some Python dependencies first by pressing the `Install dependencies` button. This will automatically install the required pip packages and requires an active internet connection.
 
-Once the micro controller is connected, the add-on will try to find and list the respective `Serial Port`. If there are multiple ports and you are unsure which one belongs to your controller, simply compare the list of ports after removing and re-connecting the device.
+![Install dependencies button](screenshots/live_mode_dependencies.png)
+
+Afterwards you can prepare and control the connection to be used for the `Live mode` via this menu. For additional convenience, you will also find buttons to export the servo positions here.
+
+### Setup a connection
+
+To use the `Live Mode`, you will need to prepare a receiver which will interpret the received commands and use them to control the servo motors accordingly.
+
+In most cases, the receiver can be considered an Arduino compatible micro controller. As a first step, a connection method should be selected via the `Method` dropdown menu.
+
+![Timeline menu](screenshots/timeline_menu.gif)
+
+> Note: starting the `Live Mode` will immediately send the position values for all servos based on the current frame. Make sure that this will not break anything, as the servos will try to move to their new position as fast as possible.
+
+#### Serial connection
+
+Once the micro controller is connected via USB to your PC, the add-on will try to find and list the respective `Serial Port`. If there are multiple ports and you are unsure which one belongs to your controller, simply compare the list of ports after removing and re-connecting the device.
 
 The `Baud Rate` specifies at which rate or speed the data will be transferred. It might need to be adjusted according to the limitations and configurations of your receiver. Keep in mind that a high frame rate combined with a multitude of servos requires a faster data transmission to achieve a smooth movement. As a reference, it was possible to smoothly control `16 servos` at `60 fps` with a baud rate of `115200`.
 
 Once the `Serial Port` and `Baud Rate` have been set, you can click the `Connect` button to establish the serial connection and start the `Live Mode`.
 
-> Note: starting the `Live Mode` will immediately send the position values for all servos based on the current frame. Make sure that this will not break anything, as the servos will try to move to their new position as fast as possible.
+#### Web socket connection
+
+It is also possible to send the position values via a TCP-based web socket connection. For example, one could use a WiFi-capable micro controller like the `ESP32` and set up a server to receive commands from Blender. The server should be in the same network as the machine which is running Blender.
+
+After starting such a server, we can enter the respective IP address and port into the `Host` and `Port` input fields.
+
+Clicking the `Connect` button will then establish a tcp connection and start the `Live Mode`.
 
 ### Position Jump Handling
 
@@ -118,7 +143,7 @@ Once the connection is established, you can use the timeline to control your ser
 
 When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will first calculate all position value differences. If one of those differences exceeds the `Threshold` value, the servos will be slowly moved to their new target position. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
 
-### Serial Protocol
+### Command Protocol
 
 The position values are sent based on a specific binary protocol. The receiver has to know about it and be able to interpret the received data in order to successfully trigger the correct servo movement.
 
@@ -132,6 +157,6 @@ The protocol defines in which order and pattern individual bytes are transferred
 
 The position value is split into 2 bytes (high and low), while the first byte is the most significant one.
 
-### Reading Serial Commands on an Arduino
+### Reading Commands on an Arduino
 
-Instead of writing your own logic to read and interpret the serial commands, you can also use the [Blender Servo Animation Arduino Library](https://github.com/timhendriks93/blender-servo-animation-arduino) which has a built-in support for the live mode. Check out the library's repository for more details and some read-to-use examples.
+Instead of writing your own logic to read and interpret the live mode commands, you can also use the [Blender Servo Animation Arduino Library](https://github.com/timhendriks93/blender-servo-animation-arduino) which has a built-in support for the live mode. Check out the library's repository for more details and some ready-to-use examples.

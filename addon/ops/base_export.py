@@ -2,6 +2,7 @@ import time
 import bpy
 
 from ..utils.converter import calculate_positions
+from ..ops.live_mode import LiveMode
 
 
 class BaseExport:
@@ -24,9 +25,8 @@ class BaseExport:
 
     def execute(self, context):
         start = time.time()
-        servo_animation = context.window_manager.servo_animation
         original_frame = context.scene.frame_current
-        original_live_mode = servo_animation.live_mode
+        original_live_mode = LiveMode.is_active()
 
         if original_live_mode is True:
             bpy.ops.export_anim.stop_live_mode()
@@ -42,7 +42,7 @@ class BaseExport:
             context.scene.frame_set(original_frame)
 
             if original_live_mode is True:
-                bpy.ops.export_anim.start_live_mode('INVOKE_DEFAULT')
+                bpy.ops.export_anim.live_mode('INVOKE_DEFAULT')
 
         with open(self.filepath, 'w', encoding='utf-8') as file:
             file.write(content)
@@ -61,3 +61,7 @@ class BaseExport:
         seconds = round(frames / scene.render.fps)
 
         return fps, frames, seconds
+
+    @staticmethod
+    def get_blend_filename():
+        return bpy.path.basename(bpy.context.blend_data.filepath)
