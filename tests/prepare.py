@@ -4,8 +4,6 @@ import sys
 import ensurepip
 import subprocess
 
-from textwrap import dedent
-
 import bpy
 
 
@@ -13,26 +11,10 @@ main_dir = pathlib.Path(os.path.dirname(__file__)).resolve()
 sys.path.append(str(main_dir))
 
 def ensure_pip():
-    print(dedent('''
-        ################################
-        ||                            ||
-        ||      Ensuring pip...       ||
-        ||                            ||
-        ################################
-    '''))
-
     ensurepip.bootstrap()
     os.environ.pop("PIP_REQ_TRACKER", None)
 
 def install_dependencies():
-    print(dedent('''
-        ################################
-        ||                            ||
-        || Installing dependencies... ||
-        ||                            ||
-        ################################
-    '''))
-
     try:
         python = bpy.app.binary_path_python
     except AttributeError:

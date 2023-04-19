@@ -48,7 +48,7 @@ class TestSocketLiveMode(unittest.TestCase):
 
     def read_bytes(self):
         con = WebSocket()
-        con.connect(f"ws://{self.host}:{self.port}/ws")
+        con.connect(f"ws://{self.host}:{self.port}")
         con.send("stop")
         con.close()
 

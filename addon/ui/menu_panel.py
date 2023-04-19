@@ -59,6 +59,7 @@ class MenuPanel(Panel):
         elif servo_animation.live_mode_method == LiveMode.METHOD_SOCKET:
             col.prop(servo_animation, "socket_host")
             col.prop(servo_animation, "socket_port")
+            col.prop(servo_animation, "socket_path")
 
         col = layout.column()
         col.prop(servo_animation, "position_jump_handling")

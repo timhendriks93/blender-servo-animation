@@ -48,6 +48,7 @@ class LiveMode(Operator):
 
     socket_host: bpy.props.StringProperty()
     socket_port: bpy.props.IntProperty()
+    socket_path: bpy.props.StringProperty()
 
     @classmethod
     def poll(cls, context):
@@ -265,30 +266,21 @@ class LiveMode(Operator):
         return {'FINISHED'}
 
     def open_socket(self, _context):
-        socket_url = f"ws://{self.socket_host}:{self.socket_port}/ws"
+        socket_url = f"ws://{self.socket_host}:{self.socket_port}{self.socket_path}"
         socket_connection = websocket.WebSocket()
         socket_connection.settimeout(1)
 
         try:
             socket_connection.connect(socket_url)
         except (websocket.WebSocketException, OSError):
-            self.report(
-                {'ERROR'},
-                (
-                    f"Failed to open web socket connection with host {self.socket_host} "
-                    f"on port {self.socket_port}"
-                )
-            )
+            self.report({'ERROR'}, f"Failed to open web socket connection with {socket_url}")
 
             return {'CANCELLED'}
 
         LiveMode._socket_connection = socket_connection
 
         self.register_handlers()
-        self.report(
-            {'INFO'},
-            f"Opened web socket connection with host {self.socket_host} on port {self.socket_port}"
-        )
+        self.report({'INFO'}, f"Opened web socket connection with {socket_url}")
 
         return {'FINISHED'}
 
@@ -320,5 +312,6 @@ class LiveMode(Operator):
 
         self.socket_host = servo_animation.socket_host
         self.socket_port = servo_animation.socket_port
+        self.socket_path = servo_animation.socket_path
 
         return self.execute(context)

@@ -45,6 +45,10 @@ class WindowManagerPropertyGroup(PropertyGroup):
         max=65535,
         default=80
     )
+    socket_path: bpy.props.StringProperty(
+        name="Path",
+        default="/"
+    )
     position_jump_handling: bpy.props.BoolProperty(
         name="Position Jump Handling",
         description=(
