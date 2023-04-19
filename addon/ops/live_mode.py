@@ -35,11 +35,9 @@ class LiveMode(Operator):
     ]
 
     _last_positions = {}
+    _connection = None
     _is_handling = False
     _is_available = DEPS_INSTALLED
-
-    _serial_connection = None
-    _socket_connection = None
 
     method: bpy.props.EnumProperty(items=METHOD_ITEMS)
 
@@ -133,10 +131,10 @@ class LiveMode(Operator):
     @classmethod
     def has_serial_connection(cls):
         return (
-            isinstance(cls._serial_connection, serial.Serial)
-            and cls._serial_connection.is_open
+            isinstance(cls._connection, serial.Serial)
+            and cls._connection.is_open
             and (
-                cls._serial_connection.port in cls.get_serial_ports()
+                cls._connection.port in cls.get_serial_ports()
                 or bpy.app.background
             )
         )
@@ -144,8 +142,8 @@ class LiveMode(Operator):
     @classmethod
     def has_socket_connection(cls):
         return (
-            isinstance(cls._socket_connection, websocket.WebSocket)
-            and cls._socket_connection.connected
+            isinstance(cls._connection, websocket.WebSocket)
+            and cls._connection.connected
         )
 
     @classmethod
@@ -220,9 +218,9 @@ class LiveMode(Operator):
 
         try:
             if servo_animation.live_mode_method == cls.METHOD_SERIAL:
-                cls._serial_connection.write(command)
+                cls._connection.write(command)
             elif servo_animation.live_mode_method == cls.METHOD_SOCKET:
-                cls._socket_connection.send_binary(bytes(command))
+                cls._connection.send_binary(bytes(command))
 
             cls._last_positions[servo_id] = position
         except (serial.SerialException, websocket.WebSocketException, OSError):
@@ -244,8 +242,7 @@ class LiveMode(Operator):
 
     def open_serial(self, _context):
         try:
-            LiveMode._serial_connection = serial.Serial(
-                port=self.serial_port, baudrate=self.serial_baud)
+            LiveMode._connection = serial.Serial(self.serial_port, self.serial_baud)
         except (serial.SerialException, ValueError):
             self.report(
                 {'ERROR'},
@@ -277,7 +274,7 @@ class LiveMode(Operator):
 
             return {'CANCELLED'}
 
-        LiveMode._socket_connection = socket_connection
+        LiveMode._connection = socket_connection
 
         self.register_handlers()
         self.report({'INFO'}, f"Opened web socket connection with {socket_url}")
@@ -286,21 +283,20 @@ class LiveMode(Operator):
 
     @classmethod
     def close_connections(cls):
+        cls._last_positions = {}
         method = bpy.context.window_manager.servo_animation.live_mode_method
 
         if (
-            method == cls.METHOD_SERIAL
-            and isinstance(cls._serial_connection, serial.Serial)
+            (
+                method == cls.METHOD_SERIAL
+                and isinstance(cls._connection, serial.Serial)
+            ) or
+            (
+                method == cls.METHOD_SOCKET
+                and isinstance(cls._connection, websocket.WebSocket)
+            )
         ):
-            cls._serial_connection.close()
-
-        if (
-            method == cls.METHOD_SOCKET
-            and isinstance(cls._socket_connection, websocket.WebSocket)
-        ):
-            cls._socket_connection.close()
-
-        cls._last_positions = {}
+            cls._connection.close()
 
     def invoke(self, context, _event):
         servo_animation = context.window_manager.servo_animation
