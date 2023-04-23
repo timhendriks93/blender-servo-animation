@@ -33,7 +33,7 @@ After enabling this Add-on, you should see a `Servo Settings` panel within the `
 
 The underlying principle is that each bone represents a servo motor in the real world. To treat a bone as a servo and activate the `Servo Settings`, enable the checkbox in the panel header.
 
-![Servo Settings panel](screenshots/servo_settings.png)
+![Servo Settings panel](images/servo_settings.png)
 
 ### Servo Setting Properties
 
@@ -77,7 +77,7 @@ Once all servo settings are provided and your animation is ready, you can calcul
 
 Make sure to select the armature containing the bones/servos you want to export and choose the desired format in the `File > Export` menu:
 
-![Servo Settings panel](screenshots/export_menu.png)
+![Servo Settings panel](images/export_menu.png)
 
 Alternatively, you can also trigger the export via the timeline menu which is shown in the live mode section below.
 
@@ -107,7 +107,7 @@ This will allow you to control your servos in real-time from within Blender.
 
 After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Before using the live mode feature of this add-on, you might have to install some Python dependencies first by pressing the `Install dependencies` button. This will automatically install the required pip packages and requires an active internet connection.
 
-![Install dependencies button](screenshots/live_mode_dependencies.png)
+![Install dependencies button](images/live_mode_dependencies.png)
 
 Afterwards you can prepare and control the connection to be used for the `Live mode` via this menu. For additional convenience, you will also find buttons to export the servo positions here.
 
@@ -117,7 +117,7 @@ To use the `Live Mode`, you will need to prepare a receiver which will interpret
 
 In most cases, the receiver can be considered an Arduino compatible micro controller. As a first step, a connection method should be selected via the `Method` dropdown menu.
 
-![Timeline menu](screenshots/timeline_menu.gif)
+![Timeline menu](images/timeline_menu.gif)
 
 > Note: starting the `Live Mode` will immediately send the position values for all servos based on the current frame. Make sure that this will not break anything, as the servos will try to move to their new position as fast as possible.
 

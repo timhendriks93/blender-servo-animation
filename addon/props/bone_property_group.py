@@ -114,7 +114,7 @@ class BonePropertyGroup(PropertyGroup):
         precision=1,
         step=10,
         description=(
-            "Multilplier to increase or decrease the rotation to adjust the "
+            "Multiplier to increase or decrease the rotation to adjust the "
             "intensity within a specific build"
         )
     )
