@@ -34,7 +34,9 @@ class BonePanel(Panel):
         col.prop(servo_settings, "position_min")
         col.prop(servo_settings, "position_max")
 
-        self.draw_limit(servo_settings)
+        col = layout.column(align=True)
+        col.active = servo_settings.active
+        col.prop(servo_settings, "threshold")
 
         layout.separator()
 
@@ -65,23 +67,10 @@ class BonePanel(Panel):
         col.active = servo_settings.active
         col.prop(servo_settings, "servo_id")
 
-    def draw_limit(self, servo_settings):
-        layout = self.layout
-        col = layout.column(align=True)
-        col.active = servo_settings.active
-
-        sub = col.column()
-        sub.prop(servo_settings, "set_position_limits")
-
-        sub = col.column(align=True)
-        sub.prop(servo_settings, "position_limit_start")
-        sub.prop(servo_settings, "position_limit_end")
-        sub.active = servo_settings.set_position_limits
-
     def draw_current(self, context):
         layout = self.layout
         box = layout.box()
-        position, in_range = calculate_position(
+        position, angle, in_range = calculate_position(
             context.active_pose_bone, None)
 
         if not in_range:
@@ -90,8 +79,10 @@ class BonePanel(Panel):
         row = box.row()
         col = row.column(align=True)
         col.alignment = 'RIGHT'
-        col.label(text="Current frame")
-        col.label(text="Current position value")
+        col.label(text="Frame:")
+        col.label(text="Position value:")
+        col.label(text="Angle:")
         col = row.column(align=True)
         col.label(text=str(context.scene.frame_current))
         col.label(text=str(position))
+        col.label(text=str(angle) + "°")

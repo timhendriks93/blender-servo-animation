@@ -34,6 +34,8 @@ class LiveMode(Operator):
         (METHOD_SOCKET, "Web Socket", "Connect via a web socket"),
     ]
 
+    STEP_DURATION_BASE = .3
+
     _last_positions = {}
     _connection = None
     _is_handling = False
@@ -78,27 +80,27 @@ class LiveMode(Operator):
         servo_animation = bpy.context.window_manager.servo_animation
 
         for pose_bone in get_active_pose_bones(bpy.context.scene):
-            target_position, in_range = calculate_position(pose_bone, None)
+            target_position, _angle, in_range = calculate_position(pose_bone, None)
 
             if not in_range:
                 continue
 
-            servo_id = pose_bone.bone.servo_settings.servo_id
+            servo_settings = pose_bone.bone.servo_settings
+            servo_id = servo_settings.servo_id
             target_positions[servo_id] = target_position
 
             if servo_id in cls._last_positions:
-                diffs.append(
-                    abs(target_position - cls._last_positions[servo_id]))
+                diff = abs(target_position - cls._last_positions[servo_id])
+
+                if diff > servo_settings.threshold:
+                    diffs.append(diff)
 
         if len(diffs) > 0:
             steps = max(diffs)
         else:
             steps = 0
 
-        if (
-            servo_animation.position_jump_handling
-            and steps > servo_animation.position_jump_threshold
-        ):
+        if (servo_animation.position_jump_handling and steps > 0):
             cls.handle_position_jump(target_positions, steps)
         else:
             cls.handle_default(target_positions)
@@ -190,6 +192,8 @@ class LiveMode(Operator):
         window_manager = bpy.context.window_manager
         window_manager.progress_begin(0, steps)
 
+        step_duration = cls.STEP_DURATION_BASE / steps
+
         for step in range(steps):
             window_manager.progress_update(step)
             for servo_id, target_position in target_positions.items():
@@ -201,7 +205,7 @@ class LiveMode(Operator):
                 else:
                     new_position = previous_position - 1
                 cls.send_position(servo_id, new_position)
-            time.sleep(.01)
+            time.sleep(step_duration)
 
         window_manager.progress_end()
 
