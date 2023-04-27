@@ -26,6 +26,7 @@ class TestSerialLiveMode(unittest.TestCase):
 
         bpy.context.window_manager.servo_animation.position_jump_handling = False
         bpy.context.object.data.bones['Bone'].servo_settings.servo_id = 0
+        bpy.context.object.data.bones['Bone'].servo_settings.threshold = 20
         bpy.context.scene.frame_set(1)
 
     def read_bytes(self):
@@ -71,9 +72,9 @@ class TestSerialLiveMode(unittest.TestCase):
         assert read_bytes[4] == COMMAND_END
 
     @parameterized.expand([
-            ('without handling', False, 20, 33, [90, 45]),
-            ('threshold reached', True, 20, 33, range(90, 44, -1)),
-            ('threshold not reached - small frame jump', True, 20, 10, [90, 81]),
+            ('without handling', False, 10, 33, [90, 45]),
+            ('threshold reached', True, 10, 33, range(90, 44, -1)),
+            ('threshold not reached - small frame jump', True, 10, 10, [90, 81]),
             ('threshold not reached - increased threshold', True, 50, 33, [90, 45]),
         ])
     def test_position_jump(self, _name, handling, threshold, frame, positions):
@@ -86,7 +87,7 @@ class TestSerialLiveMode(unittest.TestCase):
                 serial_baud=115200
             )
             bpy.context.window_manager.servo_animation.position_jump_handling = handling
-            bpy.context.window_manager.servo_animation.position_jump_threshold = threshold
+            bpy.context.object.data.bones['Bone'].servo_settings.threshold = threshold
             bpy.context.scene.frame_set(frame)
             bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT')
 

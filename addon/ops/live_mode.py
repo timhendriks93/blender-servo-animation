@@ -1,4 +1,5 @@
 import importlib
+import math
 import time
 import bpy
 
@@ -33,6 +34,8 @@ class LiveMode(Operator):
         (METHOD_SERIAL, "Serial", "Connect via USB"),
         (METHOD_SOCKET, "Web Socket", "Connect via a web socket"),
     ]
+
+    STEP_DURATION_BASE = .3
 
     _last_positions = {}
     _connection = None
@@ -73,33 +76,29 @@ class LiveMode(Operator):
 
         cls._is_handling = True
 
-        diffs = []
-        target_positions = {}
+        threshold_exceeded = False
+        target_positions = []
         servo_animation = bpy.context.window_manager.servo_animation
 
         for pose_bone in get_active_pose_bones(bpy.context.scene):
-            target_position, in_range = calculate_position(pose_bone, None)
+            position, _angle, in_range = calculate_position(pose_bone, None)
 
             if not in_range:
                 continue
 
-            servo_id = pose_bone.bone.servo_settings.servo_id
-            target_positions[servo_id] = target_position
+            servo_settings = pose_bone.bone.servo_settings
+            servo_id = servo_settings.servo_id
+            step = round(servo_settings.threshold / 10)
+            target_positions.append((servo_id, position, step))
 
-            if servo_id in cls._last_positions:
-                diffs.append(
-                    abs(target_position - cls._last_positions[servo_id]))
+            if (
+                servo_id in cls._last_positions
+                and abs(position - cls._last_positions[servo_id]) > servo_settings.threshold
+            ):
+                threshold_exceeded = True
 
-        if len(diffs) > 0:
-            steps = max(diffs)
-        else:
-            steps = 0
-
-        if (
-            servo_animation.position_jump_handling
-            and steps > servo_animation.position_jump_threshold
-        ):
-            cls.handle_position_jump(target_positions, steps)
+        if (servo_animation.position_jump_handling and threshold_exceeded):
+            cls.handle_position_jump(target_positions)
         else:
             cls.handle_default(target_positions)
 
@@ -179,28 +178,45 @@ class LiveMode(Operator):
 
     @classmethod
     def handle_default(cls, target_positions):
-        for servo_id, target_position in target_positions.items():
-            cls.send_position(servo_id, target_position)
+        for servo_id, position, _step in target_positions:
+            cls.send_position(servo_id, position)
 
     @classmethod
-    def handle_position_jump(cls, target_positions, steps):
+    def handle_position_jump(cls, target_positions):
         if bpy.context.screen.is_animation_playing:
             bpy.ops.screen.animation_cancel(restore_frame=False)
 
-        window_manager = bpy.context.window_manager
-        window_manager.progress_begin(0, steps)
+        abs_steps = 0
 
-        for step in range(steps):
-            window_manager.progress_update(step)
-            for servo_id, target_position in target_positions.items():
-                previous_position = cls._last_positions[servo_id]
-                if target_position == previous_position:
+        for servo_id, position, step in target_positions:
+            diff = abs(position - cls._last_positions[servo_id])
+            steps = math.ceil(diff / step)
+
+            if steps > abs_steps:
+                abs_steps = steps
+
+        window_manager = bpy.context.window_manager
+        window_manager.progress_begin(0, abs_steps)
+
+        for abs_step in range(abs_steps):
+            window_manager.progress_update(abs_step)
+
+            for servo_id, position, step in target_positions:
+                new_position = cls._last_positions[servo_id]
+
+                if position == new_position:
                     continue
-                if target_position > previous_position:
-                    new_position = previous_position + 1
+
+                if position > new_position:
+                    new_position += step
                 else:
-                    new_position = previous_position - 1
+                    new_position -= step
+
+                if abs(position - new_position) < step:
+                    new_position = position
+
                 cls.send_position(servo_id, new_position)
+
             time.sleep(.01)
 
         window_manager.progress_end()

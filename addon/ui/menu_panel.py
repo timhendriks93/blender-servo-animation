@@ -25,8 +25,6 @@ class MenuPanel(Panel):
         else:
             self.draw_live_mode_deps(col)
 
-        layout.separator()
-
         col = layout.column()
         col.label(text="Export")
         row = col.row(align=True)
@@ -63,9 +61,6 @@ class MenuPanel(Panel):
 
         col = layout.column()
         col.prop(servo_animation, "position_jump_handling")
-        col = layout.column()
-        col.active = servo_animation.position_jump_handling
-        col.prop(servo_animation, "position_jump_threshold")
 
     @classmethod
     def draw_live_mode_deps(cls, col):

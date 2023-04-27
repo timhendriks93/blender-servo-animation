@@ -33,7 +33,7 @@ After enabling this Add-on, you should see a `Servo Settings` panel within the `
 
 The underlying principle is that each bone represents a servo motor in the real world. To treat a bone as a servo and activate the `Servo Settings`, enable the checkbox in the panel header.
 
-![Servo Settings panel](screenshots/servo_settings.png)
+![Servo Settings panel](images/servo_settings.png)
 
 ### Servo Setting Properties
 
@@ -42,9 +42,7 @@ The underlying principle is that each bone represents a servo motor in the real 
 | Servo ID | Unique number between `0` and `255` to identify this servo (used to send live commands) |
 | Position Min | The minimum position value to identify this servo physically stops moving |
 | Position Max | Same as `Position Min`, but for the maximum value |
-| Set Position Limits | Define a position range to limit the calculated position values according to a specific build |
-| Position Limit Start | The minimum position value before the servo is supposed to stop moving within a specific build |
-| Position Limit End | Same as `Position Limit Start`, but for the end value |
+| Threshold | The maximum value change between frames which is also used for frame jump handling in live mode |
 | Neutral Angle | The assumed neutral angle of the servo in degrees (typically half the rotation range) which should be adjusted carefully, since the servo will first move to its 'natural' neutral angle when powered |
 | Rotation Range | The manufactured rotation range of the servo in degrees (typically `180`) |
 | Euler Rotation Axis | The Euler rotation axis (`X`, `Y` or `Z`) of the bone rotation representing the servo movement |
@@ -61,9 +59,7 @@ It is also possible to use a different kind of value range. For example, to use 
 
 ### Limiting the value range
 
-The possible range of motion of a servo can be influenced by the specific design of your build. In this case, you can measure and use the position limit values to avoid damage to your setup.
-
-You can also take advantage of Blender's functionality and use [bone constraints](https://docs.blender.org/manual/en/latest/animation/constraints/transform/limit_rotation.html) to already limit the bone rotation according to your build. The more precise your 3D model, the easier it will be to apply constraints and get an accurate preview of the real-world setup.
+You can take advantage of Blender's functionality and use [bone constraints](https://docs.blender.org/manual/en/latest/animation/constraints/transform/limit_rotation.html) to already limit the bone rotation according to your build. The more precise your 3D model, the easier it will be to apply constraints and get an accurate preview of the real-world setup.
 
 ## Animating the Armature
 
@@ -77,7 +73,7 @@ Once all servo settings are provided and your animation is ready, you can calcul
 
 Make sure to select the armature containing the bones/servos you want to export and choose the desired format in the `File > Export` menu:
 
-![Servo Settings panel](screenshots/export_menu.png)
+![Servo Settings panel](images/export_menu.png)
 
 Alternatively, you can also trigger the export via the timeline menu which is shown in the live mode section below.
 
@@ -107,7 +103,7 @@ This will allow you to control your servos in real-time from within Blender.
 
 After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Before using the live mode feature of this add-on, you might have to install some Python dependencies first by pressing the `Install dependencies` button. This will automatically install the required pip packages and requires an active internet connection.
 
-![Install dependencies button](screenshots/live_mode_dependencies.png)
+![Install dependencies button](images/live_mode_dependencies.png)
 
 Afterwards you can prepare and control the connection to be used for the `Live mode` via this menu. For additional convenience, you will also find buttons to export the servo positions here.
 
@@ -117,7 +113,7 @@ To use the `Live Mode`, you will need to prepare a receiver which will interpret
 
 In most cases, the receiver can be considered an Arduino compatible micro controller. As a first step, a connection method should be selected via the `Method` dropdown menu.
 
-![Timeline menu](screenshots/timeline_menu.gif)
+![Timeline menu](images/timeline_menu.gif)
 
 > Note: starting the `Live Mode` will immediately send the position values for all servos based on the current frame. Make sure that this will not break anything, as the servos will try to move to their new position as fast as possible.
 
@@ -139,9 +135,11 @@ Clicking the `Connect` button will then establish a tcp connection and start the
 
 ### Position Jump Handling
 
-Once the connection is established, you can use the timeline to control your servos in a synchronized way. This opens up the possibility to jump to a different frame or position within your animation. To prevent damage due to the servos moving too quickly, you can use `Position Jump Handling` and define a respective `Threshold`. This option is enabled by default.
+Once the connection is established, you can use the timeline to control your servos in a synchronized way. This opens up the possibility to jump to a different frame or position within your animation. To prevent damage due to the servos moving too quickly, you can use `Position Jump Handling`. This option is enabled by default.
 
-When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will first calculate all position value differences. If one of those differences exceeds the `Threshold` value, the servos will be slowly moved to their new target position. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
+When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will first calculate all position value differences. If one of those differences exceeds the `Threshold` value of the respective servos, they will be slowly moved to their new target position. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
+
+The speed of this process is also relative to the configured `Threshold` values. A slower and safer movement can be achieved by setting the threshold values as low as possible with the actual animation still able to run properly.
 
 ### Command Protocol
 

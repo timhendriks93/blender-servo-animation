@@ -41,6 +41,7 @@ class JsonExport(Operator, BaseExport, ExportHelper):
             "bones": len(positions),
             "armature": context.object.name,
             "file": filename,
+            "scene": context.scene.name,
             "servos": servos
         }
 
