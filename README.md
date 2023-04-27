@@ -42,9 +42,7 @@ The underlying principle is that each bone represents a servo motor in the real 
 | Servo ID | Unique number between `0` and `255` to identify this servo (used to send live commands) |
 | Position Min | The minimum position value to identify this servo physically stops moving |
 | Position Max | Same as `Position Min`, but for the maximum value |
-| Set Position Limits | Define a position range to limit the calculated position values according to a specific build |
-| Position Limit Start | The minimum position value before the servo is supposed to stop moving within a specific build |
-| Position Limit End | Same as `Position Limit Start`, but for the end value |
+| Threshold | The maximum value change between frames which is also used for frame jump handling in live mode |
 | Neutral Angle | The assumed neutral angle of the servo in degrees (typically half the rotation range) which should be adjusted carefully, since the servo will first move to its 'natural' neutral angle when powered |
 | Rotation Range | The manufactured rotation range of the servo in degrees (typically `180`) |
 | Euler Rotation Axis | The Euler rotation axis (`X`, `Y` or `Z`) of the bone rotation representing the servo movement |
@@ -61,9 +59,7 @@ It is also possible to use a different kind of value range. For example, to use 
 
 ### Limiting the value range
 
-The possible range of motion of a servo can be influenced by the specific design of your build. In this case, you can measure and use the position limit values to avoid damage to your setup.
-
-You can also take advantage of Blender's functionality and use [bone constraints](https://docs.blender.org/manual/en/latest/animation/constraints/transform/limit_rotation.html) to already limit the bone rotation according to your build. The more precise your 3D model, the easier it will be to apply constraints and get an accurate preview of the real-world setup.
+You can take advantage of Blender's functionality and use [bone constraints](https://docs.blender.org/manual/en/latest/animation/constraints/transform/limit_rotation.html) to already limit the bone rotation according to your build. The more precise your 3D model, the easier it will be to apply constraints and get an accurate preview of the real-world setup.
 
 ## Animating the Armature
 
@@ -139,9 +135,11 @@ Clicking the `Connect` button will then establish a tcp connection and start the
 
 ### Position Jump Handling
 
-Once the connection is established, you can use the timeline to control your servos in a synchronized way. This opens up the possibility to jump to a different frame or position within your animation. To prevent damage due to the servos moving too quickly, you can use `Position Jump Handling` and define a respective `Threshold`. This option is enabled by default.
+Once the connection is established, you can use the timeline to control your servos in a synchronized way. This opens up the possibility to jump to a different frame or position within your animation. To prevent damage due to the servos moving too quickly, you can use `Position Jump Handling`. This option is enabled by default.
 
-When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will first calculate all position value differences. If one of those differences exceeds the `Threshold` value, the servos will be slowly moved to their new target position. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
+When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will first calculate all position value differences. If one of those differences exceeds the `Threshold` value of the respective servos, they will be slowly moved to their new target position. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
+
+The speed of this process is also relative to the configured `Threshold` values. A slower and safer movement can be achieved by setting the threshold values as low as possible with the actual animation still able to run properly.
 
 ### Command Protocol
 
