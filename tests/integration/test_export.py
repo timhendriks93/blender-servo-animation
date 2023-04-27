@@ -60,7 +60,7 @@ class TestExport(unittest.TestCase):
         with open(export_file, 'r', encoding='utf-8') as file:
             parsed = json.load(file)
 
-        assert parsed["file"] == "simple.blend"
+        assert parsed["file"] == "test.blend"
         assert parsed["frames"] == 100
         assert parsed["scene"] == "Scene"
         assert len(parsed["servos"]["0"]["positions"]) == 100
@@ -145,3 +145,6 @@ class TestExport(unittest.TestCase):
         )
         got = error_msg
         assert got == exp, f"expected error message '{exp}', got '{got}' instead"
+
+if __name__ == '__main__':
+    unittest.main()
