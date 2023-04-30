@@ -24,14 +24,14 @@ def toggle_position(self, context):
         send_position_max(self, context)
 
 
-class Calibration(Operator):
+class CalibrateServo(Operator):
     bl_idname = "export_anim.servo_calibration"
     bl_label = "Calibrate servo"
     bl_description = "Calibrate servo during live mode by setting the min and max position values"
     bl_options = {'INTERNAL', 'BLOCKING'}
 
     toggle: bpy.props.EnumProperty(
-        name="Current position",
+        name="Position type",
         items=[
             ('MIN', 'Min position', ''),
             ('MAX', 'Max position', '')
@@ -41,14 +41,14 @@ class Calibration(Operator):
         update=toggle_position
     )
     position_min: bpy.props.IntProperty(
-        name="Min Position",
+        name="Position value",
         min=0,
         max=10000,
         description="The minimum position value before the servo physically stops moving",
         update=send_position_min
     )
     position_max: bpy.props.IntProperty(
-        name="Max Position",
+        name="Position value",
         min=0,
         max=10000,
         description="The maximum position value before the servo physically stops moving",
@@ -94,21 +94,16 @@ class Calibration(Operator):
         layout.use_property_split = True
 
         box = layout.box()
-        box.label(text="Value changes immediately move servo", icon="ERROR")
+        box.label(text="Changes move servo immediately", icon="ERROR")
 
         layout.separator()
 
         col = self.layout.column(align=True)
         col.prop(self, "toggle")
 
-        layout.separator()
-
-        col = layout.column(align=True)
-        col.enabled = self.toggle == "MIN"
-        col.prop(self, "position_min")
-
-        col = layout.column(align=True)
-        col.enabled = self.toggle == "MAX"
-        col.prop(self, "position_max")
+        if self.toggle == 'MIN':
+            col.prop(self, "position_min")
+        else:
+            col.prop(self, "position_max")
 
         layout.separator()
