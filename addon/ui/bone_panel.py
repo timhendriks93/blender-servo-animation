@@ -25,6 +25,9 @@ class BonePanel(Panel):
         layout.use_property_split = True
         servo_settings = context.active_bone.servo_settings
 
+        layout.operator("export_anim.servo_calibration")
+        layout.separator()
+
         self.draw_servo_id(servo_settings, context)
 
         layout.separator()

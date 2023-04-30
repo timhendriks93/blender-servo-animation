@@ -39,7 +39,7 @@ class LiveMode(Operator):
 
     _last_positions = {}
     _connection = None
-    _is_handling = False
+    is_handling = False
     _is_available = DEPS_INSTALLED
 
     method: bpy.props.EnumProperty(items=METHOD_ITEMS)
@@ -71,10 +71,10 @@ class LiveMode(Operator):
 
     @classmethod
     def handler(cls, _scene, _depsgraph):
-        if cls._is_handling:
+        if cls.is_handling:
             return
 
-        cls._is_handling = True
+        cls.is_handling = True
 
         threshold_exceeded = False
         target_positions = []
@@ -102,7 +102,7 @@ class LiveMode(Operator):
         else:
             cls.handle_default(target_positions)
 
-        cls._is_handling = False
+        cls.is_handling = False
 
     @classmethod
     def register_handlers(cls):
