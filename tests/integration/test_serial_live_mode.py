@@ -54,13 +54,13 @@ class TestSerialLiveMode(unittest.TestCase):
 
         stdout = io.StringIO()
         with redirect_stdout(stdout):
-            bpy.ops.export_anim.live_mode(
+            bpy.ops.servo_animation.start_live_mode(
                 'EXEC_DEFAULT',
                 method='SERIAL',
                 serial_port=self.ttyname,
                 serial_baud=baud_rate
             )
-            bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT')
+            bpy.ops.servo_animation.stop_live_mode('EXEC_DEFAULT')
             bpy.context.scene.frame_set(33)
 
         read_bytes = self.read_bytes()
@@ -80,7 +80,7 @@ class TestSerialLiveMode(unittest.TestCase):
     def test_position_jump(self, _name, handling, threshold, frame, positions):
         stdout = io.StringIO()
         with redirect_stdout(stdout):
-            bpy.ops.export_anim.live_mode(
+            bpy.ops.servo_animation.start_live_mode(
                 'EXEC_DEFAULT',
                 method='SERIAL',
                 serial_port=self.ttyname,
@@ -89,7 +89,7 @@ class TestSerialLiveMode(unittest.TestCase):
             bpy.context.window_manager.servo_animation.position_jump_handling = handling
             bpy.context.object.data.bones['Bone'].servo_settings.threshold = threshold
             bpy.context.scene.frame_set(frame)
-            bpy.ops.export_anim.stop_live_mode('EXEC_DEFAULT')
+            bpy.ops.servo_animation.stop_live_mode('EXEC_DEFAULT')
 
         read_bytes = self.read_bytes()
 
@@ -120,7 +120,7 @@ class TestSerialLiveMode(unittest.TestCase):
         stdout = io.StringIO()
         with redirect_stdout(stdout):
             try:
-                bpy.ops.export_anim.live_mode(
+                bpy.ops.servo_animation.start_live_mode(
                     'EXEC_DEFAULT',
                     method='SERIAL',
                     serial_port=serial_port,

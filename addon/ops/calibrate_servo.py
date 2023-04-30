@@ -1,7 +1,8 @@
 import bpy
 
 from bpy.types import Operator
-from .live_mode import LiveMode
+from ..ops.install_dependencies import InstallDependencies
+from ..utils.live_mode import LiveMode
 from ..utils.converter import calculate_position
 
 
@@ -25,7 +26,7 @@ def toggle_position(self, context):
 
 
 class CalibrateServo(Operator):
-    bl_idname = "export_anim.servo_calibration"
+    bl_idname = "servo_animation.calibrate"
     bl_label = "Calibrate servo"
     bl_description = "Calibrate servo during live mode by setting the min and max position values"
     bl_options = {'INTERNAL', 'BLOCKING'}
@@ -57,7 +58,11 @@ class CalibrateServo(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.active_pose_bone and LiveMode.is_active()
+        return (
+            context.active_pose_bone
+            and InstallDependencies.installed()
+            and LiveMode.is_connected()
+        )
 
     def execute(self, context):
         servo_settings = context.active_pose_bone.bone.servo_settings
@@ -71,9 +76,10 @@ class CalibrateServo(Operator):
     def __del__(self):
         self.stop()
 
-    def stop(self):
-        if LiveMode.is_handling:
-            LiveMode.is_handling = False
+    @classmethod
+    def stop(cls):
+        if LiveMode.is_handler_enabled():
+            LiveMode.disable_handler()
             LiveMode.handler(None, None)
 
     def invoke(self, context, _event):
@@ -85,7 +91,7 @@ class CalibrateServo(Operator):
         self.position_min = position
         self.position_max = position
 
-        LiveMode.is_handling = True
+        LiveMode.enable_handler()
 
         return context.window_manager.invoke_props_dialog(self)
 

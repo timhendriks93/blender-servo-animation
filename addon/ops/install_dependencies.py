@@ -2,23 +2,34 @@ import os
 import sys
 import subprocess
 import ensurepip
-import bpy
 
+from importlib.util import find_spec
 from bpy.types import Operator
-from ..ops.live_mode import LiveMode
+
+import bpy
 
 
 class InstallDependencies(Operator):
-    bl_idname = "wm.install_servo_animation_deps"
+    bl_idname = "servo_animation.install_dependencies"
     bl_label = "Install Servo Animation Live Mode Dependencies"
     bl_description ="Install missing live mode dependencies (requires an active internet connection)"
     bl_options = {'INTERNAL', 'BLOCKING'}
+
+    MODULES = ["serial", "websocket"]
 
     python: bpy.props.StringProperty()
 
     @classmethod
     def poll(cls, _context):
-        return not LiveMode.is_available()
+        return not cls.installed()
+
+    @classmethod
+    def installed(cls):
+        for module in cls.MODULES:
+            if find_spec(module) is None:
+                return False
+
+        return True
 
     def execute(self, _context):
         try:
@@ -28,8 +39,6 @@ class InstallDependencies(Operator):
             self.report({"ERROR"}, str(err))
 
             return {"CANCELLED"}
-
-        LiveMode.update_dependencies()
 
         return {"FINISHED"}
 

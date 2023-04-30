@@ -8,7 +8,7 @@ from .ops.json_export import JsonExport
 from .ops.arduino_export import ArduinoExport
 from .ops.stop_live_mode import StopLiveMode
 from .ops.install_dependencies import InstallDependencies
-from .ops.live_mode import LiveMode
+from .ops.start_live_mode import StartLiveMode
 from .ops.calibrate_servo import CalibrateServo
 
 bl_info = {
@@ -33,7 +33,7 @@ classes = (
     ArduinoExport,
     JsonExport,
     StopLiveMode,
-    LiveMode,
+    StartLiveMode,
     InstallDependencies,
     CalibrateServo
 )
