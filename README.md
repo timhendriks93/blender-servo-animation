@@ -101,7 +101,7 @@ This will allow you to control your servos in real-time from within Blender.
 
 ### Installing dependencies
 
-After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Before using the live mode feature of this add-on, you might have to install some Python dependencies first by pressing the `Install dependencies` button. This will automatically install the required pip packages and requires an active internet connection.
+After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Before using the live mode feature of this add-on, you might have to install some Python dependencies first by pressing the `Install dependencies` button. This will automatically install the required `pip` packages and requires an active internet connection. This process can might take a few seconds depending on the speed of your internet connection.
 
 ![Install dependencies button](images/live_mode_dependencies.png)
 
@@ -140,6 +140,24 @@ Once the connection is established, you can use the timeline to control your ser
 When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will first calculate all position value differences. If one of those differences exceeds the `Threshold` value of the respective servos, they will be slowly moved to their new target position. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
 
 The speed of this process is also relative to the configured `Threshold` values. A slower and safer movement can be achieved by setting the threshold values as low as possible with the actual animation still able to run properly.
+
+### Servo Calibration
+
+While having an active live mode connection, it is possible to use a servo calibration feature. This will allow you to find the minimum and maximum position value of a servo similar to what you would normally do with a servo tester.
+
+The calibration process can be started by clicking the `Calibrate servo` button within the servo settings panel:
+
+![Calibrate servo button](images/calibrate_servo_button.png)
+
+> Note: the button will only be clickable when there is an active live mode connection.
+
+Clicking this button will bring up a dialog containing a drop down menu to switch between the minimum and maximum position. You can then carefully adjust the position value until the servo stops moving. After doing so for both directions or position types, you can click on `OK` to apply these values as the new min and max position values.
+
+![Calibrate servo dialog](images/calibrate_servo_dialog.png)
+
+> Note: Be careful when changing the position value and toggling the position type as the servo will move at full speed and position jump handling is not being considered.
+
+To cancel this process you can either press `ESC` or click outside the dialog box. While position jump handling is not considered during the calibration process it is again considered when cancelling or applying the calibration.
 
 ### Command Protocol
 

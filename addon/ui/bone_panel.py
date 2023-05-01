@@ -1,5 +1,6 @@
 
 from bpy.types import Panel
+from ..ops.calibrate_servo import CalibrateServo
 from ..utils.converter import calculate_position
 from ..utils.servo_settings import has_unique_servo_id
 
@@ -24,6 +25,9 @@ class BonePanel(Panel):
         layout = self.layout
         layout.use_property_split = True
         servo_settings = context.active_bone.servo_settings
+
+        layout.operator(CalibrateServo.bl_idname)
+        layout.separator()
 
         self.draw_servo_id(servo_settings, context)
 

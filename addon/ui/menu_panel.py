@@ -3,7 +3,8 @@ from ..ops.json_export import JsonExport
 from ..ops.arduino_export import ArduinoExport
 from ..ops.stop_live_mode import StopLiveMode
 from ..ops.install_dependencies import InstallDependencies
-from ..ops.live_mode import LiveMode
+from ..ops.start_live_mode import StartLiveMode
+from ..utils.live_mode import LiveMode
 
 
 class MenuPanel(Panel):
@@ -20,7 +21,7 @@ class MenuPanel(Panel):
         col = layout.column()
         col.label(text="Live Mode")
 
-        if LiveMode.is_available():
+        if InstallDependencies.installed():
             self.draw_live_mode(context, layout, col)
         else:
             self.draw_live_mode_deps(col)
@@ -34,16 +35,16 @@ class MenuPanel(Panel):
     @classmethod
     def draw_live_mode(cls, context, layout, col):
         servo_animation = context.window_manager.servo_animation
-        live_mode_is_active = LiveMode.is_active()
+        live_mode_is_connected = LiveMode.is_connected()
 
-        if live_mode_is_active:
+        if live_mode_is_connected:
             col.operator(StopLiveMode.bl_idname,
                          text="Disconnect", depress=True)
         else:
-            col.operator(LiveMode.bl_idname, text="Connect")
+            col.operator(StartLiveMode.bl_idname, text="Connect")
 
         col = layout.column(align=True)
-        col.enabled = not live_mode_is_active
+        col.enabled = not live_mode_is_connected
         col.prop(servo_animation, "live_mode_method")
 
         if servo_animation.live_mode_method == LiveMode.METHOD_SERIAL:

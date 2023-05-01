@@ -2,7 +2,7 @@ import time
 import bpy
 
 from ..utils.converter import calculate_positions
-from ..ops.live_mode import LiveMode
+from ..utils.live_mode import LiveMode
 
 
 class BaseExport:
@@ -26,10 +26,10 @@ class BaseExport:
     def execute(self, context):
         start = time.time()
         original_frame = context.scene.frame_current
-        original_live_mode = LiveMode.is_active()
+        original_live_mode = LiveMode.is_connected()
 
         if original_live_mode is True:
-            bpy.ops.export_anim.stop_live_mode()
+            bpy.ops.servo_animation.stop_live_mode()
 
         try:
             positions = calculate_positions(context, self.precision)
@@ -42,7 +42,7 @@ class BaseExport:
             context.scene.frame_set(original_frame)
 
             if original_live_mode is True:
-                bpy.ops.export_anim.live_mode('INVOKE_DEFAULT')
+                bpy.ops.servo_animation.start_live_mode('INVOKE_DEFAULT')
 
         with open(self.filepath, 'w', encoding='utf-8') as file:
             file.write(content)

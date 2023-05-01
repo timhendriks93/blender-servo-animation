@@ -1,11 +1,9 @@
 import unittest
 import os
 import json
-import io
 import re
 import shutil
 
-from contextlib import redirect_stdout
 from parameterized import parameterized
 
 import bpy
@@ -51,9 +49,7 @@ class TestExport(unittest.TestCase):
         if os.path.exists(export_file):
             os.remove(export_file)
 
-        stdout = io.StringIO()
-        with redirect_stdout(stdout):
-            bpy.ops.export_anim.servo_positions_json(filepath=export_file, precision=precision)
+        bpy.ops.export_anim.servo_positions_json(filepath=export_file, precision=precision)
 
         assert os.path.exists(export_file), "expected export file to be present"
 
@@ -82,13 +78,11 @@ class TestExport(unittest.TestCase):
         if os.path.exists(export_file):
             os.remove(export_file)
 
-        stdout = io.StringIO()
-        with redirect_stdout(stdout):
-            bpy.ops.export_anim.servo_positions_arduino(
-                filepath=export_file,
-                precision=precision,
-                namespace=namespace
-            )
+        bpy.ops.export_anim.servo_positions_arduino(
+            filepath=export_file,
+            precision=precision,
+            namespace=namespace
+        )
 
         assert os.path.exists(export_file), "expected export file to be present"
 

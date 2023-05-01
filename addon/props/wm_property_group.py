@@ -1,7 +1,8 @@
 import bpy
 
 from bpy.types import PropertyGroup
-from ..ops.live_mode import LiveMode
+from ..ops.start_live_mode import StartLiveMode
+from ..utils.live_mode import LiveMode
 
 
 def get_serial_port_items(_self, _context):
@@ -20,7 +21,7 @@ def get_serial_port_items(_self, _context):
 class WindowManagerPropertyGroup(PropertyGroup):
     live_mode_method: bpy.props.EnumProperty(
         name="Method",
-        items=LiveMode.METHOD_ITEMS
+        items=StartLiveMode.METHOD_ITEMS
     )
     serial_port: bpy.props.EnumProperty(
         name="Port",
