@@ -47,16 +47,12 @@ def calculate_position(pose_bone, precision):
     check_min = servo_settings.position_min
     check_max = servo_settings.position_max
 
-    if servo_settings.set_position_limits:
-        check_min = servo_settings.position_limit_start
-        check_max = servo_settings.position_limit_end
-
     if position < check_min or position > check_max:
         in_range = False
     else:
         in_range = True
 
-    return position, in_range
+    return position, round(angle, 2), in_range
 
 
 def calculate_positions(context, precision):
@@ -84,7 +80,7 @@ def calculate_positions(context, precision):
 
         for pose_bone in pose_bones:
             bone = pose_bone.bone
-            position, in_range = calculate_position(pose_bone, precision)
+            position, _angle, in_range = calculate_position(pose_bone, precision)
 
             if not in_range:
                 raise RuntimeError(

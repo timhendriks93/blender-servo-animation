@@ -6,6 +6,7 @@
     "bones": 2,
     "armature": "Armature",
     "file": "ik.blend",
+    "scene": "Scene",
     "servos": {
         "0": {
             "name": "Neck Left",

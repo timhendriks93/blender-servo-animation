@@ -1,0 +1,2 @@
+pyserial==3.5
+websocket-client==1.5.1

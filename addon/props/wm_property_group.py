@@ -1,41 +1,54 @@
 import bpy
 
 from bpy.types import PropertyGroup
-from ..utils.uart import UART_CONTROLLER
+from ..ops.start_live_mode import StartLiveMode
+from ..utils.live_mode import LiveMode
 
 
 def get_serial_port_items(_self, _context):
     items = []
+    ports = LiveMode.get_serial_ports()
 
-    for port in UART_CONTROLLER.get_serial_ports():
-        items.append((port, port, ""))
+    if len(ports) < 1:
+        items.append(("NONE", "No port available", ""))
+    else:
+        for port in ports:
+            items.append((port, port, ""))
 
     return items
 
 
-def stop_live_mode(self, _context):
-    if self.live_mode:
-        bpy.ops.export_anim.stop_live_mode()
-
-
 class WindowManagerPropertyGroup(PropertyGroup):
-    live_mode: bpy.props.BoolProperty(
-        name="Live Mode"
+    live_mode_method: bpy.props.EnumProperty(
+        name="Method",
+        items=StartLiveMode.METHOD_ITEMS
     )
     serial_port: bpy.props.EnumProperty(
-        name="Serial Port",
-        update=stop_live_mode,
+        name="Port",
         items=get_serial_port_items
     )
-    baud_rate: bpy.props.EnumProperty(
+    serial_baud: bpy.props.EnumProperty(
         name="Baud Rate",
-        update=stop_live_mode,
         default="115200",
         items=[
             ("19200", "19200", ""),
             ("115200", "115200", ""),
             ("192500", "192500", "")
         ]
+    )
+    socket_host: bpy.props.StringProperty(
+        name="Host",
+        default="127.0.0.1"
+    )
+    socket_port: bpy.props.IntProperty(
+        name="Port",
+        min=0,
+        max=65535,
+        default=80
+    )
+    socket_path: bpy.props.StringProperty(
+        name="Path",
+        default="/"
     )
     position_jump_handling: bpy.props.BoolProperty(
         name="Position Jump Handling",
@@ -44,11 +57,4 @@ class WindowManagerPropertyGroup(PropertyGroup):
             "when the position difference exceeds the threshold"
         ),
         default=True
-    )
-    position_jump_threshold: bpy.props.IntProperty(
-        name="Threshold",
-        default=20,
-        min=2,
-        max=100,
-        description="The position difference value triggering position jump handling when exceeded"
     )

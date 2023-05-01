@@ -14,16 +14,6 @@ def update_position_max(self, _context):
         self.position_max, self.position_min, None)
 
 
-def update_position_limit_start(self, _context):
-    self.position_limit_start = range_limit_value(
-        self.position_limit_start, self.position_min, self.position_limit_end)
-
-
-def update_position_limit_end(self, _context):
-    self.position_limit_end = range_limit_value(
-        self.position_limit_end, self.position_limit_start, self.position_max)
-
-
 def update_neutral_angle(self, _context):
     self.neutral_angle = range_limit_value(
         self.neutral_angle, None, self.rotation_range)
@@ -39,7 +29,7 @@ class BonePropertyGroup(PropertyGroup):
         default=0,
         min=0,
         max=255,
-        description="The unique servo ID used to send live data via UART"
+        description="The unique servo ID which is also used for sending live commands"
     )
     position_min: bpy.props.IntProperty(
         name="Min Position",
@@ -57,27 +47,15 @@ class BonePropertyGroup(PropertyGroup):
         description="The maximum position value before the servo physically stops moving",
         update=update_position_max
     )
-    position_limit_start: bpy.props.IntProperty(
-        name="Limit Start",
-        default=150,
+    threshold: bpy.props.IntProperty(
+        name="Threshold",
+        default=20,
         min=0,
         max=10000,
         description=(
-            "The minimum position value before the servo is "
-            "supposed to stop moving within a specific build"
-        ),
-        update=update_position_limit_start
-    )
-    position_limit_end: bpy.props.IntProperty(
-        name="Limit End",
-        default=600,
-        min=0,
-        max=10000,
-        description=(
-            "The maximum position value before the servo is supposed to "
-            "stop moving within a specific build"
-        ),
-        update=update_position_limit_end
+            "The maximum value change between frames which is also "
+            "used for frame jump handling in live mode"
+        )
     )
     neutral_angle: bpy.props.IntProperty(
         name="Neutral Angle",
@@ -85,9 +63,8 @@ class BonePropertyGroup(PropertyGroup):
         min=0,
         max=360,
         description=(
-            "The assumed neutral angle of the servo in degrees (typically half the rotation range) "
-            "which should be adjusted carefully, since the servo will first move to its 'natural' "
-            "neutral angle when powered"
+            "The neutral angle of the servo in degrees (typically half the rotation range) "
+            "which resembles the bone's position in the first frame"
         ),
         update=update_neutral_angle
     )
@@ -99,13 +76,6 @@ class BonePropertyGroup(PropertyGroup):
             "positioning within a specific build"
         )
     )
-    set_position_limits: bpy.props.BoolProperty(
-        name="Limit Positions",
-        description=(
-            "Define a position range to limit the calculated position values "
-            "according to a specific build"
-        )
-    )
     multiplier: bpy.props.FloatProperty(
         name="Multiplier",
         default=1,
@@ -114,7 +84,7 @@ class BonePropertyGroup(PropertyGroup):
         precision=1,
         step=10,
         description=(
-            "Multilplier to increase or decrease the rotation to adjust the "
+            "Multiplier to increase or decrease the rotation to adjust the "
             "intensity within a specific build"
         )
     )
