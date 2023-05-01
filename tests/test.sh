@@ -8,6 +8,9 @@ blender \
     --addons servo_animation \
     --python-use-system-env \
     --python-exit-code 1 \
-    --python $TESTSDIR/test.py
+    --python $TESTSDIR/test.py \
+    > /dev/null 2>&1
+
+cat $TESTSDIR/results.txt
 
 exit $?
