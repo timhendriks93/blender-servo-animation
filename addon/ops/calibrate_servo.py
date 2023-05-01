@@ -1,20 +1,18 @@
 import bpy
 
 from bpy.types import Operator
-from ..ops.install_dependencies import InstallDependencies
 from ..utils.live_mode import LiveMode
-from ..utils.converter import calculate_position
 
 
 def send_position_min(self, context):
     LiveMode.send_position(
-        context.active_pose_bone.bone.servo_settings.servo_id,
+        context.active_bone.servo_settings.servo_id,
         self.position_min
     )
 
 def send_position_max(self, context):
     LiveMode.send_position(
-        context.active_pose_bone.bone.servo_settings.servo_id,
+        context.active_bone.servo_settings.servo_id,
         self.position_max
     )
 
@@ -58,14 +56,10 @@ class CalibrateServo(Operator):
 
     @classmethod
     def poll(cls, context):
-        return (
-            context.active_pose_bone
-            and InstallDependencies.installed()
-            and LiveMode.is_connected()
-        )
+        return context.active_bone and LiveMode.is_connected()
 
     def execute(self, context):
-        servo_settings = context.active_pose_bone.bone.servo_settings
+        servo_settings = context.active_bone.servo_settings
         servo_settings.position_min = self.position_min
         servo_settings.position_max = self.position_max
 
@@ -78,20 +72,23 @@ class CalibrateServo(Operator):
 
     @classmethod
     def stop(cls):
-        if LiveMode.is_handler_enabled():
-            LiveMode.disable_handler()
+        if not LiveMode.is_handler_enabled():
+            LiveMode.enable_handler()
             LiveMode.handler(None, None)
 
     def invoke(self, context, _event):
-        position, _angle, _in_range = calculate_position(
-            context.active_pose_bone,
-            None
-        )
+        servo_id = context.active_bone.servo_settings.servo_id
+        last_position = LiveMode.get_last_position(servo_id)
 
-        self.position_min = position
-        self.position_max = position
+        if last_position is None:
+            self.report({'ERROR'}, f"Could not find last position for servo with ID {servo_id}")
 
-        LiveMode.enable_handler()
+            return {'CANCELLED'}
+
+        self.position_min = last_position
+        self.position_max = last_position
+
+        LiveMode.disable_handler()
 
         return context.window_manager.invoke_props_dialog(self)
 

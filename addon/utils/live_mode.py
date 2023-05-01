@@ -1,4 +1,4 @@
-# pylint: disable=import-outside-toplevel
+# pylint: disable=import-outside-toplevel, broad-exception-caught
 
 import time
 import math
@@ -18,7 +18,7 @@ class LiveMode:
 
     _last_positions = {}
     _connection = None
-    _handler_enabled = False
+    _handler_enabled = True
 
     @classmethod
     def set_connection(cls, connection):
@@ -73,11 +73,18 @@ class LiveMode:
         return ports
 
     @classmethod
+    def get_last_position(cls, servo_id):
+        if servo_id in cls._last_positions:
+            return cls._last_positions[servo_id]
+
+        return None
+
+    @classmethod
     def handler(cls, _scene, _depsgraph):
-        if cls._handler_enabled:
+        if not cls.is_handler_enabled():
             return
 
-        cls._handler_enabled = True
+        cls.disable_handler()
 
         threshold_exceeded = False
         target_positions = []
@@ -105,7 +112,7 @@ class LiveMode:
         else:
             cls.handle_default(target_positions)
 
-        cls._handler_enabled = False
+        cls.enable_handler()
 
     @classmethod
     def handle_default(cls, target_positions):
