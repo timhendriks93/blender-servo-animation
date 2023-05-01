@@ -1,2 +1,4 @@
-pytest
-pexpect
+parameterized
+pyserial
+websocket-client
+websockets
