@@ -6,6 +6,7 @@ from .ui.bone_panel import BonePanel
 from .ui.menu_panel import MenuPanel
 from .ops.json_export import JsonExport
 from .ops.arduino_export import ArduinoExport
+from .ops.servoanim_export import ServoanimExport
 from .ops.stop_live_mode import StopLiveMode
 from .ops.install_dependencies import InstallDependencies
 from .ops.start_live_mode import StartLiveMode
@@ -32,6 +33,7 @@ classes = (
     MenuPanel,
     ArduinoExport,
     JsonExport,
+    ServoanimExport,
     StopLiveMode,
     StartLiveMode,
     InstallDependencies,
@@ -42,6 +44,7 @@ classes = (
 def menu_func_export(self, _):
     self.layout.operator(ArduinoExport.bl_idname)
     self.layout.operator(JsonExport.bl_idname)
+    self.layout.operator(ServoanimExport.bl_idname)
 
 
 def menu_func_timeline(self, _):
