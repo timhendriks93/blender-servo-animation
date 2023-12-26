@@ -18,19 +18,19 @@ class ServoanimExport(Operator, BaseExport, ExportHelper):
         maxlen=255
     )
 
-    def export(self, positions, context):
-        fps, frames, seconds = self.get_time_meta(context.scene)
-        positions_keys = list(positions.keys())
-        ids = ",".join(str(x) for x in positions_keys)
+    LINE_BREAK = 10
 
-        content = f"fps:{fps} frames:{frames} seconds:{seconds} ids:{ids}\n\n"
+    def export(self, positions, filepath, context):
+        _fps, frames, _seconds = self.get_time_meta(context.scene)
+        content = []
 
         for frame in range(frames):
             for servo_id in range(255):
                 if servo_id not in positions:
                     continue
-                pos = positions[servo_id][frame]
-                content += str(pos) + " "
-            content = content[:-1] + "\n"
+                position = positions[servo_id][frame]
+                content += self.get_command(servo_id, position)
+            content.append(self.LINE_BREAK)
 
-        return content
+        with open(filepath, 'wb') as file:
+            file.write(bytes(content))

@@ -20,7 +20,7 @@ class JsonExport(Operator, BaseExport, ExportHelper):
         maxlen=255
     )
 
-    def export(self, positions, context):
+    def export(self, positions, filepath, context):
         fps, frames, seconds = self.get_time_meta(context.scene)
         filename = self.get_blend_filename()
 
@@ -45,4 +45,7 @@ class JsonExport(Operator, BaseExport, ExportHelper):
             "servos": servos
         }
 
-        return json.dumps(data, indent=4)
+        content = json.dumps(data, indent=4)
+
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write(content)

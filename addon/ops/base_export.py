@@ -6,6 +6,9 @@ from ..utils.live_mode import LiveMode
 
 
 class BaseExport:
+    COMMAND_START = 0x3C
+    COMMAND_END = 0x3E
+
     precision: bpy.props.IntProperty(
         name="Precision",
         description="The number of decimal digits to round to",
@@ -33,7 +36,7 @@ class BaseExport:
 
         try:
             positions = calculate_positions(context, self.precision)
-            content = self.export(positions, context)
+            self.export(positions, self.filepath, context)
         except RuntimeError as error:
             self.report({'ERROR'}, str(error))
 
@@ -44,15 +47,20 @@ class BaseExport:
             if original_live_mode is True:
                 bpy.ops.servo_animation.start_live_mode('INVOKE_DEFAULT')
 
-        with open(self.filepath, 'w', encoding='utf-8') as file:
-            file.write(content)
-
         end = time.time()
         duration = round(end - start)
         self.report(
             {'INFO'}, f"Animation servo positions exported after {duration} seconds")
 
         return {'FINISHED'}
+
+    @classmethod
+    def get_command(cls, servo_id, position):
+        command = [cls.COMMAND_START, servo_id]
+        command += position.to_bytes(2, 'big')
+        command += [cls.COMMAND_END]
+
+        return command
 
     @staticmethod
     def get_time_meta(scene):

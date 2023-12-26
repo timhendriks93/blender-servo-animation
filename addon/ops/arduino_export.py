@@ -44,7 +44,7 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
         )
     )
 
-    def export(self, positions, context):
+    def export(self, positions, filepath, context):
         variable_type = 'int' if self.precision == 0 else 'float'
         fps, frames, seconds = self.get_time_meta(context.scene)
         filename = self.get_blend_filename()
@@ -93,4 +93,5 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
         if self.namespace:
             content += f"\n}} // namespace {context.scene.name}\n"
 
-        return content
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write(content)
