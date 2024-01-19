@@ -91,7 +91,7 @@ class LiveMode:
         servo_animation = bpy.context.window_manager.servo_animation
 
         for pose_bone in get_active_pose_bones(bpy.context.scene):
-            position, _angle, in_range = calculate_position(pose_bone, None)
+            position, _angle, in_range = calculate_position(pose_bone)
 
             if not in_range:
                 continue

@@ -10,6 +10,12 @@ class BaseExport:
     COMMAND_END = 0x3E
     LINE_BREAK = 10
 
+    skip_duplicates: bpy.props.BoolProperty(
+        name="Skip unchanged positions",
+        description="Skip positions which haven't changed since the last frame",
+        default=True
+    )
+
     @classmethod
     def poll(cls, context):
         if not context.object or context.object.type != 'ARMATURE':
@@ -47,27 +53,36 @@ class BaseExport:
 
         return {'FINISHED'}
 
-    @classmethod
-    def get_command(cls, servo_id, position):
-        command = [cls.COMMAND_START, servo_id]
-        command += position.to_bytes(2, 'big')
-        command += [cls.COMMAND_END]
-
-        return command
-
-    @classmethod
-    def get_commands(cls, frames, positions):
+    def get_commands(self, frames, positions):
         commands = []
+        last_positions = {}
 
         for frame in range(frames):
             for servo_id in range(255):
                 if servo_id not in positions:
                     continue
+
+                if servo_id not in last_positions:
+                    last_positions[servo_id] = None
+
                 position = positions[servo_id][frame]
-                commands += cls.get_command(servo_id, position)
-            commands.append(cls.LINE_BREAK)
+
+                if self.skip_duplicates and last_positions[servo_id] == position:
+                    continue
+
+                commands += self.get_command(servo_id, position)
+                last_positions[servo_id] = position
+
+            commands.append(self.LINE_BREAK)
 
         return commands
+
+    def get_command(self, servo_id, position):
+        command = [self.COMMAND_START, servo_id]
+        command += position.to_bytes(2, 'big')
+        command += [self.COMMAND_END]
+
+        return command
 
     @staticmethod
     def get_time_meta(scene):

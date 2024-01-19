@@ -20,6 +20,8 @@ class JsonExport(Operator, BaseExport, ExportHelper):
         maxlen=255
     )
 
+    skip_duplicates: None
+
     def export(self, positions, filepath, context):
         fps, frames, seconds = self.get_time_meta(context.scene)
         filename = self.get_blend_filename()
