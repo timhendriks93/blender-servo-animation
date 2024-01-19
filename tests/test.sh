@@ -11,6 +11,8 @@ blender \
     --python $TESTSDIR/test.py \
     > /dev/null 2>&1
 
+blender_exit_code=$?
+
 cat $TESTSDIR/results.txt
 
-exit $?
+exit $blender_exit_code
