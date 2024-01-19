@@ -30,7 +30,7 @@ def matrix_visual(pose_bone):
     )
 
 
-def calculate_position(pose_bone, precision):
+def calculate_position(pose_bone):
     servo_settings = pose_bone.bone.servo_settings
     rotation_euler = matrix_visual(pose_bone).to_euler()
     rotation_axis_index = int(servo_settings.rotation_axis)
@@ -42,7 +42,7 @@ def calculate_position(pose_bone, precision):
 
     angle = servo_settings.neutral_angle - rotation_in_degrees
     position = round(range_map(angle, 0, servo_settings.rotation_range,
-                               servo_settings.position_min, servo_settings.position_max), precision)
+                               servo_settings.position_min, servo_settings.position_max))
 
     check_min = servo_settings.position_min
     check_max = servo_settings.position_max
@@ -55,7 +55,7 @@ def calculate_position(pose_bone, precision):
     return position, round(angle, 2), in_range
 
 
-def calculate_positions(context, precision):
+def calculate_positions(context):
     pose_bones = []
     scene = context.scene
     window_manager = context.window_manager
@@ -70,9 +70,6 @@ def calculate_positions(context, precision):
             pose_bones.append(pose_bone)
             positions[servo_settings.servo_id] = []
 
-    if precision == 0:
-        precision = None
-
     window_manager.progress_begin(min=start, max=end)
 
     for frame in range(start, end):
@@ -80,7 +77,7 @@ def calculate_positions(context, precision):
 
         for pose_bone in pose_bones:
             bone = pose_bone.bone
-            position, _angle, in_range = calculate_position(pose_bone, precision)
+            position, _angle, in_range = calculate_position(pose_bone)
 
             if not in_range:
                 raise RuntimeError(

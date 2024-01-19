@@ -8,14 +8,7 @@ from ..utils.live_mode import LiveMode
 class BaseExport:
     COMMAND_START = 0x3C
     COMMAND_END = 0x3E
-
-    precision: bpy.props.IntProperty(
-        name="Precision",
-        description="The number of decimal digits to round to",
-        default=0,
-        min=0,
-        max=6
-    )
+    LINE_BREAK = 10
 
     @classmethod
     def poll(cls, context):
@@ -35,7 +28,7 @@ class BaseExport:
             bpy.ops.servo_animation.stop_live_mode()
 
         try:
-            positions = calculate_positions(context, self.precision)
+            positions = calculate_positions(context)
             self.export(positions, self.filepath, context)
         except RuntimeError as error:
             self.report({'ERROR'}, str(error))
@@ -61,6 +54,20 @@ class BaseExport:
         command += [cls.COMMAND_END]
 
         return command
+
+    @classmethod
+    def get_commands(cls, frames, positions):
+        commands = []
+
+        for frame in range(frames):
+            for servo_id in range(255):
+                if servo_id not in positions:
+                    continue
+                position = positions[servo_id][frame]
+                commands += cls.get_command(servo_id, position)
+            commands.append(cls.LINE_BREAK)
+
+        return commands
 
     @staticmethod
     def get_time_meta(scene):

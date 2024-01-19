@@ -18,19 +18,9 @@ class ServoanimExport(Operator, BaseExport, ExportHelper):
         maxlen=255
     )
 
-    LINE_BREAK = 10
-
     def export(self, positions, filepath, context):
         _fps, frames, _seconds = self.get_time_meta(context.scene)
-        content = []
-
-        for frame in range(frames):
-            for servo_id in range(255):
-                if servo_id not in positions:
-                    continue
-                position = positions[servo_id][frame]
-                content += self.get_command(servo_id, position)
-            content.append(self.LINE_BREAK)
+        commands = self.get_commands(frames, positions)
 
         with open(filepath, 'wb') as file:
-            file.write(bytes(content))
+            file.write(bytes(commands))

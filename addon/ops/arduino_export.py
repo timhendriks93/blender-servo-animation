@@ -1,10 +1,8 @@
-import re
 import bpy
 
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
-from ..utils.servo_settings import get_pose_bone_by_servo_id
 
 
 class ArduinoExport(Operator, BaseExport, ExportHelper):
@@ -13,7 +11,7 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
     bl_description = "Save an Arduino header file with servo position values of the active armature"
 
     filename_ext = ".h"
-    position_chunk_size = 50
+    chunk_size = 12
 
     filter_glob: bpy.props.StringProperty(
         default="*.h",
@@ -45,7 +43,6 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
     )
 
     def export(self, positions, filepath, context):
-        variable_type = 'int' if self.precision == 0 else 'float'
         fps, frames, seconds = self.get_time_meta(context.scene)
         filename = self.get_blend_filename()
 
@@ -56,6 +53,11 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
             f"Scene: {context.scene.name}\n  File: {filename}\n*/\n"
         )
 
+        commands = self.get_commands(frames, positions)
+        length = len(commands)
+        lines = self.join_by_chunk_size(commands, self.chunk_size)
+        progmem = 'PROGMEM ' if self.progmem else ''
+
         if self.progmem or self.animation_variables:
             content += "\n#include <Arduino.h>\n"
 
@@ -65,33 +67,29 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
         if self.animation_variables:
             content += (
                 f"\nconst byte FPS = {fps};"
-                f"\nconst int FRAMES = {frames};\n"
+                f"\nconst int FRAMES = {frames};"
+                f"\nconst int LENGTH = {length};\n\n"
             )
 
-        for servo_id in positions:
-            pose_bone = get_pose_bone_by_servo_id(servo_id, context.scene)
-            bone_positions = list(map(str, positions[servo_id]))
-            variable_name = re.sub('[^a-zA-Z0-9_]', '', pose_bone.bone.name)
-            array_size = "FRAMES" if self.animation_variables else frames
-            content += (
-                f"\n// Servo ID: {servo_id}\n"
-                f"const {variable_type} {variable_name}[{array_size}] "
-            )
-
-            if self.progmem:
-                content += 'PROGMEM '
-
-            content += '= {\n'
-
-            for i in range(0, len(bone_positions), self.position_chunk_size):
-                content += '  ' + \
-                    ', '.join(
-                        bone_positions[i:i + self.position_chunk_size]) + ',\n'
-
-            content += '};\n'
+        array_size = "LENGTH" if self.animation_variables else length
+        content += f'const byte {progmem}ANIMATION_DATA[{array_size}] = {{\n{lines}}};\n'
 
         if self.namespace:
             content += f"\n}} // namespace {context.scene.name}\n"
 
         with open(filepath, 'w', encoding='utf-8') as file:
             file.write(content)
+
+    @classmethod
+    def join_by_chunk_size(cls, iterable, chunk_size):
+        output = ''
+        str_iterable = list(map(cls.format_hex, iterable))
+
+        for i in range(0, len(str_iterable), chunk_size):
+            output += '    ' + ', '.join(str_iterable[i:i + chunk_size]) + ',\n'
+
+        return output
+
+    @classmethod
+    def format_hex(cls, byte):
+        return f'{byte:#04x}'
