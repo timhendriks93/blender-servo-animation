@@ -1,6 +1,7 @@
 #!/bin/bash
 
 TESTSDIR=$(dirname "$0")
+TESTFILE="$TESTSDIR/results.txt"
 
 blender \
     -noaudio \
@@ -11,8 +12,12 @@ blender \
     --python $TESTSDIR/test.py \
     > /dev/null 2>&1
 
-blender_exit_code=$?
+cat $TESTFILE
 
-cat $TESTSDIR/results.txt
+last_line=$(tail -n 1 "$TESTFILE")
 
-exit $blender_exit_code
+if [ "$last_line" == "OK" ]; then
+    exit 0
+else
+    exit 1
+fi
