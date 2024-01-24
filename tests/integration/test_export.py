@@ -49,7 +49,7 @@ class TestExport(unittest.TestCase):
         if os.path.exists(export_file):
             os.remove(export_file)
 
-        bpy.ops.export_anim.servo_positions_json(filepath=export_file, precision=precision)
+        bpy.ops.export_anim.servo_animation_json(filepath=export_file, precision=precision)
 
         assert os.path.exists(export_file), "expected export file to be present"
 
@@ -78,7 +78,7 @@ class TestExport(unittest.TestCase):
         if os.path.exists(export_file):
             os.remove(export_file)
 
-        bpy.ops.export_anim.servo_positions_arduino(
+        bpy.ops.export_anim.servo_animation_arduino(
             filepath=export_file,
             precision=precision,
             namespace=namespace
@@ -125,16 +125,16 @@ class TestExport(unittest.TestCase):
 
         try:
             if export_type == "arduino":
-                bpy.ops.export_anim.servo_positions_arduino(filepath=export_file)
+                bpy.ops.export_anim.servo_animation_arduino(filepath=export_file)
             elif export_type == "json":
-                bpy.ops.export_anim.servo_positions_json(filepath=export_file)
+                bpy.ops.export_anim.servo_animation_json(filepath=export_file)
         except RuntimeError as error:
             error_msg = str(error)
 
         assert not os.path.exists(export_file), "did not expect export file to be present"
 
         exp = (
-            f"Operator bpy.ops.export_anim.servo_positions_{export_type}.poll() failed, "
+            f"Operator bpy.ops.export_anim.servo_animation_{export_type}.poll() failed, "
             "context is incorrect"
         )
         got = error_msg

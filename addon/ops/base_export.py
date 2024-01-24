@@ -34,7 +34,7 @@ class BaseExport:
             bpy.ops.servo_animation.stop_live_mode()
 
         try:
-            positions = calculate_positions(context)
+            positions = calculate_positions(context, self.skip_duplicates)
             self.export(positions, self.filepath, context)
         except RuntimeError as error:
             self.report({'ERROR'}, str(error))
@@ -53,25 +53,13 @@ class BaseExport:
 
         return {'FINISHED'}
 
-    def get_commands(self, frames, positions):
+    def get_commands(self, positions):
         commands = []
-        last_positions = {}
 
-        for frame in range(frames):
-            for servo_id in range(255):
-                if servo_id not in positions:
-                    continue
-
-                if servo_id not in last_positions:
-                    last_positions[servo_id] = None
-
-                position = positions[servo_id][frame]
-
-                if self.skip_duplicates and last_positions[servo_id] == position:
-                    continue
-
+        for frame_positions in positions:
+            for servo_id in frame_positions:
+                position = frame_positions[servo_id]
                 commands += self.get_command(servo_id, position)
-                last_positions[servo_id] = position
 
             commands.append(self.LINE_BREAK)
 

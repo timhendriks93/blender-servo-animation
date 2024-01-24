@@ -9,7 +9,7 @@ from ..utils.live_mode import LiveMode
 
 
 class MenuPanel(Panel):
-    bl_label = "Servo Positions"
+    bl_label = "Servo Animation"
     bl_idname = "TIMELINE_PT_servo"
     bl_space_type = 'SEQUENCE_EDITOR'
     bl_region_type = 'HEADER'
@@ -27,12 +27,11 @@ class MenuPanel(Panel):
         else:
             self.draw_live_mode_deps(col)
 
-        col = layout.column()
+        col = layout.column(align=True)
         col.label(text="Export")
-        row = col.row(align=True)
-        row.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
-        row.operator(JsonExport.bl_idname, text="JSON (.json)")
-        row.operator(ServoanimExport.bl_idname, text="Servoanim (.servoanim)")
+        col.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
+        col.operator(JsonExport.bl_idname, text="JSON (.json)")
+        col.operator(ServoanimExport.bl_idname, text="Servoanim (.servoanim)")
 
     @classmethod
     def draw_live_mode(cls, context, layout, col):

@@ -6,8 +6,8 @@ from .base_export import BaseExport
 
 
 class ServoanimExport(Operator, BaseExport, ExportHelper):
-    bl_idname = "export_anim.servo_positions_servoanim"
-    bl_label = "Animation Servo Positions (.servoanim)"
+    bl_idname = "export_anim.servo_animation_servoanim"
+    bl_label = "Servo Animation (.servoanim)"
     bl_description = "Save an SD card optimized file with servo position values of the active armature"
 
     filename_ext = ".servoanim"
@@ -18,9 +18,8 @@ class ServoanimExport(Operator, BaseExport, ExportHelper):
         maxlen=255
     )
 
-    def export(self, positions, filepath, context):
-        _fps, frames, _seconds = self.get_time_meta(context.scene)
-        commands = self.get_commands(frames, positions)
+    def export(self, positions, filepath, _context):
+        commands = self.get_commands(positions)
 
         with open(filepath, 'wb') as file:
             file.write(bytes(commands))

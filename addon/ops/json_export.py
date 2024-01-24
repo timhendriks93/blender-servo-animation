@@ -4,12 +4,11 @@ import bpy
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
 from .base_export import BaseExport
-from ..utils.servo_settings import get_pose_bone_by_servo_id
 
 
 class JsonExport(Operator, BaseExport, ExportHelper):
-    bl_idname = "export_anim.servo_positions_json"
-    bl_label = "Animation Servo Positions (.json)"
+    bl_idname = "export_anim.servo_animation_json"
+    bl_label = "Servo Animation (.json)"
     bl_description = "Save a JSON file with servo position values of the active armature"
 
     filename_ext = ".json"
@@ -20,34 +19,40 @@ class JsonExport(Operator, BaseExport, ExportHelper):
         maxlen=255
     )
 
-    skip_duplicates: None
+    indent: bpy.props.EnumProperty(
+        name="Indent",
+        items=[
+            ('None', 'No indent', ''),
+            ('1', '1 Space', ''),
+            ('2', '2 Spaces', ''),
+            ('3', '3 Spaces', ''),
+            ('4', '4 Spaces', ''),
+        ],
+        default='2',
+    )
 
     def export(self, positions, filepath, context):
         fps, frames, seconds = self.get_time_meta(context.scene)
         filename = self.get_blend_filename()
 
-        servos = {}
-
-        for servo_id in positions:
-            pose_bone = get_pose_bone_by_servo_id(servo_id, context.scene)
-            servos[servo_id] = {
-                "name": pose_bone.bone.name,
-                "positions": positions[servo_id],
-            }
+        try:
+            indent = int(self.indent)
+        except ValueError:
+            indent = None
 
         data = {
             "description": 'Blender Servo Animation Positions',
             "fps": fps,
             "frames": frames,
             "seconds": seconds,
-            "bones": len(positions),
+            "bones": len(positions[0]),
             "armature": context.object.name,
             "file": filename,
             "scene": context.scene.name,
-            "servos": servos
+            "positions": positions
         }
 
-        content = json.dumps(data, indent=4)
+        content = json.dumps(data, indent=indent)
 
         with open(filepath, 'w', encoding='utf-8') as file:
             file.write(content)
