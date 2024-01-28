@@ -1,38 +1,32 @@
 import unittest
 import os
-import json
-import re
 import shutil
+import hashlib
 
 from parameterized import parameterized
 
 import bpy
 
-positions = {
-    "without_precision": {
-        0: 90,
-        11: 78,
-        32: 45,
-        54: 112,
-        65: 135,
-        88: 101,
-        99: 90,
-    },
-    "with_precision": {
-        0: 90.0,
-        11: 77.7,
-        32: 45.0,
-        54: 111.67,
-        65: 135.0,
-        88: 101.08,
-        99: 90.0,
-    }
-}
+
+def assert_file_hash(file_path, expected):
+    assert os.path.exists(
+        file_path), "expected export file to be present"
+
+    hash_object = hashlib.sha256()
+
+    with open(file_path, "rb") as file:
+        hash_object.update(file.read())
+
+    file_hash = hash_object.hexdigest()
+
+    assert file_hash == expected, f"expected file has to be {expected}, got {file_hash} instead"
+
 
 class TestExport(unittest.TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
         self.output_dir = test_dir + "/output"
+        shutil.rmtree(self.output_dir, ignore_errors=True)
         os.mkdir(self.output_dir)
 
     def tearDown(self):
@@ -40,81 +34,64 @@ class TestExport(unittest.TestCase):
         bpy.data.armatures['Armature'].bones['Bone'].servo_settings.active = True
 
     @parameterized.expand([
-        ("without precision", 0, positions["without_precision"]),
-        ("with precision", 2, positions["with_precision"])
+        ("with skipping and indent of 2", True, "2",
+         "7576d368e9680a35a67a62df0200f08fd310e0f830e1497f8f12a3138e5ff24b"),
+        ("without skipping and indent of 2", False, "2",
+         "f96d14717222b184740f4258842f766eee341f0768eac42c44a4efd8e45f5814"),
+        ("with skipping and no indent", True, "None",
+         "88b4da9ceee71fbbe75f1f0f73727b69bc8b6ba21358a86932efb41ab5b1a1e6"),
+        ("with skipping and indent of 4", True, "4",
+         "87f25f8fab6a8996393a0e277d6e2891c70194d24c8283bf937097970c5033c8")
     ])
-    def test_json_export(self, _name, precision, expected):
+    def test_json_export(self, _name, skip_duplicates, indent, expected):
         export_file = self.output_dir + "/export.json"
 
-        if os.path.exists(export_file):
-            os.remove(export_file)
+        bpy.ops.export_anim.servo_animation_json(
+            filepath=export_file, skip_duplicates=skip_duplicates, indent=indent)
 
-        bpy.ops.export_anim.servo_animation_json(filepath=export_file, precision=precision)
-
-        assert os.path.exists(export_file), "expected export file to be present"
-
-        with open(export_file, 'r', encoding='utf-8') as file:
-            parsed = json.load(file)
-
-        assert parsed["file"] == "test.blend"
-        assert parsed["frames"] == 100
-        assert parsed["scene"] == "Scene"
-        assert len(parsed["servos"]["0"]["positions"]) == 100
-
-        for frame, exp in expected.items():
-            got = parsed["servos"]["0"]["positions"][frame]
-            assert exp == got, f"expected position value {exp} for frame {frame}, got {got} instead"
-
-        os.remove(export_file)
+        assert_file_hash(export_file, expected)
 
     @parameterized.expand([
-        ("without precision", 0, positions["without_precision"], False),
-        ("with precision", 2, positions["with_precision"], False),
-        ("namespace", 0, positions["without_precision"], True),
+        ("with skipping and no namespace", True, False,
+         "5b8b6abd5ae925a394020dcfe2341705c74a3b1f2dd3a2a5230d73e56b85b4c5"),
+        ("without skipping and no namespace", False, False,
+         "38d458c7061ca3d252da01995199e7f23e646e9889d5b4a6609328fa57b9a237"),
+        ("with skipping and namespace", True, True,
+         "fc3e0c39b24bc2147c56d6cc3f65181839478e0df54b0b580328f50b0587a6d1"),
+        ("without skipping and namespace", False, True,
+         "e1abc66c2dc73bb13828c83bbd30c8967a1a0bb346a01ad542d5e74321b68e2a")
     ])
-    def test_arduino_export(self, _name, precision, expected, namespace):
+    def test_arduino_export(self, _name, skip_duplicates, namespace, expected):
         export_file = self.output_dir + "/export.h"
-
-        if os.path.exists(export_file):
-            os.remove(export_file)
 
         bpy.ops.export_anim.servo_animation_arduino(
             filepath=export_file,
-            precision=precision,
+            skip_duplicates=skip_duplicates,
             namespace=namespace
         )
 
-        assert os.path.exists(export_file), "expected export file to be present"
+        assert_file_hash(export_file, expected)
 
-        with open(export_file, 'r', encoding='utf-8') as file:
-            content = file.read()
+    @parameterized.expand([
+        ("with skipping", True,
+         "f6d5d5b3e0012e63e28b51bfe7416ffebf9517b67e4a873f947ff1c998a4a512"),
+        ("without skipping", False,
+         "11f06c27463865d5e6a4f014c515a01c1c0212c413d0434698908a562c13237f")
+    ])
+    def test_servoanim_export(self, _name, skip_duplicates, expected):
+        export_file = self.output_dir + "/export.h"
 
-        regex = re.compile(r"\= \{(.+?)\}", re.MULTILINE | re.DOTALL)
-        match = regex.search(content)
+        bpy.ops.export_anim.servo_animation_servoanim(
+            filepath=export_file,
+            skip_duplicates=skip_duplicates
+        )
 
-        assert match is not None
-
-        json_string = match.group(0).replace("= {\n ", "[").replace(",\n}", "]").replace("\n", "")
-        parsed = json.loads(json_string)
-
-        assert "const byte FPS = 30;" in content
-        assert "const int FRAMES = 100;" in content
-        assert len(parsed) == 100
-
-        if namespace:
-            assert "namespace Scene" in content
-        else:
-            assert "namespace Scene" not in content
-
-        for frame, exp in expected.items():
-            got = parsed[frame]
-            assert exp == got, f"expected position value {exp} for frame {frame}, got {got} instead"
-
-        os.remove(export_file)
+        assert_file_hash(export_file, expected)
 
     @parameterized.expand([
         ("arduino", ".h"),
-        ("json", ".json")
+        ("json", ".json"),
+        ("servoanim", ".servoanim")
     ])
     def test_no_servo_settings(self, export_type, extension):
         export_file = self.output_dir + "/export" + extension
@@ -125,13 +102,18 @@ class TestExport(unittest.TestCase):
 
         try:
             if export_type == "arduino":
-                bpy.ops.export_anim.servo_animation_arduino(filepath=export_file)
+                bpy.ops.export_anim.servo_animation_arduino(
+                    filepath=export_file)
             elif export_type == "json":
                 bpy.ops.export_anim.servo_animation_json(filepath=export_file)
+            elif export_type == "servoanim":
+                bpy.ops.export_anim.servo_animation_servoanim(
+                    filepath=export_file)
         except RuntimeError as error:
             error_msg = str(error)
 
-        assert not os.path.exists(export_file), "did not expect export file to be present"
+        assert not os.path.exists(
+            export_file), "did not expect export file to be present"
 
         exp = (
             f"Operator bpy.ops.export_anim.servo_animation_{export_type}.poll() failed, "
@@ -139,6 +121,7 @@ class TestExport(unittest.TestCase):
         )
         got = error_msg
         assert got == exp, f"expected error message '{exp}', got '{got}' instead"
+
 
 if __name__ == '__main__':
     unittest.main()
