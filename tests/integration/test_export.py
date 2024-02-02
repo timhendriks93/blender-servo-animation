@@ -78,10 +78,10 @@ class TestExport(unittest.TestCase):
         ("without skipping", False,
          "11f06c27463865d5e6a4f014c515a01c1c0212c413d0434698908a562c13237f")
     ])
-    def test_servoanim_export(self, _name, skip_duplicates, expected):
-        export_file = self.output_dir + "/export.h"
+    def test_binary_export(self, _name, skip_duplicates, expected):
+        export_file = self.output_dir + "/export.bin"
 
-        bpy.ops.export_anim.servo_animation_servoanim(
+        bpy.ops.export_anim.servo_animation_binary(
             filepath=export_file,
             skip_duplicates=skip_duplicates
         )
@@ -91,7 +91,7 @@ class TestExport(unittest.TestCase):
     @parameterized.expand([
         ("arduino", ".h"),
         ("json", ".json"),
-        ("servoanim", ".servoanim")
+        ("binary", ".bin")
     ])
     def test_no_servo_settings(self, export_type, extension):
         export_file = self.output_dir + "/export" + extension
@@ -106,8 +106,8 @@ class TestExport(unittest.TestCase):
                     filepath=export_file)
             elif export_type == "json":
                 bpy.ops.export_anim.servo_animation_json(filepath=export_file)
-            elif export_type == "servoanim":
-                bpy.ops.export_anim.servo_animation_servoanim(
+            elif export_type == "binary":
+                bpy.ops.export_anim.servo_animation_binary(
                     filepath=export_file)
         except RuntimeError as error:
             error_msg = str(error)

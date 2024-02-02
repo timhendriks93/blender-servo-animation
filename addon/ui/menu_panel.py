@@ -1,7 +1,7 @@
 from bpy.types import Panel
 from ..ops.json_export import JsonExport
 from ..ops.arduino_export import ArduinoExport
-from ..ops.servoanim_export import ServoanimExport
+from ..ops.binary_export import BinaryExport
 from ..ops.stop_live_mode import StopLiveMode
 from ..ops.install_dependencies import InstallDependencies
 from ..ops.start_live_mode import StartLiveMode
@@ -31,7 +31,7 @@ class MenuPanel(Panel):
         col.label(text="Export")
         col.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
         col.operator(JsonExport.bl_idname, text="JSON (.json)")
-        col.operator(ServoanimExport.bl_idname, text="Servoanim (.servoanim)")
+        col.operator(BinaryExport.bl_idname, text="Binary (.bin)")
 
     @classmethod
     def draw_live_mode(cls, context, layout, col):
