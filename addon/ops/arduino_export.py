@@ -44,7 +44,8 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
         lines = self.join_by_chunk_size(commands, self.chunk_size)
 
         if self.namespace:
-            content += f"\nnamespace {context.scene.name} {{\n"
+            scene_name = self.format_scene_name()
+            content += f"\nnamespace {scene_name} {{\n"
 
         content += (
             f"\nconst byte FPS = {fps};"
@@ -55,7 +56,7 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
         content += f'const byte PROGMEM ANIMATION_DATA[LENGTH] = {{\n{lines}}};\n'
 
         if self.namespace:
-            content += f"\n}} // namespace {context.scene.name}\n"
+            content += f"\n}} // namespace {scene_name}\n"
 
         with open(filepath, 'w', encoding='utf-8') as file:
             file.write(content)
@@ -73,3 +74,13 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
     @classmethod
     def format_hex(cls, byte):
         return f'{byte:#04x}'
+
+    @classmethod
+    def format_scene_name(cls):
+        valid_chars = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
+        scene_name = ''.join(c if c in valid_chars else '_' for c in bpy.context.scene.name)
+
+        if scene_name[0].isdigit():
+            scene_name = '_' + scene_name
+        
+        return scene_name
