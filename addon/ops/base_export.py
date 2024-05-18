@@ -48,8 +48,9 @@ class BaseExport:
 
         end = time.time()
         duration = round(end - start)
+        unit = "second" if duration == 1 else "seconds"
         self.report(
-            {'INFO'}, f"Animation servo positions exported after {duration} seconds")
+            {'INFO'}, f"Animation servo positions exported after {duration} {unit}")
 
         return {'FINISHED'}
 

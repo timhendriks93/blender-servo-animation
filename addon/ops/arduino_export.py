@@ -82,5 +82,5 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
 
         if scene_name[0].isdigit():
             scene_name = '_' + scene_name
-        
+
         return scene_name
