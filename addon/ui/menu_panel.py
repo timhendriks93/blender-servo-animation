@@ -1,6 +1,7 @@
 from bpy.types import Panel
 from ..ops.json_export import JsonExport
 from ..ops.arduino_export import ArduinoExport
+from ..ops.binary_export import BinaryExport
 from ..ops.stop_live_mode import StopLiveMode
 from ..ops.install_dependencies import InstallDependencies
 from ..ops.start_live_mode import StartLiveMode
@@ -8,7 +9,7 @@ from ..utils.live_mode import LiveMode
 
 
 class MenuPanel(Panel):
-    bl_label = "Servo Positions"
+    bl_label = "Servo Animation"
     bl_idname = "TIMELINE_PT_servo"
     bl_space_type = 'SEQUENCE_EDITOR'
     bl_region_type = 'HEADER'
@@ -26,11 +27,11 @@ class MenuPanel(Panel):
         else:
             self.draw_live_mode_deps(col)
 
-        col = layout.column()
+        col = layout.column(align=True)
         col.label(text="Export")
-        row = col.row(align=True)
-        row.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
-        row.operator(JsonExport.bl_idname, text="JSON (.json)")
+        col.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
+        col.operator(JsonExport.bl_idname, text="JSON (.json)")
+        col.operator(BinaryExport.bl_idname, text="Binary (.bin)")
 
     @classmethod
     def draw_live_mode(cls, context, layout, col):
