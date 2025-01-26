@@ -1,7 +1,8 @@
 #!/bin/bash
 
 PARENTDIR=$(dirname "$current_dir")
-TESTFILE="$PARENTDIR/tests/results.txt"
+TESTSDIR="$PARENTDIR/tests"
+TESTFILE="$TESTSDIR/results.txt"
 
 blender \
     -noaudio \
