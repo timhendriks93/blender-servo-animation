@@ -3,3 +3,4 @@ __pycache__
 !.vscode/settings.json
 *.blend1
 tests/results.txt
+*.zip

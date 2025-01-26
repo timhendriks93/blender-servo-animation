@@ -4,7 +4,6 @@ import bpy
 
 from bpy.types import Operator
 from ..utils.live_mode import LiveMode
-from ..ops.install_dependencies import InstallDependencies
 
 
 class StartLiveMode(Operator):
@@ -32,8 +31,7 @@ class StartLiveMode(Operator):
         servo_animation = context.window_manager.servo_animation
 
         return (
-            InstallDependencies.installed()
-            and not LiveMode.is_connected()
+            not LiveMode.is_connected()
             and (
                 (
                     servo_animation.live_mode_method == LiveMode.METHOD_SERIAL
