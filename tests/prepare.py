@@ -25,11 +25,6 @@ def install_dependencies():
 
     subprocess.run([python, "-m", "pip", "install", "-r", req_file], check=True)
 
-def install_addon():
-    bpy.ops.preferences.addon_install(filepath="blender_servo_animation_addon.zip", overwrite=True)
-    bpy.ops.preferences.addon_enable(module="servo_animation")
-
 if __name__ == "__main__":
     ensure_pip()
-    install_addon()
     install_dependencies()
