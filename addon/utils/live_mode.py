@@ -6,9 +6,10 @@ import bpy
 import serial
 import websocket
 
+from serial.tools import list_ports
+
 from ..utils.servo_settings import get_active_pose_bones
 from ..utils.converter import calculate_position
-from serial.tools import list_ports
 
 class LiveMode:
     COMMAND_START = 0x3C
