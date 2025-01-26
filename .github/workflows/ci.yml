@@ -13,7 +13,7 @@ jobs:
       run: |
         cp -R addon servo_animation
         cp README.md LICENSE servo_animation
-        blender --command extension build --source-dir addon --output-filepath blender_servo_animation_addon.zip
+        ./scripts/build.sh
     - name: Archive add-on ZIP
       uses: actions/upload-artifact@v4
       with:
@@ -57,10 +57,10 @@ jobs:
         name: blender_servo_animation_addon.zip
     - name: Install add-on
       run: |
-        blender --command extension install-file -r user_default -e blender_servo_animation_addon.zip
+        ./scripts/install.sh
     - name: Install test dependencies inside Blender
       run: |
-        ./tests/prepare.sh
+        ./scripts/prepare.sh
     - name: Run tests inside Blender
       run: |
-        ./tests/test.sh
+        ./scripts/test.sh
