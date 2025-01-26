@@ -1,6 +1,6 @@
-# pylint: disable=import-outside-toplevel
-
 import bpy
+import serial
+import websocket
 
 from bpy.types import Operator
 from ..utils.live_mode import LiveMode
@@ -65,8 +65,6 @@ class StartLiveMode(Operator):
         return {'CANCELLED'}
 
     def open_serial(self, _context):
-        import serial
-
         try:
             serial_connection = serial.Serial(self.serial_port, self.serial_baud)
         except (serial.SerialException, ValueError):
@@ -91,8 +89,6 @@ class StartLiveMode(Operator):
         return {'FINISHED'}
 
     def open_socket(self, _context):
-        import websocket
-
         socket_url = f"ws://{self.socket_host}:{self.socket_port}{self.socket_path}"
         socket_connection = websocket.WebSocket()
         socket_connection.settimeout(1)
