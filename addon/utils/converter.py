@@ -30,7 +30,7 @@ def matrix_visual(pose_bone):
     )
 
 
-def calculate_position(pose_bone, precision):
+def calculate_position(pose_bone):
     servo_settings = pose_bone.bone.servo_settings
     rotation_euler = matrix_visual(pose_bone).to_euler()
     rotation_axis_index = int(servo_settings.rotation_axis)
@@ -42,56 +42,62 @@ def calculate_position(pose_bone, precision):
 
     angle = servo_settings.neutral_angle - rotation_in_degrees
     position = round(range_map(angle, 0, servo_settings.rotation_range,
-                               servo_settings.position_min, servo_settings.position_max), precision)
+                     servo_settings.position_min, servo_settings.position_max))
 
-    check_min = servo_settings.position_min
-    check_max = servo_settings.position_max
-
-    if position < check_min or position > check_max:
-        in_range = False
-    else:
-        in_range = True
+    in_range = servo_settings.position_min <= position <= servo_settings.position_max
 
     return position, round(angle, 2), in_range
 
 
-def calculate_positions(context, precision):
+def calculate_positions(context, skip_duplicates):
     pose_bones = []
-    scene = context.scene
+    positions = []
+    last_positions = {}
     window_manager = context.window_manager
-    start = scene.frame_start
-    end = scene.frame_end + 1
+    start = context.scene.frame_start
+    end = context.scene.frame_end + 1
 
-    positions = {}
+    window_manager.progress_begin(min=start, max=end)
 
     for pose_bone in context.object.pose.bones:
         servo_settings = pose_bone.bone.servo_settings
         if servo_settings.active:
             pose_bones.append(pose_bone)
-            positions[servo_settings.servo_id] = []
-
-    if precision == 0:
-        precision = None
-
-    window_manager.progress_begin(min=start, max=end)
 
     for frame in range(start, end):
-        scene.frame_set(frame)
-
-        for pose_bone in pose_bones:
-            bone = pose_bone.bone
-            position, _angle, in_range = calculate_position(pose_bone, precision)
-
-            if not in_range:
-                raise RuntimeError(
-                    f"Calculated position {position} for bone {bone.name} "
-                    + f"is out of range at frame {frame}."
-                )
-
-            positions[bone.servo_settings.servo_id].append(position)
-
+        frame_positions = calculate_frame_positions(
+            context, pose_bones, last_positions, skip_duplicates, frame)
+        positions.append(frame_positions)
         window_manager.progress_update(frame)
 
     window_manager.progress_end()
 
     return positions
+
+
+def calculate_frame_positions(context, pose_bones, last_positions, skip_duplicates, frame):
+    frame_positions = {}
+
+    context.scene.frame_set(frame)
+
+    for pose_bone in pose_bones:
+        bone = pose_bone.bone
+        servo_id = bone.servo_settings.servo_id
+        position, _angle, in_range = calculate_position(pose_bone)
+
+        if servo_id not in last_positions:
+            last_positions[servo_id] = None
+
+        if not in_range:
+            raise RuntimeError(
+                f"Calculated position {position} for bone {bone.name} "
+                + f"is out of range at frame {frame}."
+            )
+
+        if skip_duplicates and last_positions[servo_id] == position:
+            continue
+
+        frame_positions[servo_id] = position
+        last_positions[servo_id] = position
+
+    return frame_positions

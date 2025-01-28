@@ -91,7 +91,7 @@ class LiveMode:
         servo_animation = bpy.context.window_manager.servo_animation
 
         for pose_bone in get_active_pose_bones(bpy.context.scene):
-            position, _angle, in_range = calculate_position(pose_bone, None)
+            position, _angle, in_range = calculate_position(pose_bone)
 
             if not in_range:
                 continue
@@ -129,9 +129,7 @@ class LiveMode:
         for servo_id, position, step in target_positions:
             diff = abs(position - cls._last_positions[servo_id])
             steps = math.ceil(diff / step)
-
-            if steps > abs_steps:
-                abs_steps = steps
+            abs_steps = max(abs_steps, steps)
 
         window_manager = bpy.context.window_manager
         window_manager.progress_begin(0, abs_steps)

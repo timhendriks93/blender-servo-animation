@@ -74,8 +74,7 @@ class BonePanel(Panel):
     def draw_current(self, context):
         layout = self.layout
         box = layout.box()
-        position, angle, in_range = calculate_position(
-            context.active_pose_bone, None)
+        position, angle, in_range = calculate_position(context.active_pose_bone)
 
         if not in_range:
             box.label(text="Position is out of range", icon="ERROR")
