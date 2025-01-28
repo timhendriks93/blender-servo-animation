@@ -1,6 +1,7 @@
 #!/bin/bash
 
-TESTSDIR=$(dirname "$0")
+PARENTDIR=$(dirname "$current_dir")
+TESTSDIR="$PARENTDIR/tests"
 
 blender \
     -noaudio \

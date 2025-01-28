@@ -1,8 +1,12 @@
-# pylint: disable=import-outside-toplevel, broad-exception-caught
+# pylint: disable=broad-exception-caught
 
 import time
 import math
 import bpy
+import serial
+import websocket
+
+from serial.tools import list_ports
 
 from ..utils.servo_settings import get_active_pose_bones
 from ..utils.converter import calculate_position
@@ -26,9 +30,6 @@ class LiveMode:
 
     @classmethod
     def is_connected(cls):
-        import serial
-        import websocket
-
         method = bpy.context.window_manager.servo_animation.live_mode_method
 
         if method == LiveMode.METHOD_SERIAL:
@@ -63,8 +64,6 @@ class LiveMode:
 
     @classmethod
     def get_serial_ports(cls):
-        from serial.tools import list_ports
-
         ports = []
 
         for port in list_ports.comports():

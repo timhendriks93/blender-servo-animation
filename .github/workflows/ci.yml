@@ -6,13 +6,14 @@ jobs:
   build:
     name: "Build"
     runs-on: ubuntu-latest
+    container: linuxserver/blender:latest
     steps:
     - uses: actions/checkout@v4
     - name: Build add-on
       run: |
         cp -R addon servo_animation
         cp README.md LICENSE servo_animation
-        zip -r blender_servo_animation_addon servo_animation
+        ./scripts/build.sh
     - name: Archive add-on ZIP
       uses: actions/upload-artifact@v4
       with:
@@ -28,7 +29,6 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.10"
-        cache: "pip"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -40,58 +40,27 @@ jobs:
   test:
     name: "Test"
     needs: build
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        blender: 
-        - {version: "2.90.0", dir: "2.90"}
-        - {version: "3.1.0", dir: "3.1"}
-        - {version: "3.5.0", dir: "3.5"}
-        - {version: "4.0.0", dir: "4.0"}
+        version:
+        - "4.2.0"
+        - "4.3.0"
+        - "4.3.2"
+    runs-on: ubuntu-latest
+    container: linuxserver/blender:${{ matrix.version }}
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
-        cache: "pip"
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends -y unzip wget xz-utils libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1
-    - name: Restore Blender cache
-      id: restore-blender-cache
-      uses: actions/cache/restore@v4
-      with:
-        path: blender-${{ matrix.blender.version }}
-        key: blender-${{ matrix.blender.version }}
-    - name: Download Blender
-      if: steps.restore-blender-cache.outputs.cache-hit != 'true'
-      run: |
-        python -m pip install --upgrade pip
-        pip install blender-downloader
-        blender-downloader ${{ matrix.blender.version }}
-        mkdir -p blender-${{ matrix.blender.version }}
-        tar xf *.tar.xz -C blender-${{ matrix.blender.version }} --strip-components 1
-    - name: Cache Blender
-      uses: actions/cache/save@v4
-      if: steps.restore-blender-cache.outputs.cache-hit != 'true'
-      with:
-        path: blender-${{ matrix.blender.version }}
-        key: blender-${{ matrix.blender.version }}
-    - name: Create Blender symlink
-      run: |
-        sudo ln -s "$(pwd)/blender-${{ matrix.blender.version }}/blender" /usr/bin/blender
     - name: Download add-on
       uses: actions/download-artifact@v4
       with:
         name: blender_servo_animation_addon.zip
     - name: Install add-on
       run: |
-        unzip blender_servo_animation_addon.zip
-        sudo ln -s "$(pwd)/servo_animation" "$(pwd)/blender-${{ matrix.blender.version }}/${{ matrix.blender.dir }}/scripts/addons/servo_animation"
+        ./scripts/install.sh
+    - name: Install test dependencies inside Blender
+      run: |
+        ./scripts/prepare.sh
     - name: Run tests inside Blender
       run: |
-        ./tests/prepare.sh
-        ./tests/test.sh
+        ./scripts/test.sh
