@@ -18,14 +18,9 @@ Also check out the [Blender Servo Animation Arduino Library](https://github.com/
 
 ## Installation
 
-> Note: this Add-on is compatible with Blender version **2.90 or higher**.
+> Note: the latest version of this Add-on is compatible with Blender  **4.2 or higher**.
 
-1. Download the [latest version of the Add-on](https://github.com/timhendriks93/blender-servo-animation/releases/latest/download/blender_servo_animation_addon.zip) as a ZIP archive.
-2. Open Blender and go to `File > Preferences > Add-ons`.
-3. Click the `Install...` button, select the previously downloaded ZIP and click `Install Add-on`.
-4. Enable the Add-on by checking the checkbox in the Add-ons list.
-
-More information and screenshots can be found in the official [Blender Manual](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#add-ons).
+The Add-on can be installed as a regular [Blender Extension](https://docs.blender.org/manual/en/latest/editors/preferences/extensions.html).
 
 ## Providing Servo Settings
 
@@ -73,16 +68,19 @@ Once all servo settings are provided and your animation is ready, you can calcul
 
 Make sure to select the armature containing the bones/servos you want to export and choose the desired format in the `File > Export` menu:
 
-![Servo Settings panel](images/export_menu.png)
+![Export Menu Top](images/export_menu.png)
 
-Alternatively, you can also trigger the export via the timeline menu which is shown in the live mode section below.
+Alternatively, you can also trigger the export via the timeline menu which is shown in the live mode section below:
+
+![Export Menu Timeline](images/timeline_menu.png)
 
 ### Export Formats
 
-There are two different formats to choose from:
+There are 3 different formats to choose from:
 
 1. `Animation Servo Positions (.h)`: An Arduino/C/C++ style header file which can be easily included in an Arduino project.
 2. `Animation Servo Positions (.json)`: A simple (non-formatted) JSON file which can be used in a more generic way.
+3. `Animation Servo Positions (.bin)`: A binary file which can be used to store the animation data on an SD card.
 
 ### Using the Exported Data
 
@@ -99,21 +97,13 @@ To make the animation process even more intuitive, you can enable the `Live mode
 
 This will allow you to control your servos in real-time from within Blender.
 
-### Installing dependencies
-
-After enabling the add-on, you can find the `Servo Positions` popover menu in the header of the timeline. Before using the live mode feature of this add-on, you might have to install some Python dependencies first by pressing the `Install dependencies` button. This will automatically install the required `pip` packages and requires an active internet connection. This process can might take a few seconds depending on the speed of your internet connection.
-
-![Install dependencies button](images/live_mode_dependencies.png)
-
-Afterwards you can prepare and control the connection to be used for the `Live mode` via this menu. For additional convenience, you will also find buttons to export the servo positions here.
-
 ### Setup a connection
 
 To use the `Live Mode`, you will need to prepare a receiver which will interpret the received commands and use them to control the servo motors accordingly.
 
 In most cases, the receiver can be considered an Arduino compatible micro controller. As a first step, a connection method should be selected via the `Method` dropdown menu.
 
-![Timeline menu](images/timeline_menu.gif)
+![Livemode Timeline menu](images/timeline_menu.png)
 
 > Note: starting the `Live Mode` will immediately send the position values for all servos based on the current frame. Make sure that this will not break anything, as the servos will try to move to their new position as fast as possible.
 

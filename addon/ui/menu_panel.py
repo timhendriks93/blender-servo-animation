@@ -3,7 +3,6 @@ from ..ops.json_export import JsonExport
 from ..ops.arduino_export import ArduinoExport
 from ..ops.binary_export import BinaryExport
 from ..ops.stop_live_mode import StopLiveMode
-from ..ops.install_dependencies import InstallDependencies
 from ..ops.start_live_mode import StartLiveMode
 from ..utils.live_mode import LiveMode
 
@@ -22,10 +21,7 @@ class MenuPanel(Panel):
         col = layout.column()
         col.label(text="Live Mode")
 
-        if InstallDependencies.installed():
-            self.draw_live_mode(context, layout, col)
-        else:
-            self.draw_live_mode_deps(col)
+        self.draw_live_mode(context, layout, col)
 
         col = layout.column(align=True)
         col.label(text="Export")
@@ -63,8 +59,3 @@ class MenuPanel(Panel):
 
         col = layout.column()
         col.prop(servo_animation, "position_jump_handling")
-
-    @classmethod
-    def draw_live_mode_deps(cls, col):
-        col.label(text="You are missing dependencies", icon="ERROR")
-        col.operator(InstallDependencies.bl_idname, text="Install dependencies")

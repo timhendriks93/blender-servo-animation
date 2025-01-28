@@ -1,0 +1,25 @@
+schema_version = "1.0.0"
+
+id = "servo_animation"
+version = "2.0.0"
+name = "Servo Animation"
+tagline = "Export your Blender animation to servo position values"
+maintainer = "Tim Hendriks <admin@tim-hendriks.com>"
+type = "add-on"
+
+website = "https://github.com/timhendriks93/blender-servo-animation"
+
+tags = ["Animation", "Import-Export", "Rigging"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+wheels = [
+  "./wheels/pyserial-3.5-py2.py3-none-any.whl",
+  "./wheels/websocket_client-1.5.1-py3-none-any.whl",
+]
+
+files = "Export animation servo position values to disk"

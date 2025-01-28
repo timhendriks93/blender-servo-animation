@@ -23,6 +23,7 @@ def install_dependencies():
     dir_path = os.path.dirname(__file__)
     req_file = dir_path + "/../requirements-dev.txt"
 
+    subprocess.run([python, "-m", "pip", "install", "--upgrade", "pip"], check=True)
     subprocess.run([python, "-m", "pip", "install", "-r", req_file], check=True)
 
 if __name__ == "__main__":
