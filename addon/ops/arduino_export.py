@@ -8,7 +8,7 @@ from .base_export import BaseExport
 class ArduinoExport(Operator, BaseExport, ExportHelper):
     bl_idname = "export_anim.servo_animation_arduino"
     bl_label = "Servo Animation (.h)"
-    bl_description = "Save an Arduino header file with servo position values of the active armature"
+    bl_description = "Save an Arduino header file with servo position values of the active scene"
 
     filename_ext = ".h"
     chunk_size = 12
@@ -32,10 +32,14 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
         filename = self.get_blend_filename()
 
         content = (
-            "/*\n  Blender Servo Animation Positions\n\n  "
-            f"FPS: {fps}\n  Frames: {frames}\n  Seconds: {seconds}\n  "
-            f"Bones: {len(positions[0])}\n  Armature: {context.object.name}\n  "
-            f"Scene: {context.scene.name}\n  File: {filename}\n*/\n\n"
+            "/*\n  Blender Servo Animation Positions\n\n"
+            f"  FPS: {fps}\n"
+            f"  Frames: {frames}\n"
+            f"  Seconds: {seconds}\n"
+            f"  Bones: {len(positions[0])}\n"
+            f"  Scene: {context.scene.name}\n"
+            f"  File: {filename}\n"
+            "*/\n\n"
             "#include <Arduino.h>\n"
         )
 

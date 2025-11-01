@@ -5,7 +5,6 @@
   Frames: 200
   Seconds: 3
   Bones: 1
-  Armature: Armature.001
   Scene: SceneB
   File: scenes.blend
 */

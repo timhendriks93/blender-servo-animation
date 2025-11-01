@@ -4,7 +4,6 @@
   "frames": 100,
   "seconds": 3,
   "bones": 1,
-  "armature": "Armature",
   "file": "scenes.blend",
   "scene": "SceneA",
   "positions": [
