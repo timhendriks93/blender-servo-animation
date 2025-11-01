@@ -88,13 +88,7 @@ def calculate_frame_positions(context, pose_bones, last_positions, skip_duplicat
         if servo_id not in last_positions:
             last_positions[servo_id] = None
 
-        if not in_range:
-            raise RuntimeError(
-                f"Calculated position {position} for bone {bone.name} "
-                + f"is out of range at frame {frame}."
-            )
-
-        if skip_duplicates and last_positions[servo_id] == position:
+        if not in_range or (skip_duplicates and last_positions[servo_id] == position):
             continue
 
         frame_positions[servo_id] = position
