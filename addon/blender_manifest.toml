@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "servo_animation"
-version = "2.0.0"
+version = "2.1.0"
 name = "Servo Animation"
 tagline = "Export your Blender animation to servo position values"
 maintainer = "Tim Hendriks <admin@tim-hendriks.com>"
