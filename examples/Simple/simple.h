@@ -5,7 +5,6 @@
   Frames: 100
   Seconds: 3
   Bones: 1
-  Armature: Armature
   Scene: Scene
   File: simple.blend
 */

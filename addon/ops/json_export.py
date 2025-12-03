@@ -9,7 +9,7 @@ from .base_export import BaseExport
 class JsonExport(Operator, BaseExport, ExportHelper):
     bl_idname = "export_anim.servo_animation_json"
     bl_label = "Servo Animation (.json)"
-    bl_description = "Save a JSON file with servo position values of the active armature"
+    bl_description = "Save a JSON file with servo position values of the active scene"
 
     filename_ext = ".json"
 
@@ -46,7 +46,6 @@ class JsonExport(Operator, BaseExport, ExportHelper):
             "frames": frames,
             "seconds": seconds,
             "bones": len(positions[0]),
-            "armature": context.object.name,
             "file": filename,
             "scene": context.scene.name,
             "positions": positions

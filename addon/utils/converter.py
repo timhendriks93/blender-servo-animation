@@ -1,6 +1,8 @@
 import math
 import mathutils
 
+from ..utils.servo_settings import get_active_pose_bones
+
 
 def range_map(value, from_low, from_high, to_low, to_high):
     return (value - from_low) * (to_high - to_low) / (from_high - from_low) + to_low
@@ -50,19 +52,14 @@ def calculate_position(pose_bone):
 
 
 def calculate_positions(context, skip_duplicates):
-    pose_bones = []
     positions = []
     last_positions = {}
+    pose_bones = get_active_pose_bones(context.scene)
     window_manager = context.window_manager
     start = context.scene.frame_start
     end = context.scene.frame_end + 1
 
     window_manager.progress_begin(min=start, max=end)
-
-    for pose_bone in context.object.pose.bones:
-        servo_settings = pose_bone.bone.servo_settings
-        if servo_settings.active:
-            pose_bones.append(pose_bone)
 
     for frame in range(start, end):
         frame_positions = calculate_frame_positions(
@@ -88,13 +85,7 @@ def calculate_frame_positions(context, pose_bones, last_positions, skip_duplicat
         if servo_id not in last_positions:
             last_positions[servo_id] = None
 
-        if not in_range:
-            raise RuntimeError(
-                f"Calculated position {position} for bone {bone.name} "
-                + f"is out of range at frame {frame}."
-            )
-
-        if skip_duplicates and last_positions[servo_id] == position:
+        if not in_range or (skip_duplicates and last_positions[servo_id] == position):
             continue
 
         frame_positions[servo_id] = position

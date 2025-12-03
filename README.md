@@ -66,7 +66,7 @@ When thinking of animatronic or robotic projects, you could animate a head or ar
 
 Once all servo settings are provided and your animation is ready, you can calculate and export the servo position values.
 
-Make sure to select the armature containing the bones/servos you want to export and choose the desired format in the `File > Export` menu:
+Choose the desired format in the `File > Export` menu:
 
 ![Export Menu Top](images/export_menu.png)
 

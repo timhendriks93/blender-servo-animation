@@ -5,7 +5,6 @@
   Frames: 100
   Seconds: 3
   Bones: 2
-  Armature: Armature
   Scene: Scene
   File: ik.blend
 */

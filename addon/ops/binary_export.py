@@ -8,7 +8,7 @@ from .base_export import BaseExport
 class BinaryExport(Operator, BaseExport, ExportHelper):
     bl_idname = "export_anim.servo_animation_binary"
     bl_label = "Servo Animation (.bin)"
-    bl_description = "Save a binary file with servo position values of the active armature"
+    bl_description = "Save a binary file with servo position values of the active scene"
 
     filename_ext = ".bin"
 
