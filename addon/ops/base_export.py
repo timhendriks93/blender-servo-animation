@@ -3,6 +3,7 @@ import bpy
 
 from ..utils.converter import calculate_positions
 from ..utils.live_mode import LiveMode
+from ..utils.servo_settings import get_active_pose_bones
 
 
 class BaseExport:
@@ -18,11 +19,12 @@ class BaseExport:
 
     @classmethod
     def poll(cls, context):
-        if not context.object or context.object.type != 'ARMATURE':
-            return False
-        for pose_bone in context.object.pose.bones:
+        pose_bones = get_active_pose_bones(context.scene)
+
+        for pose_bone in pose_bones:
             if pose_bone.bone.servo_settings.active:
                 return True
+
         return False
 
     def execute(self, context):

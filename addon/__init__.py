@@ -47,7 +47,7 @@ def register():
     bpy.types.WindowManager.servo_animation = bpy.props.PointerProperty(
         type=WindowManagerPropertyGroup)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
-    bpy.types.TIME_MT_editor_menus.append(menu_func_timeline)
+    bpy.types.DOPESHEET_MT_editor_menus.append(menu_func_timeline)
 
 
 def unregister():
@@ -58,4 +58,4 @@ def unregister():
     del bpy.types.EditBone.servo_settings
     del bpy.types.WindowManager.servo_animation
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
-    bpy.types.TIME_MT_editor_menus.remove(menu_func_timeline)
+    bpy.types.DOPESHEET_MT_editor_menus.remove(menu_func_timeline)

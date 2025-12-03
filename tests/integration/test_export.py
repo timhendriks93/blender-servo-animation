@@ -35,13 +35,13 @@ class TestExport(unittest.TestCase):
 
     @parameterized.expand([
         ("with skipping and indent of 2", True, "2",
-         "7576d368e9680a35a67a62df0200f08fd310e0f830e1497f8f12a3138e5ff24b"),
+         "d9daf933670642efc973b2cf2a44516630a0c31a7b11ca64cc7668d64b550cb8"),
         ("without skipping and indent of 2", False, "2",
-         "f96d14717222b184740f4258842f766eee341f0768eac42c44a4efd8e45f5814"),
+         "1815631c5f69b09af4db932b14af502b723072e7cebf72a7a5d47512dfaf0dac"),
         ("with skipping and no indent", True, "None",
-         "88b4da9ceee71fbbe75f1f0f73727b69bc8b6ba21358a86932efb41ab5b1a1e6"),
+         "69ca1146a3d51aec9ce899d1500a8766b57208f169428186413f6db7931b93c5"),
         ("with skipping and indent of 4", True, "4",
-         "87f25f8fab6a8996393a0e277d6e2891c70194d24c8283bf937097970c5033c8")
+         "163b928792a3cf9aae4e080ab21272d9c2e8ff6a45fce33f81c7ae4ecba59740")
     ])
     def test_json_export(self, _name, skip_duplicates, indent, expected):
         export_file = self.output_dir + "/export.json"
@@ -53,13 +53,13 @@ class TestExport(unittest.TestCase):
 
     @parameterized.expand([
         ("with skipping and no namespace", True, False,
-         "5b8b6abd5ae925a394020dcfe2341705c74a3b1f2dd3a2a5230d73e56b85b4c5"),
+         "91f67d84a30e52f6c1f985c392596fc492d8441691becf118fb76c91f54b192d"),
         ("without skipping and no namespace", False, False,
-         "38d458c7061ca3d252da01995199e7f23e646e9889d5b4a6609328fa57b9a237"),
+         "ea0159399d5256392e193271e5458bb5537fec7b5cd392b5a0eb83c329ec22d5"),
         ("with skipping and namespace", True, True,
-         "fc3e0c39b24bc2147c56d6cc3f65181839478e0df54b0b580328f50b0587a6d1"),
+         "3339a271a3f5adad5ab4d9c24b41c390a49f7bae640be98cd3322e8dfd6e35fc"),
         ("without skipping and namespace", False, True,
-         "e1abc66c2dc73bb13828c83bbd30c8967a1a0bb346a01ad542d5e74321b68e2a")
+         "eba932e01ee399807ac580eeb60ffad6280f7d7d7ec66610769514eedbf89aae")
     ])
     def test_arduino_export(self, _name, skip_duplicates, namespace, expected):
         export_file = self.output_dir + "/export.h"
