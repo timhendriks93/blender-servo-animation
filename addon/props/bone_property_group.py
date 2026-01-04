@@ -5,17 +5,17 @@ from ..utils.servo_settings import range_limit_value
 
 
 def update_position_min(self, _context):
-    self.position_min = range_limit_value(
+    self["position_min"] = range_limit_value(
         self.position_min, None, self.position_max)
 
 
 def update_position_max(self, _context):
-    self.position_max = range_limit_value(
+    self["position_max"] = range_limit_value(
         self.position_max, self.position_min, None)
 
 
 def update_neutral_angle(self, _context):
-    self.neutral_angle = range_limit_value(
+    self["neutral_angle"] = range_limit_value(
         self.neutral_angle, None, self.rotation_range)
 
 
