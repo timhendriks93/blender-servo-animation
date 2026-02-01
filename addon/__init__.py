@@ -4,6 +4,7 @@ from .props.bone_property_group import BonePropertyGroup
 from .props.wm_property_group import WindowManagerPropertyGroup
 from .ui.bone_panel import BonePanel
 from .ui.menu_panel import MenuPanel
+from .ui.export_menu import ExportMenu
 from .ops.json_export import JsonExport
 from .ops.arduino_export import ArduinoExport
 from .ops.binary_export import BinaryExport
@@ -17,6 +18,7 @@ classes = (
     WindowManagerPropertyGroup,
     BonePanel,
     MenuPanel,
+    ExportMenu,
     ArduinoExport,
     JsonExport,
     BinaryExport,
@@ -27,9 +29,7 @@ classes = (
 
 
 def menu_func_export(self, _):
-    self.layout.operator(ArduinoExport.bl_idname)
-    self.layout.operator(JsonExport.bl_idname)
-    self.layout.operator(BinaryExport.bl_idname)
+    self.layout.menu(ExportMenu.bl_idname, text="Servo Animation")
 
 
 def menu_func_timeline(self, _):

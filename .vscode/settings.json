@@ -3,5 +3,8 @@
         "**/__pycache__": true
     },
     "blender.addon.loadDirectory": "addon",
-    "blender.addon.moduleName": "servo_animation"
+    "blender.addon.moduleName": "servo_animation",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportInvalidTypeForm": "none"
+    }
 }
