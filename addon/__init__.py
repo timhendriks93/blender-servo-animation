@@ -8,6 +8,7 @@ from .ui.export_menu import ExportMenu
 from .ops.json_export import JsonExport
 from .ops.arduino_export import ArduinoExport
 from .ops.binary_export import BinaryExport
+from .ops.text_export import TextExport
 from .ops.stop_live_mode import StopLiveMode
 from .ops.start_live_mode import StartLiveMode
 from .ops.calibrate_servo import CalibrateServo
@@ -22,6 +23,7 @@ classes = (
     ArduinoExport,
     JsonExport,
     BinaryExport,
+    TextExport,
     StopLiveMode,
     StartLiveMode,
     CalibrateServo
