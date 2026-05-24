@@ -22,8 +22,8 @@ class ArduinoExport(Operator, BaseExport, ExportHelper):
     namespace: bpy.props.BoolProperty(
         name="Add scene namespace",
         description=(
-            "Use the current scene name to wrap the position arrays and "
-            "variables in a namespace"
+            "Use the current scene name to wrap the position array and "
+            "animation variables in a namespace"
         )
     )
 

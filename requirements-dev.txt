@@ -1,2 +1,4 @@
+fake-bpy-module-4.2
 parameterized
+pylint
 websockets
