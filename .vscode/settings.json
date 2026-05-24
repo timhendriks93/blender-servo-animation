@@ -2,6 +2,8 @@
     "files.exclude": {
         "**/__pycache__": true
     },
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "pylint.importStrategy": "fromEnvironment",
     "blender.addon.loadDirectory": "addon",
     "blender.addon.moduleName": "servo_animation",
     "python.analysis.diagnosticSeverityOverrides": {
