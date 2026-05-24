@@ -54,19 +54,9 @@ class WindowManagerPropertyGroup(PropertyGroup):
         name="Position Jump Handling",
         description=(
             "Slowly move the servos to their new position "
-            "when jumping across a larger frame distance"
+            "when jumping across two or more frames"
         ),
         default=True
-    )
-    frame_jump_threshold: bpy.props.IntProperty(
-        name="Frame Jump Threshold",
-        description=(
-            "Use controlled transitions when the frame difference "
-            "is larger than this value"
-        ),
-        default=10,
-        min=2,
-        max=100
     )
     transition_speed: bpy.props.IntProperty(
         name="Transition Speed",

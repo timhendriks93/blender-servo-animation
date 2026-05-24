@@ -57,5 +57,4 @@ class MenuPanel(Panel):
         col.prop(servo_animation, "position_jump_handling")
         sub = col.column()
         sub.active = servo_animation.position_jump_handling
-        sub.prop(servo_animation, "frame_jump_threshold")
         sub.prop(servo_animation, "transition_speed")

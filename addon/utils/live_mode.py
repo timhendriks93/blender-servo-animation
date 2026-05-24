@@ -95,14 +95,14 @@ class LiveMode:
 
         cls.disable_handler()
 
-        frame_jump_exceeded = False
+        frame_jump_detected = False
         target_positions = []
         servo_animation = bpy.context.window_manager.servo_animation
         current_frame = scene.frame_current
 
         if cls._last_frame is not None:
             frame_delta = abs(current_frame - cls._last_frame)
-            frame_jump_exceeded = frame_delta > servo_animation.frame_jump_threshold
+            frame_jump_detected = frame_delta >= 2
 
         for pose_bone in get_active_pose_bones(scene):
             position, _angle, in_range = calculate_position(pose_bone)
@@ -115,7 +115,7 @@ class LiveMode:
             step = cls.get_transition_step(servo_settings, servo_animation)
             target_positions.append((servo_id, position, step))
 
-        if servo_animation.position_jump_handling and frame_jump_exceeded:
+        if servo_animation.position_jump_handling and frame_jump_detected:
             cls.handle_position_jump(target_positions)
         else:
             cls.handle_default(target_positions)
@@ -130,9 +130,6 @@ class LiveMode:
 
     @classmethod
     def handle_position_jump(cls, target_positions):
-        if bpy.context.screen.is_animation_playing:
-            bpy.ops.screen.animation_cancel(restore_frame=False)
-
         abs_steps = 0
 
         for servo_id, position, step in target_positions:
