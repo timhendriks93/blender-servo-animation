@@ -18,11 +18,21 @@ class LiveMode:
     METHOD_SERIAL = "SERIAL"
     METHOD_SOCKET = "SOCKET"
 
-    STEP_DURATION_BASE = .3
+    STEP_DURATION = .03
 
     _last_positions = {}
+    _last_frame = None
     _connection = None
     _handler_enabled = True
+
+    @classmethod
+    def get_transition_step(cls, servo_settings, servo_animation):
+        transition_speed = servo_animation.transition_speed
+
+        if servo_settings.use_custom_transition_speed:
+            transition_speed = servo_settings.transition_speed
+
+        return transition_speed
 
     @classmethod
     def set_connection(cls, connection):
@@ -79,17 +89,22 @@ class LiveMode:
         return None
 
     @classmethod
-    def handler(cls, _scene, _depsgraph):
+    def handler(cls, scene, _depsgraph):
         if not cls.is_handler_enabled():
             return
 
         cls.disable_handler()
 
-        threshold_exceeded = False
+        frame_jump_exceeded = False
         target_positions = []
         servo_animation = bpy.context.window_manager.servo_animation
+        current_frame = scene.frame_current
 
-        for pose_bone in get_active_pose_bones(bpy.context.scene):
+        if cls._last_frame is not None:
+            frame_delta = abs(current_frame - cls._last_frame)
+            frame_jump_exceeded = frame_delta > servo_animation.frame_jump_threshold
+
+        for pose_bone in get_active_pose_bones(scene):
             position, _angle, in_range = calculate_position(pose_bone)
 
             if not in_range:
@@ -97,20 +112,15 @@ class LiveMode:
 
             servo_settings = pose_bone.bone.servo_settings
             servo_id = servo_settings.servo_id
-            step = round(servo_settings.threshold / 10)
+            step = cls.get_transition_step(servo_settings, servo_animation)
             target_positions.append((servo_id, position, step))
 
-            if (
-                servo_id in cls._last_positions
-                and abs(position - cls._last_positions[servo_id]) > servo_settings.threshold
-            ):
-                threshold_exceeded = True
-
-        if (servo_animation.position_jump_handling and threshold_exceeded):
+        if servo_animation.position_jump_handling and frame_jump_exceeded:
             cls.handle_position_jump(target_positions)
         else:
             cls.handle_default(target_positions)
 
+        cls._last_frame = current_frame
         cls.enable_handler()
 
     @classmethod
@@ -152,7 +162,7 @@ class LiveMode:
 
                 cls.send_position(servo_id, new_position)
 
-            time.sleep(.01)
+            time.sleep(cls.STEP_DURATION)
 
         window_manager.progress_end()
 
@@ -180,6 +190,7 @@ class LiveMode:
     @classmethod
     def close_connection(cls):
         cls._last_positions = {}
+        cls._last_frame = None
 
         if cls._connection:
             cls._connection.close()
