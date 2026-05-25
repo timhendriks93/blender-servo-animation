@@ -1,35 +1,48 @@
-# AGENTS
+# AGENTS.md
 
-## Test Workflow
+## Project Overview
 
-Run all commands from the repository root.
+This repository contains a Blender add-on that converts armature animation into servo position data and can stream live servo commands over serial or websocket connections.
 
-Before running the Blender integration tests, install the test dependencies into Blender's Python environment:
+The extension source lives in `addon/`. Example assets are in `examples/`. Blender-driven integration tests live in `tests/integration/`.
 
-```bash
-bash scripts/prepare.sh
-```
+## Key Paths
 
-Then run the test suite:
+- `addon/__init__.py`: add-on registration entry point
+- `addon/ops/`: export and live mode operators
+- `addon/props/`: Blender property groups
+- `addon/ui/`: Blender panels and menus
+- `addon/utils/`: conversion logic, live mode helpers, and servo settings helpers
+- `tests/test.py`: unittest discovery entry point used inside Blender
+- `tests/prepare.py`: installs Python dependencies into Blender's Python environment
+- `scripts/build.sh`: builds the Blender extension zip
+- `scripts/install.sh`: installs the built extension into Blender
+- `scripts/prepare.sh`: runs dependency preparation in Blender
+- `scripts/test.sh`: runs the integration suite in Blender
 
-```bash
-bash scripts/test.sh
-```
+## Working Conventions
 
-The prepare step is required because the integration tests depend on packages such as `parameterized`, and those must be installed inside Blender's Python environment.
+- Preserve Blender add-on compatibility patterns already used in the repo. Registration is centralized in `addon/__init__.py`.
+- Favor small, local changes. Operator, UI, property, and utility responsibilities are already split by folder.
+- Do not assume plain Python execution is enough for behavior verification. Most meaningful tests run through Blender with the test `.blend` file.
+- `requirements-dev.txt` is also intended for local development inside the repo `venv`. Installing it there supports IDE hints, local imports, and linting.
+- Keep dependencies aligned with `requirements-dev.txt` and the vendored wheels in `addon/wheels/` when relevant to live mode functionality.
 
-## Verification Expectations
+## Validation
 
-Agents should always verify code changes by running the relevant tests before finishing work.
+Typical project workflows:
 
-- If a change affects live mode, export behavior, calibration, or other tested Blender flows, run `bash scripts/test.sh`.
-- If the test dependencies may not be installed yet in the current environment, run `bash scripts/prepare.sh` first.
-- If tests cannot be run, explicitly say so and explain why.
+- Install local development dependencies into the repo `venv`: `./.venv/bin/pip install -r requirements-dev.txt`
+- Lint add-on code: `./.venv/bin/pylint addon`
+- Lint tests: `./.venv/bin/pylint -d duplicate-code tests`
+- Prepare Blender's Python environment: `scripts/prepare.sh`
+- Run integration tests: `scripts/test.sh`
+- Build extension package: `scripts/build.sh`
+- Install built package into Blender: `scripts/install.sh`
 
-## Test Coverage Expectations
+## Editing Guidance
 
-Behavior changes should be covered by tests.
-
-- Prefer extending existing integration tests when the changed behavior already has coverage nearby.
-- Write new tests when no existing test covers the behavior being introduced or changed.
-- When behavior intentionally changes, update the affected tests so they describe the new behavior rather than preserving outdated expectations.
+- Avoid reverting unrelated work in the tree.
+- If modifying live mode behavior, review both serial and websocket paths plus any jump-handling or calibration flows.
+- If changing export behavior, check JSON, binary, and text/header outputs together because they share conversion logic.
+- When updating user-facing behavior, keep `README.md` in sync if the workflow, UI, or feature set changes.
