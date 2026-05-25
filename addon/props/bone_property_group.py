@@ -49,7 +49,10 @@ class BonePropertyGroup(PropertyGroup):
     )
     use_custom_transition_speed: bpy.props.BoolProperty(
         name="Use Custom Transition Speed",
-        description="Override the global live mode transition speed for this servo"
+        description=(
+            "Override the global Transition Speed used by "
+            "Position Jump Handling for this servo"
+        )
     )
     transition_speed: bpy.props.IntProperty(
         name="Transition Speed",
@@ -57,8 +60,8 @@ class BonePropertyGroup(PropertyGroup):
         min=1,
         max=100,
         description=(
-            "How many position units this servo moves per transition step "
-            "when a controlled transition is used in live mode"
+            "How many position units this servo moves per step when "
+            "Position Jump Handling is active; lower values move more slowly"
         )
     )
     neutral_angle: bpy.props.IntProperty(

@@ -128,9 +128,11 @@ Clicking the `Connect` button will then establish a tcp connection and start the
 
 Once the connection is established, you can use the timeline to control your servos in a synchronized way. This opens up the possibility to jump to a different frame or position within your animation. To prevent damage due to the servos moving too quickly, you can use `Position Jump Handling`. This option is enabled by default.
 
-When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will compare the current and new frame numbers. If the difference exceeds the configured `Frame Jump Threshold`, the servos will be slowly moved to their new target positions instead of jumping there immediately. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
+When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will compare the current and new frame numbers. If the difference is large enough to count as a frame jump, the servos will be gradually moved to their new target positions instead of jumping there immediately. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
 
-The speed of this process is relative to the global `Transition Speed` configured in live mode. Individual servos can optionally override that value with their own `Transition Speed`. The value directly defines how many position units are moved per transition step, so lower values result in slower and safer movement.
+The speed of this process is controlled by the global `Transition Speed` in live mode. Individual servos can optionally override that value with their own `Transition Speed`. The value directly defines how many position units are moved per step while `Position Jump Handling` is active, so lower values result in slower and safer movement.
+
+> Note: Jumping to other frames while the animation is playing and `Position Jump Handling` is active is not recommended. Doing so can trigger the position jump handling recursively.
 
 ### Servo Calibration
 

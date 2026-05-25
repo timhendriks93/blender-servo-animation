@@ -53,16 +53,17 @@ class WindowManagerPropertyGroup(PropertyGroup):
     position_jump_handling: bpy.props.BoolProperty(
         name="Position Jump Handling",
         description=(
-            "Slowly move the servos to their new position "
-            "when jumping across two or more frames"
+            "Gradually move servos to their new target positions "
+            "after a large timeline frame jump instead of moving there immediately"
         ),
         default=True
     )
     transition_speed: bpy.props.IntProperty(
         name="Transition Speed",
         description=(
-            "How many position units servos move per transition step "
-            "when a controlled transition is used in live mode"
+            "How many position units servos move per step while "
+            "Position Jump Handling is moving them to a new target; "
+            "lower values move more slowly"
         ),
         default=2,
         min=1,
