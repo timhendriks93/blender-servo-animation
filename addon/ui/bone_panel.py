@@ -40,7 +40,10 @@ class BonePanel(Panel):
 
         col = layout.column(align=True)
         col.active = servo_settings.active
-        col.prop(servo_settings, "threshold")
+        col.prop(servo_settings, "use_custom_transition_speed")
+        sub = col.column()
+        sub.active = servo_settings.active and servo_settings.use_custom_transition_speed
+        sub.prop(servo_settings, "transition_speed")
 
         layout.separator()
 

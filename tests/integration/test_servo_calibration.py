@@ -21,8 +21,10 @@ class TestServoCalibration(unittest.TestCase):
             pass
 
         bpy.context.window_manager.servo_animation.position_jump_handling = False
+        bpy.context.window_manager.servo_animation.transition_speed = 2
         bpy.context.object.data.bones['Bone'].servo_settings.position_min = 0
         bpy.context.object.data.bones['Bone'].servo_settings.position_max = 180
+        bpy.context.scene.frame_set(1)
 
     def read_bytes(self):
         read_bytes = []
@@ -40,8 +42,8 @@ class TestServoCalibration(unittest.TestCase):
 
     @parameterized.expand([
         ("without handling", False, 45, 135, 4),
-        ("threshold reached", True, 45, 135, 25),
-        ("threshold not reached", True, 80, 110, 4),
+        ("with handling and no frame jump", True, 45, 135, 4),
+        ("with handling and alternative values", True, 80, 110, 4),
     ])
     def test_calibration(self, _name, handling, position_min, position_max, commands):
         servo_settings = bpy.context.object.data.bones['Bone'].servo_settings

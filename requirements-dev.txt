@@ -1,4 +1,6 @@
 fake-bpy-module-4.2
 parameterized
 pylint
+pyserial==3.5
+websocket-client==1.5.1
 websockets

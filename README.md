@@ -37,7 +37,8 @@ The underlying principle is that each bone represents a servo motor in the real 
 | Servo ID | Unique number between `0` and `255` to identify this servo (used to send live commands) |
 | Position Min | The minimum position value to identify this servo physically stops moving |
 | Position Max | Same as `Position Min`, but for the maximum value |
-| Threshold | The maximum value change between frames which is also used for frame jump handling in live mode |
+| Use Custom Transition Speed | Whether this servo should override the global live mode transition speed |
+| Transition Speed | How many position units this servo moves per transition step in live mode when the custom override is enabled |
 | Neutral Angle | The assumed neutral angle of the servo in degrees (typically half the rotation range) which should be adjusted carefully, since the servo will first move to its 'natural' neutral angle when powered |
 | Rotation Range | The manufactured rotation range of the servo in degrees (typically `180`) |
 | Euler Rotation Axis | The Euler rotation axis (`X`, `Y` or `Z`) of the bone rotation representing the servo movement |
@@ -127,9 +128,11 @@ Clicking the `Connect` button will then establish a tcp connection and start the
 
 Once the connection is established, you can use the timeline to control your servos in a synchronized way. This opens up the possibility to jump to a different frame or position within your animation. To prevent damage due to the servos moving too quickly, you can use `Position Jump Handling`. This option is enabled by default.
 
-When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will first calculate all position value differences. If one of those differences exceeds the `Threshold` value of the respective servos, they will be slowly moved to their new target position. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
+When clicking somewhere in the timeline and therefore jumping to a different frame, the add-on will compare the current and new frame numbers. If the difference is large enough to count as a frame jump, the servos will be gradually moved to their new target positions instead of jumping there immediately. This is done by sending multiple position values in small increments. During this process, the user interface will show a progress indicator.
 
-The speed of this process is also relative to the configured `Threshold` values. A slower and safer movement can be achieved by setting the threshold values as low as possible with the actual animation still able to run properly.
+The speed of this process is controlled by the global `Transition Speed` in live mode. Individual servos can optionally override that value with their own `Transition Speed`. The value directly defines how many position units are moved per step while `Position Jump Handling` is active, so lower values result in slower and safer movement.
+
+> Note: Jumping to other frames while the animation is playing and `Position Jump Handling` is active is not recommended. Doing so can trigger the position jump handling recursively.
 
 ### Servo Calibration
 

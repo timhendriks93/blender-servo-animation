@@ -53,5 +53,8 @@ class MenuPanel(Panel):
             col.prop(servo_animation, "socket_port")
             col.prop(servo_animation, "socket_path")
 
-        col = layout.column()
+        col = layout.column(align=True)
         col.prop(servo_animation, "position_jump_handling")
+        sub = col.column()
+        sub.active = servo_animation.position_jump_handling
+        sub.prop(servo_animation, "transition_speed")

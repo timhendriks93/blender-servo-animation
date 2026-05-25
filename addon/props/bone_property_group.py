@@ -47,14 +47,21 @@ class BonePropertyGroup(PropertyGroup):
         description="The maximum position value before the servo physically stops moving",
         update=update_position_max
     )
-    threshold: bpy.props.IntProperty(
-        name="Threshold",
-        default=20,
-        min=0,
-        max=10000,
+    use_custom_transition_speed: bpy.props.BoolProperty(
+        name="Use Custom Transition Speed",
         description=(
-            "The maximum value change between frames which is also "
-            "used for frame jump handling in live mode"
+            "Override the global Transition Speed used by "
+            "Position Jump Handling for this servo"
+        )
+    )
+    transition_speed: bpy.props.IntProperty(
+        name="Transition Speed",
+        default=2,
+        min=1,
+        max=100,
+        description=(
+            "How many position units this servo moves per step when "
+            "Position Jump Handling is active; lower values move more slowly"
         )
     )
     neutral_angle: bpy.props.IntProperty(
